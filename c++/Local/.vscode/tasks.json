@@ -1,0 +1,25 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: cl.exe build active file in Teknic dev shell",
+            "command": "cmd",
+            "args":[
+                "/c",
+                "call \"${workspaceFolder}\\.vscode\\init_teknic_env.cmd\" && cl.exe /Zi /EHsc /nologo /Fe\"${fileDirname}\\bin\\${fileBasenameNoExtension}.exe\" \"${file}\" sFoundation20.lib"            
+                ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Compile in Teknic Dev Shell"
+        }
+    ],
+    "version": "2.0.0"
+}
