@@ -27,13 +27,18 @@ public:
     bool get_temp(float& out_temp);
     bool get_mode(int32_t& mode);
     bool get_setpoint(float& temp);
-    bool get_pid(float& p, float& i, float& d);
+    bool get_voltage(float& voltage);
+    bool get_proportional_bandwidth(float& p);
+    bool get_integral_gain(float& i);
+    bool get_derivative_gain(float& i);
 
     // setters
     bool set_mode(int32_t& mode);
-    bool set_setpoint(float temp);
-    bool set_pid(float& p, float& i, float& d);
-
+    bool set_setpoint(float& temp);
+    bool set_voltage(float& voltage);
+    bool set_proportional_bandwidth(float& p);
+    bool set_integral_gain(float& i);
+    bool set_derivative_gain(float& i);
 
 
 private:

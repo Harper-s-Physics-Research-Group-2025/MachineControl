@@ -257,10 +257,45 @@ bool Oven5R6900::get_setpoint(float& temp){
 }
 
 
-//
-bool Oven5R6900::get_pid(float& p, float& i, float& d){
-    cout << "get_pid() not implemented yet." << endl;
-    return false;
+// get voltage
+bool Oven5R6900::get_voltage(float& voltage) {
+
+    // construct message
+    string message = "*004600000000";
+    message += checksum(message);
+    message += '\r';        // terminating character
+    vector<uint8_t> msg(message.begin(), message.end());
+    vector<uint8_t> res(16);
+
+    if (!send_command(msg)) return false;    // send
+    if (!read_response(res)) return false;   // receive
+
+    string response(res.begin(), res.end());
+
+    voltage = parse_response(response) / 1000.0f;
+
+    return true;
+}
+
+
+// Within the bandwidth the controller adjusts how much power is sent to the thermoelectric (the closer the thermoelectric is to the desired temperature, the less power it sends)
+bool Oven5R6900::get_proportional_bandwidth(float& p){
+    
+    // construct message
+    string message = "*004100000000";
+    message += checksum(message);
+    message += '\r';        // terminating character
+    vector<uint8_t> msg(message.begin(), message.end());
+    vector<uint8_t> res(16);
+
+    if (!send_command(msg)) return false;    // send
+    if (!read_response(res)) return false;   // receive
+
+    string response(res.begin(), res.end());
+
+    p = parse_response(response) / 100.0f;
+
+    return true;
 }
 
 
@@ -299,9 +334,9 @@ bool Oven5R6900::set_mode(int32_t& mode){
 
 
 //
-bool Oven5R6900::set_setpoint(float temp) {
+bool Oven5R6900::set_setpoint(float& temp) {
 
-// construct message
+    // construct message
     string message = "*0010";
 
     ostringstream oss;
@@ -324,8 +359,52 @@ bool Oven5R6900::set_setpoint(float temp) {
 }
 
 
-//
-bool Oven5R6900::set_pid(float& p, float& i, float& d) {
-    cout << "set_pid() not implemented yet." << endl;
-    return false;
+// set voltage. Voltage is set to the voltage indicated by the response from the temperature controller
+bool Oven5R6900::set_voltage(float& voltage) {
+    
+    // construct message
+    string message = "*0016";
+
+    ostringstream oss;
+    oss << hex << setw(8) << setfill('0') << static_cast<uint32_t>(voltage * 1000);
+    message += oss.str();  // "00000123"  convert int mode to string
+
+    message += checksum(message);
+    message += '\r';        // terminating character
+    vector<uint8_t> msg(message.begin(), message.end());
+    vector<uint8_t> res(16);
+
+    if (!send_command(msg)) return false;    // send
+    if (!read_response(res)) return false;   // receive
+
+    string response(res.begin(), res.end());
+
+    voltage = parse_response(response) / 100.0f;
+
+    return true;
 }
+
+bool Oven5R6900::set_proportional_bandwidth(float& p){
+
+    // construct message
+    string message = "*0011";
+
+    ostringstream oss;
+    oss << hex << setw(8) << setfill('0') << static_cast<uint32_t>(p * 100);
+    message += oss.str();  // "00000123"  convert int mode to string
+
+    message += checksum(message);
+    message += '\r';        // terminating character
+    vector<uint8_t> msg(message.begin(), message.end());
+    vector<uint8_t> res(16);
+
+    if (!send_command(msg)) return false;    // send
+    if (!read_response(res)) return false;   // receive
+
+    string response(res.begin(), res.end());
+
+    p = parse_response(response) / 100.0f;
+
+    return true;
+}
+

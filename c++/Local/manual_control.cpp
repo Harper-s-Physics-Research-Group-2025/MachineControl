@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
                 printf("Motor X  Serial #: %d\n", motorX->Info.SerialNumber.Value());
                 printf("Motor Z  Serial #: %d\n", motorZ->Info.SerialNumber.Value());
-                printf("Press enter to continue, any other key to exit...");
+                printf("Press enter to continue and home motors, any other key to exit...");
                 char c = _getch();
                 if (c != '\n' && c != '\r') break;
                 printf("Enabling and Homing Motors\n");
@@ -157,8 +157,8 @@ int main(int argc, char **argv) {
                     v_x = (keys.find(39) != keys.end()) - (keys.find(37) != keys.end());
                     v_z = (keys.find(38) != keys.end()) - (keys.find(40) != keys.end());
 
-                    motorX->Motion.MoveVelStart(500*v_x);
-                    motorZ->Motion.MoveVelStart(500*v_z);
+                    motorX->Motion.MoveVelStart(50*v_x);
+                    motorZ->Motion.MoveVelStart(50*v_z);
 
 
                 } else {
