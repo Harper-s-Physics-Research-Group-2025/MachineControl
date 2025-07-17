@@ -1,0 +1,3 @@
+﻿  temperature_controller.cpp
+C:\Users\sin2\source\repos\temperature_controller\temperature_controller\temperature_controller.cpp(21,53): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  temperature_controller.vcxproj -> C:\Users\sin2\source\repos\temperature_controller\x64\Debug\temperature_controller.exe
