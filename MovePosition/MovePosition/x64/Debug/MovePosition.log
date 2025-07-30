@@ -1,3 +1,0 @@
-﻿  MovePosition.cpp
-C:\Users\sin2\source\repos\MovePosition\MovePosition\MovePosition.cpp(44,12): warning C4101: 'xPosCommanded': unreferenced local variable
-  MovePosition.vcxproj -> C:\Users\sin2\source\repos\MovePosition\x64\Debug\MovePosition.exe
