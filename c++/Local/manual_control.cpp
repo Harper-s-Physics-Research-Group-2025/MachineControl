@@ -37,7 +37,7 @@ INode* motorZ; // Controlled with Up/Down
     
 vector<string> comHubPorts;                 // usually only one port (board) and up to 4 motors per port
 unordered_set<DWORD> keys;
-int v_x;                            // possibly should be double
+int v_x;                            // desired velocity of motors possibly should be double
 int v_z;
 
 // function definitions

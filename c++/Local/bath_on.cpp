@@ -5,14 +5,23 @@ using namespace std;
 int main(int argc, char** argv) {
     // Turn bath on
     // Input: String com port
-    // Output: bool was operation successful (opposite of conventional 0 = no error)
+    // Returns: errorcode, 0 = success, 1 = failure
 
+
+    // check for correct number of command line arguments
+    if (argc != 2) {
+        cerr << "incorrect number " << argc-1 << " of command line arguments passed" << endl;
+        return 2;
+    }
+    
+    
     RTE7 bath = RTE7(argv[1]);
 
     if (!bath.turn_on()) {
-        return 0;
-    } else {
+        cerr << "initialization failed" << endl;
         return 1;
     }
-
+    
+    
+    return 0;
 }
