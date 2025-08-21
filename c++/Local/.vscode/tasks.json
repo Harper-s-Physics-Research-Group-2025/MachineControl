@@ -6,7 +6,7 @@
             "command": "cmd",
             "args":[
                 "/c",
-                "call \"${workspaceFolder}\\.vscode\\init_teknic_env.cmd\" && cl.exe /Zi /EHsc /nologo /Fe\"${fileDirname}\\bin\\${fileBasenameNoExtension}.exe\" \"${file}\" sFoundation20.lib"            
+                "call \"${workspaceFolder}\\.vscode\\init_teknic_env.cmd\" && cl.exe /Zi /EHsc /std:c++17 /nologo /Fe\"${fileDirname}\\bin\\${fileBasenameNoExtension}.exe\" \"${file}\" RTE7.cpp Oven5R6900.cpp sFoundation20.lib"            
                 ],
             "options": {
                 "cwd": "${fileDirname}"

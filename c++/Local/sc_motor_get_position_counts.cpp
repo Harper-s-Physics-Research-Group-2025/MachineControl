@@ -22,7 +22,13 @@ int main(int argc, char **argv) {
     // Output: Motor hub name and position in counts
     // Returns: Errorcode, 0 = success, 1 = failure
 
+    // check for correct number of command line arguments
+    if (argc != 1) {
+        cerr << "Usage: <command>" << endl;
+        return 2;
+    }
 
+    
     // Run Program
     try {
         
@@ -47,7 +53,7 @@ int main(int argc, char **argv) {
         motorX = &Port->Nodes(0);
         motorZ = &Port->Nodes(1); 
         
-        cout << "(" << motorX->Motion.PosnMeasured.Value() << ", " << motorZ->Motion.PosnMeasured.Value() << ")" << endl;
+        cout << "Counts: (" << motorX->Motion.PosnMeasured.Value() << ", " << motorZ->Motion.PosnMeasured.Value() << ")" << endl;
 
     } catch (mnErr& theErr) {
         cerr << "Caught error: " << theErr.ErrorMsg << "\n";

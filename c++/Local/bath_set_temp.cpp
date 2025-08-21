@@ -11,18 +11,26 @@ int main(int argc, char** argv) {
 
     // check for correct number of command line arguments
     if (argc != 3) {
-        cerr << "incorrect number " << argc-1 << " of command line arguments passed" << endl;
+        cerr << "Usage: <command> <COM port> <temp>" << endl;
         return 1;
     }
 
     RTE7 bath = RTE7(argv[1]);
 
-    if (!bath.set_setpoint(stof(argv[2]))) {
-            cout << -999;
+    float temp;
+    try {
+        temp = stof(argv[2]);
+    } catch (const invalid_argument& e) {
+        cerr << "Invalid input: " << e.what() << " '" << argv[2] << "'" << endl;
         return 2;
-    } else {
-        cout << argv[2];
-        return 0;
     }
+
+    
+    if (!bath.set_setpoint(temp)) {
+        return 2;
+    } 
+    
+    cout << "Set temp: " << temp << endl;
+    return 0;
 
 }

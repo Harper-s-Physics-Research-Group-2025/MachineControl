@@ -4,14 +4,14 @@ using namespace std;
 
 int main(int argc, char** argv) {
     // Set bath temperature
-    // Input: String com port, float temp
+    // Input: String com port
     // Output: Current bath temperature
     // Returns: Errorcode, 0 = success, 1 = failure
 
 
     // check for correct number of command line arguments
-    if (argc != 3) {
-        cerr << "incorrect number " << argc-1 << " of command line arguments passed" << endl;
+    if (argc != 2) {
+        cerr << "Usage <command> <COM port>" << endl;
         return 2;
     }
 
@@ -19,11 +19,11 @@ int main(int argc, char** argv) {
     RTE7 bath = RTE7(argv[1]);
 
     if (!bath.get_temp(temp)) {
-        cout << -999;
         return 1;
-    } else {
-        cout << temp;
-        return 0;
     }
+
+    cout << "Temp: " << temp << endl;
+    return 0;
+
 
 }

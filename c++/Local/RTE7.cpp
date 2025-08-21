@@ -89,6 +89,11 @@ bool RTE7::read_response(vector<uint8_t>& response) {
         return false;
     }
 
+    if (bytes_read == 0) {
+        cerr << "No response received." << endl;
+        return false;
+    }
+
     response.resize(bytes_read);
     // printBytes(response, "Received");
     return true;
@@ -248,7 +253,7 @@ bool RTE7::get_setpoint(float& temp) {
 }
 
 
-bool RTE7::set_setpoint(float temp) {
+bool RTE7::set_setpoint(float& temp) {
     vector<uint8_t> msg = {0xCA, 0x00, 0x01, 0xF0, 0x02};
     vector<uint8_t> res(16);
 

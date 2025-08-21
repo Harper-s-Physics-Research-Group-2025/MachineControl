@@ -30,13 +30,19 @@ int main(int argc, char **argv) {
 
     // check for correct number of command line arguments
     if (argc < 3 || argc > 4) {
-        cerr << "incorrect number " << argc-1 << " of command line arguments passed" << endl;
+        cerr << "Usage <command> <x_pos> <z_pos> <vel (rpm)> <timeout (s)>" << endl;
         return 1;
     } 
-    
+     
     for (int i = 1; i < argc; i++) {
-        args[i - 1] = stoi(argv[i]);    // populate argument array and convert types
+        try {
+            args[i - 1] = stoi(argv[i]);    // populate argument array and convert types        
+        } catch (const invalid_argument& e) {
+            cerr << "Invalid input: " << e.what() << " '" << argv[i] << "'" << endl;
+            return 2;
+        }
     }
+    
     
     if (args[2] > vel_limit) {
         cerr << "Desired velocity exceeds limit" << endl;
@@ -45,6 +51,7 @@ int main(int argc, char **argv) {
 
     args[0] *= 800;     // convert to counts
     args[1] *= 800;     // convert to counts
+    cout << args[1] << endl;
 
     // Run Program
     try {

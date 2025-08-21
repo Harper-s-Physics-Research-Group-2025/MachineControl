@@ -26,6 +26,13 @@ int main(int argc, char **argv) {
     // Output: Motor hub name and position in mm
     // Returns: Errorcode, 0 = success, 1 = failure
 
+    
+    // check for correct number of command line arguments
+    if (argc != 1) {
+        cerr << "Usage: <command>" << endl;
+        return 2;
+    }
+
     // Run Program
     try {
         
@@ -53,7 +60,7 @@ int main(int argc, char **argv) {
 
         x_pos = static_cast<float>(motorX->Motion.PosnMeasured.Value()) / 800;
         z_pos = static_cast<float>(motorZ->Motion.PosnMeasured.Value()) / 800;
-        cout << "(" << x_pos << ", " << z_pos << ")" << endl;
+        cout << "mm: (" << x_pos << ", " << z_pos << ")" << endl;
 
     } catch (mnErr& theErr) {
         cerr << "Caught error: " << theErr.ErrorMsg << "\n";

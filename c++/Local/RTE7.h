@@ -26,7 +26,7 @@ public:
     bool get_setpoint(float& temp);
 
     // setters
-    bool set_setpoint(float temp);
+    bool set_setpoint(float& temp);
 
 
 private:
