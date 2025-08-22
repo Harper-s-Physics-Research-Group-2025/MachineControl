@@ -51,8 +51,8 @@ int main(int argc, char **argv) {
 
     args[0] *= 800;     // convert to counts
     args[1] *= 800;     // convert to counts
-    cout << args[1] << endl;
 
+    
     // Run Program
     try {
         
