@@ -1,0 +1,24 @@
+How to assemble the 500 x 500 mm Bulkman 3d QueenBee Pro Setup.
+This list does not contain the dimensions and quantities of bolts needed to assemble (see videos).
+
+1. Start watching the video playlist found here: https://www.youtube.com/playlist?list=PLuWTP5wS2TNxKKNFr0nYAe2DnZT3wM86A
+2. Grab 3    2 x 8 x 46 cm blocks and 2    2 x 4 x 50 cm blocks.
+3. Lay the 2 x 8 x 46 cm blocks parallel to each other with 44.5 cm distance between the far edges of the outside blocks.
+4. Lay the 2 x 4 x 50 cm blocks perpendicular to and covering the ends of the three large blocks. There should be about 2.75cm between the ends of the 2 x 4 blocks and the closest edge of the 2 x 8 cm blocks.
+5. Square.
+6. Attach everything together with t-nuts, L-brackets, and 5mm screws (as shown in the video). Make sure the L-brackets are oriented so that the bottom of the machine is flat, flush with the table.
+7. Grab 2    2 x 4 x 44.5 cm blocks. Lay them parallel to and equally spaced between the 2 x 4 x 50 blocks in a horizontal orientation.
+8. Attach the 2 x 4 x 44.5 cm blocks with t-nuts and L-brackets.
+9. Double check square and flat/level.
+10. Build the two y-axis rails with two 50cm c-channels, 4 rails and m4 screws and t-nuts.
+11. Load 4 linear bearings with grease nipples facing outward onto each of the two rails. This may involve changing out the grease, although we found that the factory grease was better than the white lithium grease we had.
+12. Attach the two y-axes with four brackets. The distance between the two axes when measured by the outside edge of the base of the brackets should be 44.5 cm (same as the distance between the 2 x 8 x 46 cm blocks).
+13. Bolt two nut-blocks loosely onto each of the two large metal plates that say “QueenBee PRO”.
+14. Bolt the two large plates onto the four linear bearings of each axis using m4 screws.
+15. Make the x axis out of another c-channel, two rails, and m4 screws.
+16. Load 4 linear bearings onto the x axis.
+17. Bolt the x axis and a 2 x 4 x 50 cm beam onto the upper part of the uprights. Insert the required number of t-nuts into the top, back, and bottom of the rail before bolting.
+18. Bolt the x-axis face-plate onto the four linear bearings.
+19. Assemble the z-axis with the shorter c-channel, rails, end plates, lead screw, bearings and retainers, nut block, and face-plate.
+20. Attach the custom made mounting bracket by Chris Sorenson onto the back of the z-axis using 4 m5 screws and t-nuts.
+21. Bolt the entire z assembly onto the x-axis face-plate

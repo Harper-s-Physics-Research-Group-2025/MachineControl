@@ -25,6 +25,6 @@ Building these executables:
 
 I wrote classes for the neslab bath and the temperature controller and edited the tasks.json file to produce this command when the run button is hit.
 
-cmd /c chcp 65001>nul && cmd /c "call "C:\Users\Student\Documents\Summer 2025\Mathematica-C-Integration\c++\Local\.vscode\init_teknic_env.cmd" && cl.exe /Zi /EHsc /nologo /Fe"C:\Users\Student\Documents\Summer 2025\Mathematica-C-Integration\c++\Local\bin\bath_get_temp.exe" "C:\Users\Student\Documents\Summer 2025\Mathematica-C-Integration\c++\Local\bath_get_temp.cpp" RTE7.cpp Oven5R6900.cpp sFoundation20.lib"
+cmd /c chcp 65001>nul && cmd /c "call "C:\Users\Student\Documents\Summer 2025\Mathematica-C-Integration\c++\Local\.vscode\init_teknic_env.cmd" && cl.exe /Zi /EHsc /nologo /Fe"C:\Users\Student\Documents\Summer 2025\Mathematica-C-Integration\c++\Local\bin\bath_get_temp.exe" "C:\Users\Student\Documents\Summer 2025\Mathematica-C-Integration\c++\Local\bath_get_temp.cpp" classes\RTE7.cpp classes\Oven5R6900.cpp sFoundation20.lib"
 
 This lets the compiler resolve the class references.
