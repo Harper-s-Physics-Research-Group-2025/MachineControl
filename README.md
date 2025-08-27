@@ -15,7 +15,14 @@ fed back to Mathematica via stdout.
 
 Equipment:
 Queen Bee PRO 500x500mm CNC machine
-Teknic sc servo motors CPM-SCSK-2310P-EQNA
+Teknic sc servo motors CPM-SCSK-2310P-EQNA and associated electronics
+Neslab RTE7 temperature controlled bath
+Oven Industries 5R6-900 temperature controller
+Newport 1815-C Optical power meter
+LabJack UV-L3 analog to digital converter
+Thor labs pl-202 usb powered laser
+Dreamquest Windows mini-pc
+
 
 Code:
 Our code uses several packages from outside sources as well as some we wrote ourselves. The 
@@ -35,26 +42,37 @@ complex than the temp controller (Oven5R6900). The temp controller class has a m
 'message dispatcher' that builds messages from the message id code and value to pass.
 
 
-Assumptions:
-The executables are contained in the binaries folder and the code to produce them is in the c++/src 
-folder. We assume that the user of this code has the Teknic and LabJack sdks already installed on 
-their system.
-
-
 How to use:
 The binaries folder comes with precompiled binaries and the sFoundation20.dll which is essential for 
 controlling the servo motors. Thus the executables should work straight off the bat without extra 
-configuration. However, you may, for many reasons, want to reconfigure the servo motors. To do this, 
+configuration. 
+Run the executables in cmd like this: C:\> <executable_name> <param 1> <param 2> ...
+In Mathematica use the "RunProcess" command (pass parameters as command line argument strings).
+Find the COM port of the device in the Windows Device Manager.
+You may, for many reasons, want to reconfigure the servo motors. To do this, 
 install Teknic software from https://teknic.com/files/downloads/ClearView_Install.zip. This will 
 install the sdk and 'Clearview' which is Teknic's gui for monitoring and configuring motors. With 
-Clearview, you may wire the limit switches and set up the homing procedure, software position limits, 
+Clearview, one can wire the limit switches and set up the homing procedure, software position limits, 
 velocity, accel, and torque limits. If you want to write more or modify code, you may want to install 
 the LabJack sdk for the U3-LV from 
 https://files.labjack.com/installers/LJM/Windows/x86_64/release/LabJack_2024-05-16.exe. You may also 
 need to mess around with the python file names and folder structure to get python code to run 
 properly. For c++, the necessary parts of the sdk either need to be in the same directory as the code 
-or some environment variables need to be set. The .vscode has the files for vscode to automatically 
-do this but if you want to use a different editor you will have to run the commands manually. The 
-commands to set up the environment are in init_mach_ctrl_env.cmd. They let the compiler know where 
-the Teknic and LabJack libraries are. The compile command is in tasks.json under the section 
+or some environment variables need to be set. The .vscode folderhas the files for vscode to autoset 
+the environment but if you want to use a different editor you will have to run the commands manually. 
+The commands to set up the environment are in init_mach_ctrl_env.cmd. They let the compiler know where 
+the Teknic and LabJack libraries are. The compile command is in .vscode/tasks.json under the section 
 'args: '.
+
+
+Troubleshooting:
+There are currently a few known issues with the code that cannot be resolved easily.
+1. The program to home the setup sometimes needs to be run at least 2 or 3 times when the motors are 
+    plugged in for the first time or after a fault is triggered.
+2. I don't exactly know how to run the ramp/soak feature of the temperature controller. It likes to 
+    iterate through all the ramp/soak sequences (8 or 16) even if I tell it to only run the current 
+    sequence.
+There are a few troubleshooting tips. If the program is not running well in Mathematica, try running 
+it in command prompt or powershell. If there is a problem with the servo motors, the Clearview 
+software is very helpful for debugging. If there is trouble with the temperature controller, run 
+M5R6900.exe (in the dropbox folder) for a graphical interface. tc_dump.exe is also helpful.

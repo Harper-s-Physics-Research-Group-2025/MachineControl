@@ -18,7 +18,7 @@ vector<string> comHubPorts;                 // usually only one port (board) and
 
 const int vel_limit = 1000;     // max velocity rpm
 
-vector<int> args = {0, 0, 240, 10000};     // (x, z), velocity, timeout
+vector<float> args = {0, 0, 240, 10000};     // (x, z), velocity, timeout
 
 
 int main(int argc, char **argv) {
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
      
     for (int i = 1; i < argc; i++) {
         try {
-            args[i - 1] = stoi(argv[i]);    // populate argument array and convert types        
+            args[i - 1] = stof(argv[i]);    // populate argument array and convert types        
         } catch (const invalid_argument& e) {
             cerr << "Invalid input: " << e.what() << " '" << argv[i] << "'" << endl;
             return 2;
