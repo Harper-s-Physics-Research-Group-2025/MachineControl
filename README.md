@@ -13,6 +13,10 @@ passed to the executables through command line arguments and values received fro
 fed back to Mathematica via stdout. 
 
 
+Equipment:
+Queen Bee PRO 500x500mm CNC machine
+Teknic sc servo motors CPM-SCSK-2310P-EQNA
+
 Code:
 Our code uses several packages from outside sources as well as some we wrote ourselves. The 
 Teknic Clearpath SC servo motors use the Teknic sdk which is developed by them and can be 

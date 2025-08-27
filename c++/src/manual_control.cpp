@@ -69,6 +69,7 @@ int main(int argc, char **argv) {
     MSG msg;
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
 
+
     try {
         // Main message + event handling loop
         while (g_running) {
@@ -96,16 +97,6 @@ int main(int argc, char **argv) {
                 motorX = &Port->Nodes(0); // Controlled with Left/Right
                 motorZ = &Port->Nodes(1); // Controlled with Up/Down
                 
-                // print motor (Node) information
-
-                printf("Motor X  Serial #: %d\n", motorX->Info.SerialNumber.Value());
-                printf("Motor Z  Serial #: %d\n", motorZ->Info.SerialNumber.Value());
-                printf("Press enter to continue and home motors, any other key to exit...");
-                char c = _getch();
-                if (c != '\n' && c != '\r') break;
-                printf("Enabling and Homing Motors\n");
-
-
                 motorX->Status.AlertsClear();                   //Clear Alerts on node 
                 motorZ->Status.AlertsClear();
 
@@ -116,11 +107,23 @@ int main(int argc, char **argv) {
                 motorZ->EnableReq(true);
                 Sleep(200); // wait for enabling
 
-                // Homing
-                printf("current position (X, Z): (%.0f,%.0f)\n", motorX->Motion.PosnMeasured.Value(), motorZ->Motion.PosnMeasured.Value());
-                home(Mgr, motorX, "X-axis", 20000);
-                home(Mgr, motorZ, "Z-axis", 20000);
-                printf("current position (X, Z): (%.0f,%.0f)\n", motorX->Motion.PosnMeasured.Value(), motorZ->Motion.PosnMeasured.Value());
+                
+                // print motor (Node) information
+
+                printf("Motor X  Serial #: %d\n", motorX->Info.SerialNumber.Value());
+                printf("Motor Z  Serial #: %d\n", motorZ->Info.SerialNumber.Value());
+                // printf("Press enter to continue and home motors, any other key to exit...");
+                // char c = _getch();
+                // if (c != '\n' && c != '\r') break;
+                // printf("Enabling and Homing Motors\n");
+
+
+                
+                // // Homing
+                // printf("current position (X, Z): (%.0f,%.0f)\n", motorX->Motion.PosnMeasured.Value(), motorZ->Motion.PosnMeasured.Value());
+                // home(Mgr, motorX, "X-axis", 20000);
+                // home(Mgr, motorZ, "Z-axis", 20000);
+                // printf("current position (X, Z): (%.0f,%.0f)\n", motorX->Motion.PosnMeasured.Value(), motorZ->Motion.PosnMeasured.Value());
 
                 g_initialized_motors = true;
                 cout << "Use arrow keys to move motors. Press 'q' to quit.\n";
@@ -132,7 +135,7 @@ int main(int argc, char **argv) {
                 if (msg.message == WM_KEY_EVENT) {
                     
                     // Process key events
-                    EnterCriticalSection(&cs);
+                    EnterCriticalSection(&cs); // Message queue
 
                     while (!keyQueue.empty()) {
                         KeyEvent evt = keyQueue.front();
