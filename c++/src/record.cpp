@@ -34,8 +34,7 @@ double poll_labjack(LJ_HANDLE h);
 
 
 int main(int argc, char** argv) {
-
-    // Initialize Variables
+    // Record timestamp, bath temp, sample temp, laser intensity to csv file (specify filename with command line arg)
 
     // Teknic motors
     sFnd::SysManager* Mgr = nullptr;

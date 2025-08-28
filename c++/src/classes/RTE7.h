@@ -20,6 +20,7 @@ public:
 
     bool turn_on();
     bool turn_off();
+    bool manual();
 
     // getters
     bool get_temp(float& out_temp);

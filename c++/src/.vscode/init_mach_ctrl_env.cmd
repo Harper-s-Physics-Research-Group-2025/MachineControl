@@ -10,7 +10,7 @@ REM init environment vars to make cmd a developers command prompt (necesssary fo
 call "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat"        
 
 REM add paths to teknic and labjack sdk
-set "INCLUDE=C:\Program Files (x86)\Teknic\ClearView\sdk\inc;C:\Program Files (x86)\LabJack\Drivers;%INCLUDE%"
+set "INCLUDE=C:\Program Files (x86)\Teknic\ClearView\sdk\inc;C:\Program Files (x86)\LabJack\Drivers;C:\Users\Student\Documents\Summer 2025\MachineControl\c++\src\classes;%INCLUDE%"
 set "LIB=C:\Program Files (x86)\Teknic\ClearView\sdk\lib\win\release\x64;C:\Program Files (x86)\LabJack\Drivers\64bit;%LIB%"
 set "PATH=C:\Program Files (x86)\Teknic\ClearView\sdk\lib\win\Release\x64;%PATH%"
 echo Teknic and LabJack SDK environment loaded.

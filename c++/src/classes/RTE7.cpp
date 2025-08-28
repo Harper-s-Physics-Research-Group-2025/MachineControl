@@ -172,8 +172,19 @@ bool RTE7::turn_on() {
 }
 
 
+// turn bath off
 bool RTE7::turn_off() {
     vector<uint8_t> msg = {0xCA, 0x00, 0x01, 0x81, 0x08, 0x00, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x67};
+    vector<uint8_t> res(16);
+    if (!send_command(msg)) return false;    // send
+    if (!read_response(res)) return false;   // receive
+    return true;
+}
+
+
+// revert to manual control
+bool RTE7::manual() {
+    vector<uint8_t> msg = {0xCA, 0x00, 0x01, 0x81, 0x08, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x00, 0x67};
     vector<uint8_t> res(16);
     if (!send_command(msg)) return false;    // send
     if (!read_response(res)) return false;   // receive

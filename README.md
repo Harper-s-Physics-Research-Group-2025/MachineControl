@@ -65,13 +65,38 @@ the Teknic and LabJack libraries are. The compile command is in .vscode/tasks.js
 'args: '.
 
 
+CNC Setup:
+Limit switches are used for homing
+Motors home to A, A with all switches normally closed (open when activated).
+This puts the motor in the top left corner.
+Motors then back off 6400 from the limit switches and are zeroed. Axes are as such:
+    ------------------------------
+    | (A,A)         ^ +z		  |
+    |	            |		      |
+    |       -x	    |	+x	      |
+    |        <------|------>	  |
+    |	            |		      |
+    |	            |		      |
+    |	            v -z		  | (*)y
+    ------------------------------
+Software limits are used for soft limits for normal use (won't throw fatal errors)
+Software limits are x = [-6400, 180000] = [-8, 225]mm
+			        z = [-78000, 6400] = [-97.5, 8]mm
+
+
 Troubleshooting:
 There are currently a few known issues with the code that cannot be resolved easily.
-1. The program to home the setup sometimes needs to be run at least 2 or 3 times when the motors are 
+1. The default drivers for the usb to rs232 cables are not compatible with windows 11. I have tried to 
+    install different ones but they periodically revert back. Current fix: right click on the 
+    connection in Device Manager and click uninstall device, check 'Attempt to remove driver' and hit 
+    uninstall. Unplug and replug the usb cable.
+2. The program to home the setup sometimes needs to be run at least 2 or 3 times when the motors are 
     plugged in for the first time or after a fault is triggered.
-2. I don't exactly know how to run the ramp/soak feature of the temperature controller. It likes to 
+3. I don't exactly know how to run the ramp/soak feature of the temperature controller. It likes to 
     iterate through all the ramp/soak sequences (8 or 16) even if I tell it to only run the current 
     sequence.
+4. The bath cannot be concurrently be in computer and manual mode. To switch modes, turn the bath on 
+    and toggle the computer control switch.
 There are a few troubleshooting tips. If the program is not running well in Mathematica, try running 
 it in command prompt or powershell. If there is a problem with the servo motors, the Clearview 
 software is very helpful for debugging. If there is trouble with the temperature controller, run 
