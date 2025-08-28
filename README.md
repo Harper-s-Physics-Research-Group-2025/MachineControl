@@ -1,5 +1,6 @@
 # Machine Control
 This repository contains code that integrates our SC-Motors C++ Commands with Mathematica
+https://github.com/Harper-s-Physics-Research-Group-2025/MachineControl.git
 
 Overview:
 Our lipid sampling setup contains many elements which must or may be controlled by a computer.

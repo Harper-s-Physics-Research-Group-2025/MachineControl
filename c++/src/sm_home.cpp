@@ -116,6 +116,7 @@ void home(SysManager* manager, INode* motor, const char* name, const int timeout
     while (!motor->Motion.Homing.WasHomed()) {
         if (manager->TimeStampMsec() > home_timestamp) {
             cerr << "Homing timed out after "<< timeout << " milliseconds" << endl;
+            return;
         }
         Sleep(10);
     }
