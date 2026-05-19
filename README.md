@@ -1,31 +1,27 @@
-# Machine Control
-This repository contains code that integrates our SC-Motors C++ Commands with Mathematica
-https://github.com/Harper-s-Physics-Research-Group-2025/MachineControl.git
+# Josh 2.0 -- automated lipid-laser experimentation
 
-Overview:
-Our lipid sampling setup contains many elements which must or may be controlled by a computer.
-The setup is made using a Queen Bee PRO cnc machine, Teknic sc servo motors, a temperature controlled 
-water bath, thermoelectric, laser, and light sensor which is plugged into a LabJack U3-LV analog to 
-digital converter. Thus we have computer communication between the DreamQuest mini pc and the sc 
-motors, bath, thermoelectric controller, and LabJack. Our goal was to create the functionality of 
-sending and receiving values between Mathematica and these devices. We did this by creating a series 
-of executables that can be run from Mathematica using the RunProcess command. Values to send are 
-passed to the executables through command line arguments and values received from the devices are 
-fed back to Mathematica via stdout. 
+## Problem 
+Lipids are studied with lasers and X-rays. Certain institutions provide opportunities to use these high-intensity light sources to study these lipids in the form of exposure time; however, exposure time isn't maximized to obtain the maximum amount of data, as it requires individuals to manually place and remove their lipids from the position of exposure.  
 
+## Our Research
+Professor Harper leads a research project at Calvin University to automate the process of lipid-laser experimentation. This project has two aspects: 
+**(1)** a physical machine that experiments on the lipids to generate electron density distribution data, 
+**(2)** using Mathematica and Fourier transforms to analyse the electron density data and create a mathematical model for any specific lipid.
 
-Equipment:
-Queen Bee PRO 500x500mm CNC machine
-Teknic sc servo motors CPM-SCSK-2310P-EQNA and associated electronics
-Neslab RTE7 temperature controlled bath
-Oven Industries 5R6-900 temperature controller
-Newport 1815-C Optical power meter
-LabJack UV-L3 analog to digital converter
-Thor labs pl-202 usb powered laser
-Dreamquest Windows mini-pc
+**Josh 2.0** is the embodiment of the "physical machine". It is a tool that is able to perform lipid-laser experimentation (moving lipid samples in an out of laser point of a specific intensity while the samples are kept at a controlled temprature) on multiple lipid samples automatically and sequentially. It comprises the following:
+- Queen Bee PRO 500x500mm CNC machine
+- Teknic sc servo motors CPM-SCSK-2310P-EQNA and associated electronics
+- Neslab RTE7 temperature controlled bath
+- Oven Industries 5R6-900 temperature controller
+- Newport 1815-C Optical power meter
+- LabJack UV-L3 analog to digital converter
+- Thor labs pl-202 usb powered laser
+- Dreamquest Windows mini-pc
 
+## Overview
+Our lipid sampling setup contains many elements which must or may be controlled by a computer. The setup is made using a Queen Bee PRO cnc machine, Teknic sc servo motors, a temperature controlled water bath, thermoelectric, laser, and light sensor which is plugged into a LabJack U3-LV analog to digital converter. Thus we have computer communication between the DreamQuest mini pc and the sc motors, bath, thermoelectric controller, and LabJack. Our goal was to create the functionality of sending and receiving values between Mathematica and these devices. We did this by creating a series of executables that can be run from Mathematica using the RunProcess command. Values to send are passed to the executables through command line arguments and values received from the devices are fed back to Mathematica via stdout. 
 
-Code:
+### Code
 Our code uses several packages from outside sources as well as some we wrote ourselves. The 
 Teknic Clearpath SC servo motors use the Teknic sdk which is developed by them and can be 
 downloaded from their website. The LabJack also has an sdk which we used for python and c++ code 
@@ -42,8 +38,52 @@ write, checksum, and parsing methods for raw data. The bath class (RTE7) has mor
 complex than the temp controller (Oven5R6900). The temp controller class has a more advanced 
 'message dispatcher' that builds messages from the message id code and value to pass.
 
+**sFoundation20.dll**
+The sFoundation20.dll package is required...
 
-How to use:
+**bath_dump.exe**
+----
+
+**bath_get_temp.exe**
+----
+**bath_off.exe**
+----
+**bath_on.exe**
+----
+**bath_set_temp.exe**
+----
+**read_labjack_ain0.exe**
+----
+**record.exe**
+----
+**sm_get_position_mm.exe**
+----
+**sm_home.exe**
+----
+**bath_on.exe**
+----
+**sm_manual_control.exe**
+----
+**sm_set_position_mm.exe**
+----
+**tc_dump.exe**
+----
+**tc_get_mode.exe**
+----
+**tc_get_temp.exe**
+----
+**tc_on.exe**
+----
+**tc_ramp_soak.exe**
+----
+**tc_set_mode.exe**
+----
+**tc_set_temp.exe**
+----
+
+
+
+### How to use
 The binaries folder comes with precompiled binaries and the sFoundation20.dll which is essential for 
 controlling the servo motors. Thus the executables should work straight off the bat without extra 
 configuration. 
@@ -66,7 +106,7 @@ the Teknic and LabJack libraries are. The compile command is in .vscode/tasks.js
 'args: '.
 
 
-CNC Setup:
+**CNC Setup**
 Limit switches are used for homing
 Motors home to A, A with all switches normally closed (open when activated).
 This puts the motor in the top left corner.
@@ -85,7 +125,7 @@ Software limits are x = [-6400, 180000] = [-8, 225]mm
 			        z = [-78000, 6400] = [-97.5, 8]mm
 
 
-Troubleshooting:
+**Troubleshooting**
 There are currently a few known issues with the code that cannot be resolved easily.
 1. The default drivers for the usb to rs232 cables are not compatible with windows 11. I have tried to 
     install different ones but they periodically revert back. Current fix: right click on the 
@@ -102,3 +142,15 @@ There are a few troubleshooting tips. If the program is not running well in Math
 it in command prompt or powershell. If there is a problem with the servo motors, the Clearview 
 software is very helpful for debugging. If there is trouble with the temperature controller, run 
 M5R6900.exe (in the dropbox folder) for a graphical interface. tc_dump.exe is also helpful.
+
+
+## Teams 
+### 2024/2025
+- Josh Darrow
+- Zachary Mejer
+- Samuel Ntadom
+  
+### 2025/2026
+- Josh Darrow
+- Zachary Mejer
+- Samuel Ntadom
