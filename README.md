@@ -52,7 +52,6 @@ If your water bath is connected to COM3 (Windows) or /dev/ttyUSB0 (Linux), run:
 
 Output Format
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
-<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; 
 <code>Temp: [Current Temperature]</code>
 <code>Setpoint: [Target Temperature]</code>
 </pre>
@@ -60,7 +59,6 @@ Output Format
 
 Example: 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
-<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; 
 <code>Temp: 23.5</code>
 <code>Setpoint: 25</code>
 </pre>
