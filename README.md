@@ -50,7 +50,7 @@ If your water bath is connected to COM3 (Windows) or /dev/ttyUSB0 (Linux), run:
 <code>./bath_dump COM3</code>
 </pre>
 
-Output Format
+Output Format:
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <code>Temp: [Current Temperature]</code>
 <code>Setpoint: [Target Temperature]</code>
@@ -63,7 +63,7 @@ Example:
 <code>Setpoint: 25</code>
 </pre>
 
-Error Handling & Exit Codes
+Error Handling & Exit Codes:
 The program utilizes standard exit codes to communicate whether the operation succeeded or failed.
 
 
