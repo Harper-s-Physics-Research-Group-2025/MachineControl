@@ -32,32 +32,32 @@ Josh 2.0 integrates several components that require/can be computer-controlled:
 
 ## Code
 
-**bath_dump.cpp**
+### bath_dump.cpp
 
 Its primary purpose is to query the device and output the current water bath temperature and its target setpoint.
 
-Usage</br>
+**Usage**</br>
 To execute the program, run it from your command line by providing the appropriate COM port as a single argument:
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
 <code>./bath_dump <COM port></code>
 </pre>
 
-Example</br>
+**Example**</br>
 If your water bath is connected to COM3 (Windows) or /dev/ttyUSB0 (Linux), run:
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
 <code>./bath_dump COM3</code>
 </pre>
 
-Output Format:
+**Output Format**:
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <code>Temp: [Current Temperature]</code>
 <code>Setpoint: [Target Temperature]</code>
 </pre>
 
 
-Example: 
+**Example**: 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <code>Temp: 23.5</code>
 <code>Setpoint: 25</code>
@@ -66,42 +66,80 @@ Example:
 Error Handling & Exit Codes</br>
 The program utilizes standard exit codes to communicate whether the operation succeeded or failed.
 
+----
+### bath_get_temp.cpp
 
-**bath_get_temp.cpp**
+Its primary purpose is to query the device and output only the current water bath temperature.
+
+**Usage**</br>
+To execute the program, run it from your command line by providing the appropriate COM port as a single argument:
+
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
+<code>./bath_get_temp <COM port></code>
+</pre>
+
+**Example**</br>
+If your water bath is connected to COM3 (Windows) or /dev/ttyUSB0 (Linux), run:
+
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
+<code>./bath_get_temp COM3</code>
+</pre>
+
+**Output Format**:
+
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<code>Temp: [Current Temperature]</code>
+</pre>
+
+**Example**:
+
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<code>Temp: 23.5</code>
+</pre>
+
+Error Handling & Exit Codes</br>
+The program utilizes standard exit codes to communicate whether the operation succeeded or failed.
+
+* **`0`**: Success (Temperature successfully read)
+* **`1`**: Failure (Hardware communication error)
+* **`2`**: Invalid Arguments (Incorrect number of parameters supplied)
 ----
-**bath_off.cpp**
+
+### bath_off.cpp**
 ----
-**bath_on.cpp**
+### bath_on.cpp**
 ----
-**bath_set_temp.cpp**
+### bath_set_temp.cpp**
 ----
-**read_labjack_ain0.cpp**
+### read_labjack_ain0.cpp**
 ----
-**record.cpp**
+### record.cpp**
 ----
-**sm_get_position_mm.cpp**
+### sm_get_position_mm.cpp**
 ----
-**sm_home.cpp**
+### sm_home.cpp**
 ----
-**bath_on.cpp**
+### bath_on.cpp**
 ----
-**sm_manual_control.cpp**
+### sm_manual_control.cpp**
 ----
-**sm_set_position_mm.cpp**
+### sm_set_position_mm.cpp**
 ----
-**tc_dump.cpp**
+### tc_dump.cpp**
 ----
-**tc_get_mode.cpp**
+### tc_get_mode.cpp**
 ----
-**tc_get_temp.cpp**
+### tc_get_temp.cpp**
 ----
-**tc_on.cpp**
+### tc_on.cpp**
 ----
-**tc_ramp_soak.cpp**
+### tc_ramp_soak.cpp**
 ----
-**tc_set_mode.cpp**
+### tc_set_mode.cpp**
 ----
-**tc_set_temp.cpp**
+### tc_set_temp.cpp**
 ----
 
 ## Dependencies
