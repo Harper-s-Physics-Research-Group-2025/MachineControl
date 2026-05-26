@@ -30,12 +30,44 @@ Josh 2.0 integrates several components that require/can be computer-controlled:
 	Our current setup uses a DreamQuest mini PC as the central hub, communicating with the servo motors, water bath, thermoelectric controller, and LabJack. And the system is operated via standalone command-line executables that accept input parameters and return operational data directly through the Command Line Interface (CLI).
 	However, our primary objective is to enable Mathematica to send commands to and receive data from each of these devices. 
 
-**sFoundation20.dll**
-
-The sFoundation20.dll package is required...
+## Code
 
 **bath_dump.cpp**
-----
+
+Its primary purpose is to query the device and output the current water bath temperature and its target setpoint.
+
+Usage:
+To execute the program, run it from your command line by providing the appropriate COM port as a single argument:
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
+<code>./bath_dump <COM port></code>
+</pre>
+
+Example:
+If your water bath is connected to COM3 (Windows) or /dev/ttyUSB0 (Linux), run:
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
+<code>./bath_dump COM3</code>
+</pre>
+
+Output Format
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; 
+<code>Temp: [Current Temperature]</code>
+<code>Setpoint: [Target Temperature]</code>
+</pre>
+
+
+Example: 
+<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
+<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; 
+<code>Temp: 23.5</code>
+<code>Setpoint: 25</code>
+</pre>
+
+Error Handling & Exit Codes
+The program utilizes standard exit codes to communicate whether the operation succeeded or failed.
+
 
 **bath_get_temp.cpp**
 ----
@@ -73,6 +105,9 @@ The sFoundation20.dll package is required...
 ----
 **tc_set_temp.cpp**
 ----
+
+## Dependencies
+**RTE7.h**
 
 ## Overview
 Our lipid sampling setup contains many elements which must or may be controlled by a computer. The setup is made using a Queen Bee PRO cnc machine, Teknic sc servo motors, a temperature controlled water bath, thermoelectric, laser, and light sensor which is plugged into a LabJack U3-LV analog to digital converter. Thus we have computer communication between the DreamQuest mini pc and the sc motors, bath, thermoelectric controller, and LabJack. Our goal was to create the functionality of sending and receiving values between Mathematica and these devices. We did this by creating a series of executables that can be run from Mathematica using the RunProcess command. Values to send are passed to the executables through command line arguments and values received from the devices are fed back to Mathematica via stdout. 
