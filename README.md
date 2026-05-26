@@ -31,6 +31,7 @@ Josh 2.0 integrates several components that require/can be computer-controlled:
 	However, our primary objective is to enable Mathematica to send commands to and receive data from each of these devices. 
 
 **sFoundation20.dll**
+
 The sFoundation20.dll package is required...
 
 **bath_dump.cpp**
