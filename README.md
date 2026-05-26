@@ -42,7 +42,7 @@ Its primary purpose is to query the device and output the current water bath tem
 To execute the program, run it from your command line by providing the appropriate COM port as a single argument:
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./bath_dump <COM port></code>
+<code>./bath_dump {COM Port}</code>
 </pre>
 
 **Example**</br>
@@ -78,7 +78,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./bath_get_temp <COM port></code>
+<code>./bath_get_temp {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -118,7 +118,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./bath_off <COM port></code>
+<code>./bath_off {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -157,7 +157,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./bath_on <COM port></code>
+<code>./bath_on {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -196,7 +196,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./bath_set_temp <COM port> <temp></code>
+<code>./bath_set_temp {COM port} <temp></code>
 </pre>
 
 **Example**</br>
@@ -238,13 +238,6 @@ To execute the program, run it from your command line. It does not require any a
 <code>./read_labjack_ain0</code>
 </pre>
 
-**Example**</br>
-Run the compiled binary directly from your terminal:
-
-<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
-<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./read_labjack_ain0</code>
-</pre>
 
 **Output Format**:
 
@@ -326,13 +319,6 @@ To execute the program, run it from your command line. It does not require any a
 <code>./sm_get_position_mm</code>
 </pre>
 
-**Example**</br>
-Run the compiled binary directly from your terminal:
-
-<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
-<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./sm_get_position_mm</code>
-</pre>
 
 **Output Format**:
 
@@ -407,13 +393,6 @@ To execute the program, run it from your command line. The program will automati
 <code>./sm_manual_control</code>
 </pre>
 
-**Example**</br>
-Run the compiled binary directly from your terminal:
-
-<pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
-<span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./sm_manual_control</code>
-</pre>
 
 **Output Format**:
 The program outputs the initialization status and serial numbers of the detected hardware, then waits for manual arrow key inputs:
@@ -490,7 +469,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_dump <COM port></code>
+<code>./tc_dump {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -581,7 +560,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_get_mode <COM port></code>
+<code>./tc_get_mode {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -620,7 +599,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_get_temp <COM port></code>
+<code>./tc_get_temp {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -659,7 +638,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_off <COM port></code>
+<code>./tc_off {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -698,7 +677,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_on <COM port></code>
+<code>./tc_on {COM port}</code>
 </pre>
 
 **Example**</br>
@@ -737,7 +716,7 @@ To execute the program, run it from your command line by providing the COM port 
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_ramp_soak <COM port> <seq_num> <soak_temp> <ramp_dur> <soak_dur> <deviation> <method> <repeats> <next_seq></code>
+<code>./tc_ramp_soak {COM port} {seq_num} {soak_temp} {ramp_dur} {soak_dur} {deviation} <method> <repeats> <next_seq></code>
 </pre>
 
 **Example**</br>
@@ -791,7 +770,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_set_temp <COM port> <temp></code>
+<code>./tc_set_temp {COM port} {temp}</code>
 </pre>
 
 **Example**</br>
@@ -830,7 +809,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_set_temp <COM port> <temp></code>
+<code>./tc_set_temp {COM port} {temp}</code>
 </pre>
 
 **Example**</br>
@@ -869,7 +848,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./tc_set_mode <COM port> <mode></code>
+<code>./tc_set_mode {COM port} <mode></code>
 </pre>
 
 **Example**</br>
