@@ -1,22 +1,77 @@
-# Josh 2.0 -- automated lipid-laser experimentation
+# Josh 2.0-- automated lipid-laser experimentation
 
-## Problem 
-Lipids are studied with lasers and X-rays. Certain institutions provide opportunities to use these high-intensity light sources to study these lipids in the form of exposure time; however, exposure time isn't maximized to obtain the maximum amount of data, as it requires individuals to manually place and remove their lipids from the position of exposure.  
+**Problem** 
 
-## Our Research
-Professor Harper leads a research project at Calvin University to automate the process of lipid-laser experimentation. This project has two aspects: 
-**(1)** a physical machine that experiments on the lipids to generate electron density distribution data, 
-**(2)** using Mathematica and Fourier transforms to analyse the electron density data and create a mathematical model for any specific lipid.
+Lipids are commonly studied using lasers and X-rays at facilities that provide access to high-intensity light sources. Researchers are allocated fixed windows of exposure time for their experiments, but a significant portion of that time is lost to manual sample handling — physically placing and removing lipid samples from the beam position. This bottleneck prevents researchers from fully utilizing their allotted time and limits the volume of data they can collect.
 
-**Josh 2.0** is the embodiment of the "physical machine". It is a tool that is able to perform lipid-laser experimentation (moving lipid samples in an out of laser point of a specific intensity while the samples are kept at a controlled temprature) on multiple lipid samples automatically and sequentially. It comprises the following:
+**Our Research**
+
+Professor Harper's research project at Calvin University aims to address this inefficiency by automating the lipid-laser experimentation process. The project comprises two complementary components: first, a physical machine capable of autonomously positioning and cycling lipid samples through the beam to generate electron density distribution data (Josh 2.0). Second, a computational pipeline built in Mathematica that applies Fourier transforms to the resulting electron density data, producing a mathematical model for any given lipid structure.
+
+*Josh 2.0* comprises the following:
 - Queen Bee PRO 500x500mm CNC machine
 - Teknic sc servo motors CPM-SCSK-2310P-EQNA and associated electronics
-- Neslab RTE7 temperature controlled bath
+- Neslab RTE7 temperature-controlled bath
 - Oven Industries 5R6-900 temperature controller
 - Newport 1815-C Optical power meter
 - LabJack UV-L3 analog to digital converter
-- Thor labs pl-202 usb powered laser
+- Thor Labs PL-202 USB-powered laser
 - Dreamquest Windows mini-pc
+
+# Code Documentation:
+
+Josh 2.0 integrates several components that require/can be computer-controlled: 
+- a Queen Bee PRO CNC machine
+- Teknic ClearPath SC servo motors
+- a temperature-controlled water bath
+- a thermoelectric module, a laser, and
+- a light sensor connected through a LabJack U3-LV analog-to-digital converter.
+  
+	Our current setup uses a DreamQuest mini PC as the central hub, communicating with the servo motors, water bath, thermoelectric controller, and LabJack. And the system is operated via standalone command-line executables that accept input parameters and return operational data directly through the Command Line Interface (CLI).
+	However, our primary objective is to enable Mathematica to send commands to and receive data from each of these devices. 
+
+**sFoundation20.dll**
+The sFoundation20.dll package is required...
+
+**bath_dump.cpp**
+----
+
+**bath_get_temp.cpp**
+----
+**bath_off.cpp**
+----
+**bath_on.cpp**
+----
+**bath_set_temp.cpp**
+----
+**read_labjack_ain0.cpp**
+----
+**record.cpp**
+----
+**sm_get_position_mm.cpp**
+----
+**sm_home.cpp**
+----
+**bath_on.cpp**
+----
+**sm_manual_control.cpp**
+----
+**sm_set_position_mm.cpp**
+----
+**tc_dump.cpp**
+----
+**tc_get_mode.cpp**
+----
+**tc_get_temp.cpp**
+----
+**tc_on.cpp**
+----
+**tc_ramp_soak.cpp**
+----
+**tc_set_mode.cpp**
+----
+**tc_set_temp.cpp**
+----
 
 ## Overview
 Our lipid sampling setup contains many elements which must or may be controlled by a computer. The setup is made using a Queen Bee PRO cnc machine, Teknic sc servo motors, a temperature controlled water bath, thermoelectric, laser, and light sensor which is plugged into a LabJack U3-LV analog to digital converter. Thus we have computer communication between the DreamQuest mini pc and the sc motors, bath, thermoelectric controller, and LabJack. Our goal was to create the functionality of sending and receiving values between Mathematica and these devices. We did this by creating a series of executables that can be run from Mathematica using the RunProcess command. Values to send are passed to the executables through command line arguments and values received from the devices are fed back to Mathematica via stdout. 
@@ -37,51 +92,6 @@ write, checksum, and parsing methods for raw data. The bath class (RTE7) has mor
 'hardcoded' because we didn't need as much functionality and because the message format was more 
 complex than the temp controller (Oven5R6900). The temp controller class has a more advanced 
 'message dispatcher' that builds messages from the message id code and value to pass.
-
-**sFoundation20.dll**
-The sFoundation20.dll package is required...
-
-**bath_dump.exe**
-----
-
-**bath_get_temp.exe**
-----
-**bath_off.exe**
-----
-**bath_on.exe**
-----
-**bath_set_temp.exe**
-----
-**read_labjack_ain0.exe**
-----
-**record.exe**
-----
-**sm_get_position_mm.exe**
-----
-**sm_home.exe**
-----
-**bath_on.exe**
-----
-**sm_manual_control.exe**
-----
-**sm_set_position_mm.exe**
-----
-**tc_dump.exe**
-----
-**tc_get_mode.exe**
-----
-**tc_get_temp.exe**
-----
-**tc_on.exe**
-----
-**tc_ramp_soak.exe**
-----
-**tc_set_mode.exe**
-----
-**tc_set_temp.exe**
-----
-
-
 
 ### How to use
 The binaries folder comes with precompiled binaries and the sFoundation20.dll which is essential for 
