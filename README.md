@@ -36,14 +36,14 @@ Josh 2.0 integrates several components that require/can be computer-controlled:
 
 Its primary purpose is to query the device and output the current water bath temperature and its target setpoint.
 
-Usage:
+Usage</br>
 To execute the program, run it from your command line by providing the appropriate COM port as a single argument:
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
 <code>./bath_dump <COM port></code>
 </pre>
 
-Example:
+Example</br>
 If your water bath is connected to COM3 (Windows) or /dev/ttyUSB0 (Linux), run:
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
@@ -63,7 +63,7 @@ Example:
 <code>Setpoint: 25</code>
 </pre>
 
-Error Handling & Exit Codes:
+Error Handling & Exit Codes</br>
 The program utilizes standard exit codes to communicate whether the operation succeeded or failed.
 
 
