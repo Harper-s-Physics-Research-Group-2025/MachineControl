@@ -19,7 +19,7 @@ Professor Harper's research project at Calvin University aims to address this in
 - Dreamquest Windows mini-pc
 
 
-# Code Documentation v1:
+# Documentation v1:
 
 TODO: write out the dependencies for the executables
 
