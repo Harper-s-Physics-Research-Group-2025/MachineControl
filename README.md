@@ -60,11 +60,12 @@ controlling the servo motors. Thus, the executables should work straight off the
 configuration. Run the executables in CLI like this: C:\> <executable_name> <param 1> <param 2> ...(more instructions below)
 
 **Reconfiguring the servo motors**
-To reconfigure the servo motors, install Teknic software from https://teknic.com/files/downloads/ClearView_Install.zip. This will install the SDK and 'Clearview,' which is Teknic's GUI for monitoring and configuring motors. 
+
+To reconfigure the servo motors, install Teknic software from <a href="https://teknic.com/files/downloads/ClearView_Install.zip">here</a>. This will install the SDK and 'Clearview,' which is Teknic's GUI for monitoring and configuring motors. 
 
 With Clearview, one can wire the limit switches and set up the homing procedure, software position limits, 
 velocity, acceleration, and torque limits. If you want to write more or modify code, you may want to install 
-the LabJack SDK for the U3-LV from < a href="https://files.labjack.com/installers/LJM/Windows/x86_64/release/LabJack_2024-05-16.exe">here</a>. 
+the LabJack SDK for the U3-LV from <a href="https://files.labjack.com/installers/LJM/Windows/x86_64/release/LabJack_2024-05-16.exe"> here </a>. 
 
 You may also need to mess around with the Python file names and folder structure to get the Python code to run 
 properly. For C++, the necessary parts of the SDK either need to be in the same directory as the code, 
