@@ -196,7 +196,7 @@ To execute the program, run it from your command line by providing the appropria
 
 <pre style="background-color: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; overflow-x: auto;">
 <span style="color: #6a9955; display: block; margin-bottom: 5px; font-family: sans-serif; font-size: 12px; font-weight: bold;">BASH</span>
-<code>./bath_set_temp {COM port} <temp></code>
+<code>./bath_set_temp {COM port} {temp}</code>
 </pre>
 
 **Example**</br>
