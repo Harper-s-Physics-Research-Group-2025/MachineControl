@@ -18,25 +18,6 @@ Professor Harper's research project at Calvin University aims to address this in
 - Thor Labs PL-202 USB-powered laser
 - Dreamquest Windows mini-pc
 
-# Software Dependencies
-Our code uses several packages from outside sources as well as some we wrote ourselves. 
-
-The Teknic Clearpath SC servo motors use the Teknic SDK, which is developed by them and can be 
-downloaded from their website. The LabJack also has an SDK, which we used for Python and C++ code, 
-although some of the Python files' names had to be changed to get the right imports. For the bath 
-and temperature controller, we ended up writing C++ classes to streamline serial communication to 
-them, although this can and has been done in the past using Python (with the serial package).
-
-For the bath and temperature controller, we wrote two C++ classes. For the bath, we only need the 
-most basic functionality of turning it on and off, reading the current temperature and setting the 
-setpoint. 
-
-For the temperature controller, we need much more functionality (ramp and soak), which is 
-reflected in the length of the code :). Both classes have a similar constructor/destructor, read, 
-write, checksum, and parsing methods for raw data. The bath class (RTE7) has more components 
-'hardcoded' because we didn't need as much functionality, and because the message format was more 
-complex than the temp controller (Oven5R6900). The temp controller class has a more advanced 
-'message dispatcher' that builds messages from the message ID code and value to pass.
 
 # Code Documentation v1:
 
@@ -50,7 +31,27 @@ Josh 2.0 integrates several components that require/can be computer-controlled:
 - a light sensor connected through a LabJack U3-LV analog-to-digital converter.
   
 	Our current setup uses a DreamQuest mini PC as the central hub, communicating with the servo motors, water bath, thermoelectric controller, and LabJack. And the system is operated via standalone command-line executables that accept input parameters and return operational data directly through the Command Line Interface (CLI).
-	However, our primary objective is to enable Mathematica to send commands to and receive data from each of these devices. 
+	However, our primary objective is to enable Mathematica to send commands to and receive data from each of these devices.
+
+## Software Dependencies
+Our code uses several packages from outside sources as well as some we wrote ourselves. 
+
+The Teknic Clearpath SC servo motors use the Teknic SDK, which is developed by them and can be 
+downloaded from their website. The LabJack also has an SDK, which we used for Python and C++ code, 
+although some of the Python files' names had to be changed to get the right imports. For the bath 
+and temperature controller, we ended up writing C++ classes to streamline serial communication to 
+them, although this can and has been done in the past using Python (with the serial package).
+
+For the bath and temperature controller, we wrote two C++ classes. For the bath, we only need the 
+most basic functionality of turning it on and off, reading the current temperature, and setting the 
+setpoint. 
+
+For the temperature controller, we need much more functionality (ramp and soak), which is 
+reflected in the length of the code :). Both classes have a similar constructor/destructor, read, 
+write, checksum, and parsing methods for raw data. The bath class (RTE7) has more components 
+'hardcoded' because we didn't need as much functionality, and because the message format was more 
+complex than the temp controller (Oven5R6900). The temp controller class has a more advanced 
+'message dispatcher' that builds messages from the message ID code and value to pass.
 
 ## Code v1
 
