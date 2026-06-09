@@ -1,4 +1,0 @@
-﻿  Manual_Control.cpp
-C:\Users\sin2\source\repos\Manual_Control\Manual_Control\Manual_Control.cpp(268,28): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-     Creating library C:\Users\sin2\source\repos\Manual_Control\x64\Debug\Manual_Control.lib and object C:\Users\sin2\source\repos\Manual_Control\x64\Debug\Manual_Control.exp
-  Manual_Control.vcxproj -> C:\Users\sin2\source\repos\Manual_Control\x64\Debug\Manual_Control.exe
