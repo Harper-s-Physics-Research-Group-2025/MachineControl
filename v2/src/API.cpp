@@ -7,7 +7,7 @@ Authors: Josh Darrow and Samuel Ntadom
 Date Completed: May 29, 2026
 */
 #include "WolframLibrary.h"
-#include "API.h"
+#include "controls/API.h"
 
 
 using namespace std;

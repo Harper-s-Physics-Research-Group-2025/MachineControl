@@ -1,4 +1,4 @@
-#include "recorder.h"
+#include "controls/recorder.h"
 
 using namespace std;
 using namespace sFnd;

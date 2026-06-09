@@ -18,8 +18,7 @@ my_mathematica_project/
 │   └── core_logic.cpp      # Shared helper code used by multiple algorithms
 │
 ├── tests/                  # Unit tests (optional but recommended)
-│   ├── CMakeLists.txt
-│   └── test_main.cpp
-│
-└── notebooks/              # Mathematica notebooks for testing the library
-    └── test_interface.nb
+    ├── CMakeLists.txt
+    └── test_main.cpp
+    └── notebooks/              # Mathematica notebooks for testing the library
+        └── test_interface.nb

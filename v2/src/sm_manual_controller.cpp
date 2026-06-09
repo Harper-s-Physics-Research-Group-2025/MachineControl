@@ -1,4 +1,4 @@
-#include "sm_manual_controller.h"
+#include "controls/sm_manual_controller.h"
 
 using namespace std;
 using namespace sFnd;
