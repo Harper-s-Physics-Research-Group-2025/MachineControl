@@ -46,10 +46,15 @@ Date Completed:
 #include "Oven5R6900.h"
 #include <variant>
 
+namespace Lab {
+    int bath_on(std::string COMM) const;
+    int bath_off(std::string COMM) const;
+}
+
 class LabEquipment {
 public:     
-    void bath_on(std::string COMM) const;
-    void bath_off(std::string COMM) const;
+    int bath_on(std::string COMM) const;
+    int bath_off(std::string COMM) const;
     void bath_dump(std::string COMM) const;
     double bath_read_temp(std::string COMM) const;
     void bath_set_temp(std::string COMM, double Temp) const; // Added const to match API footprint

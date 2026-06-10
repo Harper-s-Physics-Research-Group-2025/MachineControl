@@ -6,7 +6,6 @@ Date Started: May 26, 2026
 Authors: Josh Darrow and Samuel Ntadom
 Date Completed: May 29, 2026
 */
-#include "WolframLibrary.h"
 #include "controls/API.h"
 
 
@@ -25,14 +24,19 @@ using generic_type = variant<int, float, string, bool>;
  * Side effect: success message or initialization failed error
  * Output: None
  *****************************************************/
-void LabEquipment::bath_on(std::string COMM) const {
-    RTE7 bath = RTE7(COMM);
+// void LabEquipment::bath_on(std::string COMM) const {
+//     RTE7 bath = RTE7(COMM);
 
-    if (!bath.turn_on()) {
-        cerr << "initialization failed" << endl;
-    } else {
-        cout << "Success!" << endl;
-    }
+//     if (!bath.turn_on()) {
+//         cerr << "initialization failed" << endl;
+//     } else {
+//         cout << "Success!" << endl;
+//     }
+// }
+
+int LabEquipment::bath_on(std::string COMM) const {
+    RTE7 bath = RTE7(COMM);
+    return bath.turn_on();
 }
 
 /*****************************************************
@@ -41,14 +45,19 @@ void LabEquipment::bath_on(std::string COMM) const {
  * Side effect: success message or shutdown failed error
  * Output: None
  *****************************************************/
-void LabEquipment::bath_off(std::string COMM) const {
-    RTE7 bath = RTE7(COMM);
+// void LabEquipment::bath_off(std::string COMM) const {
+//     RTE7 bath = RTE7(COMM);
 
-    if (!bath.turn_off()) {
-        cerr << "shutdown failed" << endl;
-    } else {
-        cout << "Success!" << endl;
-    }
+//     if (!bath.turn_off()) {
+//         cerr << "shutdown failed" << endl;
+//     } else {
+//         cout << "Success!" << endl;
+//     }
+// }
+
+int LabEquipment::bath_off(std::string COMM) const {
+    RTE7 bath = RTE7(COMM);
+    return bath.turn_off();
 }
 
 /*****************************************************
@@ -735,365 +744,365 @@ void LabEquipment::temperature_control_ramp_soak(std::string COMM, double seq_nu
 }
 
 
-// Global instance of the hardware manager
-static LabEquipment equipment;
+// // Global instance of the hardware manager
+// static LabEquipment equipment;
 
-extern "C" {
+// extern "C" {
 
-    /*****************************************************
-     * Function name: WolframLibrary_getVersion
-     * Input: None
-     * Side effect: None
-     * Output: mint (Returns engine layout version indices)
-     *****************************************************/
-    DLLEXPORT mint WolframLibrary_getVersion() { 
-        return WolframLibraryVersion; 
-    }
+//     /*****************************************************
+//      * Function name: WolframLibrary_getVersion
+//      * Input: None
+//      * Side effect: None
+//      * Output: mint (Returns engine layout version indices)
+//      *****************************************************/
+//     DLLEXPORT mint WolframLibrary_getVersion() { 
+//         return WolframLibraryVersion; 
+//     }
     
-    /*****************************************************
-     * Function name: WolframLibrary_initialize
-     * Input: lp (WolframLibraryData)
-     * Side effect: Performs low-level runtime integration checks
-     * Output: int (0 on initialization tracking)
-     *****************************************************/
-    DLLEXPORT int WolframLibrary_initialize(WolframLibraryData lp) { 
-        return 0; 
-    }
+//     /*****************************************************
+//      * Function name: WolframLibrary_initialize
+//      * Input: lp (WolframLibraryData)
+//      * Side effect: Performs low-level runtime integration checks
+//      * Output: int (0 on initialization tracking)
+//      *****************************************************/
+//     DLLEXPORT int WolframLibrary_initialize(WolframLibraryData lp) { 
+//         return 0; 
+//     }
     
-    /*****************************************************
-     * Function name: WolframLibrary_uninitialize
-     * Input: lp (WolframLibraryData)
-     * Side effect: None
-     * Output: None
-     *****************************************************/
-    DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData lp) {}
+//     /*****************************************************
+//      * Function name: WolframLibrary_uninitialize
+//      * Input: lp (WolframLibraryData)
+//      * Side effect: None
+//      * Output: None
+//      *****************************************************/
+//     DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData lp) {}
 
-    /* ==========================================================================
-       WOLFRAM INTERFACE FUNCTIONS
-       ========================================================================== */
+//     /* ==========================================================================
+//        WOLFRAM INTERFACE FUNCTIONS
+//        ========================================================================== */
 
-    /*****************************************************
-     * Function name: bath_on
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Turns on bath system equipment
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int bath_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: bath_on
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Turns on bath system equipment
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int bath_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        equipment.bath_on(comm_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.bath_on(comm_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: bath_off
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Powers down the fluid bath safely
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int bath_off(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: bath_off
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Powers down the fluid bath safely
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int bath_off(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
 
-        equipment.bath_off(comm_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.bath_off(comm_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: bath_dump
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Flushes data frames out to stdout/notebook fields
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int bath_dump(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: bath_dump
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Flushes data frames out to stdout/notebook fields
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int bath_dump(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        equipment.bath_dump(comm_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.bath_dump(comm_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: bath_read_temp
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Places evaluated loop status inside returning variables
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int bath_read_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: bath_read_temp
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Places evaluated loop status inside returning variables
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int bath_read_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        double temp = equipment.bath_read_temp(comm_str);
+//         double temp = equipment.bath_read_temp(comm_str);
     
-        return LIBRARY_NO_ERROR; 
-    }
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: bath_set_temp
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Modifies setpoints inside destination devices
-     * Output: int (LIBRARY_NO_ERROR or error status)
-     *****************************************************/
-    DLLEXPORT int bath_set_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc != 2) {
-            return LIBRARY_FUNCTION_ERROR;
-        }
+//     /*****************************************************
+//      * Function name: bath_set_temp
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Modifies setpoints inside destination devices
+//      * Output: int (LIBRARY_NO_ERROR or error status)
+//      *****************************************************/
+//     DLLEXPORT int bath_set_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         if (Argc != 2) {
+//             return LIBRARY_FUNCTION_ERROR;
+//         }
       
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        double temp = MArgument_getReal(Args[1]);
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
+//         double temp = MArgument_getReal(Args[1]);
         
-        equipment.bath_set_temp(comm_str, temp);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.bath_set_temp(comm_str, temp);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: read_labjack_ain0
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Triggers analog acquisition over USB lines
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int read_labjack_ain0(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        equipment.read_labjack_ain0();
-        return LIBRARY_NO_ERROR; 
-    }
+//     /*****************************************************
+//      * Function name: read_labjack_ain0
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Triggers analog acquisition over USB lines
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int read_labjack_ain0(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         equipment.read_labjack_ain0();
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: record
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Fixed shadowing initialization issues across multiple port handles
-     * Output: int (LIBRARY_NO_ERROR or structure argument bounds match checks)
-     *****************************************************/
-    DLLEXPORT int record(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc != 3) {
-            return LIBRARY_FUNCTION_ERROR;
-        }
+//     /*****************************************************
+//      * Function name: record
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Fixed shadowing initialization issues across multiple port handles
+//      * Output: int (LIBRARY_NO_ERROR or structure argument bounds match checks)
+//      *****************************************************/
+//     DLLEXPORT int record(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         if (Argc != 3) {
+//             return LIBRARY_FUNCTION_ERROR;
+//         }
       
-        char* csv_file = MArgument_getUTF8String(Args[0]); 
-        std::string file_str(csv_file);  
+//         char* csv_file = MArgument_getUTF8String(Args[0]); 
+//         std::string file_str(csv_file);  
 
-        char* bath_port = MArgument_getUTF8String(Args[1]); 
-        std::string b_port_str(bath_port); 
+//         char* bath_port = MArgument_getUTF8String(Args[1]); 
+//         std::string b_port_str(bath_port); 
 
-        char* temperature_port = MArgument_getUTF8String(Args[2]); 
-        std::string t_port_str(temperature_port); 
+//         char* temperature_port = MArgument_getUTF8String(Args[2]); 
+//         std::string t_port_str(temperature_port); 
         
-        equipment.record(file_str, b_port_str, t_port_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.record(file_str, b_port_str, t_port_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: servo_motor_home
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Resets staging platforms back to index boundaries
-     * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
-     *****************************************************/
-    DLLEXPORT int servo_motor_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-        if (Argc == 0) {
-            equipment.servo_motor_home();
-            return LIBRARY_NO_ERROR;
-        }
-        else if (Argc == 1) { 
-            double ms_double = MArgument_getReal(Args[0]);
-            int milliseconds = static_cast<int>(ms_double); 
-            equipment.servo_motor_home(milliseconds);
-            return LIBRARY_NO_ERROR;
-        } 
-        else {
-            return LIBRARY_FUNCTION_ERROR;
-        }
-    }
+//     /*****************************************************
+//      * Function name: servo_motor_home
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Resets staging platforms back to index boundaries
+//      * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
+//      *****************************************************/
+//     DLLEXPORT int servo_motor_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+//         if (Argc == 0) {
+//             equipment.servo_motor_home();
+//             return LIBRARY_NO_ERROR;
+//         }
+//         else if (Argc == 1) { 
+//             double ms_double = MArgument_getReal(Args[0]);
+//             int milliseconds = static_cast<int>(ms_double); 
+//             equipment.servo_motor_home(milliseconds);
+//             return LIBRARY_NO_ERROR;
+//         } 
+//         else {
+//             return LIBRARY_FUNCTION_ERROR;
+//         }
+//     }
 
-    /*****************************************************
-     * Function name: servo_motor_is_home
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Validates coordinate configuration integrity indices 
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int servo_motor_is_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-        equipment.servo_motor_is_home();
-        return LIBRARY_NO_ERROR;
-    }
+//     /*****************************************************
+//      * Function name: servo_motor_is_home
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Validates coordinate configuration integrity indices 
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int servo_motor_is_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+//         equipment.servo_motor_is_home();
+//         return LIBRARY_NO_ERROR;
+//     }
 
-    /*****************************************************
-     * Function name: servo_motor_manual_control
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Redirects terminal pipelines into Interactive driving modes
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int servo_motor_manual_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){  
-        equipment.servo_motor_manual_control();
-        return LIBRARY_NO_ERROR; 
-    }
+//     /*****************************************************
+//      * Function name: servo_motor_manual_control
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Redirects terminal pipelines into Interactive driving modes
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int servo_motor_manual_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){  
+//         equipment.servo_motor_manual_control();
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: servo_motor_read_position
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Evaluates positional feedback frames from connected hardware axes
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int servo_motor_read_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
-        // Fixed: maps correctly to the real class implementation method member name
-       equipment.servo_motor_read_position();
+//     /*****************************************************
+//      * Function name: servo_motor_read_position
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Evaluates positional feedback frames from connected hardware axes
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int servo_motor_read_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
+//         // Fixed: maps correctly to the real class implementation method member name
+//        equipment.servo_motor_read_position();
        
-        return LIBRARY_NO_ERROR; 
-    }
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: servo_motor_set_position
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Passes absolute microstepping dimensional target positions down to node controllers
-     * Output: int (LIBRARY_NO_ERROR or error values bounds tracking check)
-     *****************************************************/
-    DLLEXPORT int servo_motor_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc < 3 || Argc > 4) {
-            return LIBRARY_FUNCTION_ERROR;
-        }
+//     /*****************************************************
+//      * Function name: servo_motor_set_position
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Passes absolute microstepping dimensional target positions down to node controllers
+//      * Output: int (LIBRARY_NO_ERROR or error values bounds tracking check)
+//      *****************************************************/
+//     DLLEXPORT int servo_motor_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         if (Argc < 3 || Argc > 4) {
+//             return LIBRARY_FUNCTION_ERROR;
+//         }
 
-        double x_pos = MArgument_getReal(Args[0]); 
-        double z_pos = MArgument_getReal(Args[1]);
-        int vel_rms = static_cast<int>(MArgument_getReal(Args[2]));
+//         double x_pos = MArgument_getReal(Args[0]); 
+//         double z_pos = MArgument_getReal(Args[1]);
+//         int vel_rms = static_cast<int>(MArgument_getReal(Args[2]));
 
-        if (Argc == 4) {
-            double milliseconds = MArgument_getReal(Args[3]);
-            equipment.servo_motor_set_position(x_pos, z_pos, vel_rms, milliseconds);
-        } else {
-            equipment.servo_motor_set_position(x_pos, z_pos, vel_rms);
-        }
+//         if (Argc == 4) {
+//             double milliseconds = MArgument_getReal(Args[3]);
+//             equipment.servo_motor_set_position(x_pos, z_pos, vel_rms, milliseconds);
+//         } else {
+//             equipment.servo_motor_set_position(x_pos, z_pos, vel_rms);
+//         }
         
     
-        return LIBRARY_NO_ERROR;
-    }
+//         return LIBRARY_NO_ERROR;
+//     }
 
-    /*****************************************************
-     * Function name: temperature_control_dump
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Spits complete matrix overview tables out to terminal streams
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int temperature_control_dump(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: temperature_control_dump
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Spits complete matrix overview tables out to terminal streams
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_dump(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        equipment.temperature_control_dump(comm_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.temperature_control_dump(comm_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: temperature_control_read_temp
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Collects localized thermocouple instrumentation reading items
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int temperature_control_read_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: temperature_control_read_temp
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Collects localized thermocouple instrumentation reading items
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_read_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        // Fixed: Class return type is void; captured via print inside member, or passing placeholder error metrics
-        equipment.temperature_control_read_temp(comm_str);
+//         // Fixed: Class return type is void; captured via print inside member, or passing placeholder error metrics
+//         equipment.temperature_control_read_temp(comm_str);
        
-        return LIBRARY_NO_ERROR; 
-    }
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: temperature_control_read_mode
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Polls underlying control loop structures directly
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int temperature_control_read_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: temperature_control_read_mode
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Polls underlying control loop structures directly
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_read_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        equipment.temperature_control_read_mode(comm_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.temperature_control_read_mode(comm_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: temperature_control_set_mode
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Commits updated state definitions to thermoelectric elements
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int temperature_control_set_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
+//     /*****************************************************
+//      * Function name: temperature_control_set_mode
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Commits updated state definitions to thermoelectric elements
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_set_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
         
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        double mode = MArgument_getReal(Args[1]);
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
+//         double mode = MArgument_getReal(Args[1]);
         
-        equipment.temperature_control_set_mode(comm_str, mode);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.temperature_control_set_mode(comm_str, mode);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
 
-    /*****************************************************
-     * Function name: temperature_control_set_temp
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Prints set temperatures
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int temperature_control_set_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
+//     /*****************************************************
+//      * Function name: temperature_control_set_temp
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Prints set temperatures
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_set_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
         
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        double temp = MArgument_getReal(Args[1]);
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
+//         double temp = MArgument_getReal(Args[1]);
         
-        equipment.temperature_control_set_temp(comm_str, temp);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.temperature_control_set_temp(comm_str, temp);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
 
-    /*****************************************************
-     * Function name: temperature_control_off
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Cuts thermoelectric power generation safely
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int temperature_control_off(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: temperature_control_off
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Cuts thermoelectric power generation safely
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_off(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        equipment.temperature_control_off(comm_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.temperature_control_off(comm_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: temperature_control_on
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Activates loop monitoring subroutines over target ports
-     * Output: int (LIBRARY_NO_ERROR)
-     *****************************************************/
-    DLLEXPORT int temperature_control_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
+//     /*****************************************************
+//      * Function name: temperature_control_on
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Activates loop monitoring subroutines over target ports
+//      * Output: int (LIBRARY_NO_ERROR)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm_c_str);
         
-        equipment.temperature_control_on(comm_str);
-        return LIBRARY_NO_ERROR; 
-    }
+//         equipment.temperature_control_on(comm_str);
+//         return LIBRARY_NO_ERROR; 
+//     }
 
-    /*****************************************************
-     * Function name: temperature_control_ramp_soak
-     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-     * Side effect: Triggers stepped heating/cooling configuration programs
-     * Output: int (LIBRARY_NO_ERROR or error checks bounds verification checking)
-     *****************************************************/
-    DLLEXPORT int temperature_control_ramp_soak(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc != 6) {
-            return LIBRARY_FUNCTION_ERROR;
-        }
+//     /*****************************************************
+//      * Function name: temperature_control_ramp_soak
+//      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+//      * Side effect: Triggers stepped heating/cooling configuration programs
+//      * Output: int (LIBRARY_NO_ERROR or error checks bounds verification checking)
+//      *****************************************************/
+//     DLLEXPORT int temperature_control_ramp_soak(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+//         if (Argc != 6) {
+//             return LIBRARY_FUNCTION_ERROR;
+//         }
 
-        char* comm = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm);
-        double seq_num = MArgument_getReal(Args[1]);
-        int soak_temp = static_cast<int>(MArgument_getReal(Args[2]));
-        int ramp_dur = static_cast<int>(MArgument_getReal(Args[3]));
-        double soak_dur = MArgument_getReal(Args[4]);
-        int deviation = static_cast<int>(MArgument_getReal(Args[5]));
+//         char* comm = MArgument_getUTF8String(Args[0]); 
+//         std::string comm_str(comm);
+//         double seq_num = MArgument_getReal(Args[1]);
+//         int soak_temp = static_cast<int>(MArgument_getReal(Args[2]));
+//         int ramp_dur = static_cast<int>(MArgument_getReal(Args[3]));
+//         double soak_dur = MArgument_getReal(Args[4]);
+//         int deviation = static_cast<int>(MArgument_getReal(Args[5]));
 
-        equipment.temperature_control_ramp_soak(comm_str, seq_num, soak_temp, ramp_dur, soak_dur, deviation);
-        return LIBRARY_NO_ERROR;
-    }
-}
+//         equipment.temperature_control_ramp_soak(comm_str, seq_num, soak_temp, ramp_dur, soak_dur, deviation);
+//         return LIBRARY_NO_ERROR;
+//     }
+// }

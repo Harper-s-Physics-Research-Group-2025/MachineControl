@@ -25,34 +25,35 @@ find_path(WOLFRAM_INCLUDE_DIR
 )
 
 
-find_path(LABJACK_INCLUDE_DIR
-    NAMES LabJackUD.h
-    PATHS "C:/Program Files (x86)/LabJack/Drivers"
-)
-find_library(LABJACK_LIB 
-    NAMES LabJackUD.lib 
-    HINTS "C:/Program Files (x86)/LabJack/Drivers/64bit"
-)
+# find_path(LABJACK_INCLUDE_DIR
+#     NAMES LabJackUD.h
+#     PATHS "C:/Program Files (x86)/LabJack/Drivers"
+# )
+# find_library(LABJACK_LIB 
+#     NAMES LabJackUD.lib 
+#     HINTS "C:/Program Files (x86)/LabJack/Drivers/64bit"
+# )
 
 
-find_path(TEKNIC_INCLUDE_DIR 
-    NAMES pubSysCls.h 
-    HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/inc"
-)
-find_library(TEKNIC_LIB 
-    NAMES sFoundation20.lib
-    HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/lib/win/Release/x64"
-)
+# find_path(TEKNIC_INCLUDE_DIR 
+#     NAMES pubSysCls.h 
+#     HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/inc"
+# )
+# find_library(TEKNIC_LIB 
+#     NAMES sFoundation20.lib
+#     HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/lib/win/Release/x64"
+# )
 
 
 # 6. Define output library "EquipmentController" and source files
 add_library(wolfram_machine_controller SHARED
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/API.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/wolfram_api.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/lab.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/Oven5R6900.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/RTE7.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/recorder.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/sm_homer.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/sm_manual_controller.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/src/recorder.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/src/sm_homer.cpp"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/src/sm_manual_controller.cpp"
 )
 
 
