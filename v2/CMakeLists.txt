@@ -25,14 +25,14 @@ find_path(WOLFRAM_INCLUDE_DIR
 )
 
 
-# find_path(LABJACK_INCLUDE_DIR
-#     NAMES LabJackUD.h
-#     PATHS "C:/Program Files (x86)/LabJack/Drivers"
-# )
-# find_library(LABJACK_LIB 
-#     NAMES LabJackUD.lib 
-#     HINTS "C:/Program Files (x86)/LabJack/Drivers/64bit"
-# )
+find_path(LABJACK_INCLUDE_DIR
+    NAMES LabJackUD.h
+    PATHS "C:/Program Files (x86)/LabJack/Drivers"
+)
+find_library(LABJACK_LIB 
+    NAMES LabJackUD.lib 
+    HINTS "C:/Program Files (x86)/LabJack/Drivers/64bit"
+)
 
 
 # find_path(TEKNIC_INCLUDE_DIR 

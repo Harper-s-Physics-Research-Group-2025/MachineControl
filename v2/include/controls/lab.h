@@ -23,7 +23,7 @@ Date: 06.09.2026
 #include "RTE7.h" // For bath controller
 #include "Oven5R6900.h" // For temperature control functions
 
-//#include "LabJackUD.h"   // Header for LabJack UD library
+#include "LabJackUD.h"   // Header for LabJack UD library
 //#pragma comment(lib, "LabJackUD.lib")  // Link UD lib (Windows)
 
 //#include "recorder.h" // For recorder
@@ -62,7 +62,7 @@ namespace Lab {
 
     // int temperature_control_ramp_soak(std::string COMM, double seq_num, int soak_temp, int ramp_dur, double soak_dur, int deviation);
 
-    // void read_labjack_ain0();
+    int read_labjack_ain(const long channel, double& voltage);
     // void record(std::string CSV_FILENAME, std::string BATH_PORT, std::string TEMERATURE_PORT) const;
     
     // // Overloaded servo homing functions

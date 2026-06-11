@@ -1,6 +1,5 @@
 #include "controls/sm_homer.h"
 
-using namespace std;
 using namespace sFnd;
 
  

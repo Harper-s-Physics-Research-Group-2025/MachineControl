@@ -7,16 +7,24 @@ BeginPackage["WolframMachineControl`"]
    ========================================================================== *)
 
 (* Fluid Bath Suite *)
-BathOn::usage = "BathOn[port] activates the fluid bath equipment at the specified COM port string."
-BathOff::usage = "BathOff[port] gracefully powers down the fluid bath equipment."
-BathManual::usage = "BathManual[port] Puts bath into manual mode which means it responds to button presses rather than the computer."
-BathGetTemp::usage = "BathGetTemp[port] gracefully powers down the fluid bath equipment."
-BathOff::usage = "BathOff[port] gracefully powers down the fluid bath equipment."
-BathOff::usage = "BathOff[port] gracefully powers down the fluid bath equipment."
+WolframMachineControl`BathOn::usage = "BathOn[port] activates the fluid bath equipment at the specified COM port string."
+WolframMachineControl`BathOff::usage = "BathOff[port] gracefully powers down the fluid bath equipment."
+WolframMachineControl`BathManual::usage = "BathManual[port] Puts bath into manual mode which means it responds to button presses rather than the computer."
+WolframMachineControl`BathGetTemp::usage = "BathGetTemp[port] gracefully powers down the fluid bath equipment."
+WolframMachineControl`BathOff::usage = "BathOff[port] gracefully powers down the fluid bath equipment."
+WolframMachineControl`BathOff::usage = "BathOff[port] gracefully powers down the fluid bath equipment."
 
 
-(*WAdd::usage = "WAdd[a, b] adds two integers.";
-WSub::usage = "WSub[a, b] subtracts two integers.";*)
+WolframMachineControl`TempCtrlOn::usage = "TempCtrlOn[string port] turns on the H-bridge transistor ouput of the temp controller"
+WolframMachineControl`TempCtrlOff::usage = "TempCtrlOff[string port] turns on the H-bridge transistor ouput of the temp controller"
+WolframMachineControl`TempCtrlGetMode::usage = "TempCtrlGetMode[string port] displays the mode of the controller (0-4) 0 = normal mode, 2 = ramp/soak"
+WolframMachineControl`TempCtrlSetMode::usage = "TempCtrlSetMode[string port, int mode] sets the mode (0-4) of the controller, see prev."
+WolframMachineControl`TempCtrlGetTemp::usage = "TempCtrlGetTemp[string port] returns the temperature of the controller's thermistor probe sensor"
+WolframMachineControl`TempCtrlGetSetpoint::usage = "TempCtrlOn[string port] gets the current controller setpoint"
+WolframMachineControl`TempCtrlSetSetpoint::usage = "TempCtrlOn[string port, float temp] changes the controller setpoint"
+
+WolframMachineControl`ReadLabjack::usage = "ReadLabjack[int channel] reads voltage on specified channel"
+
 
 
 Begin["`Private`"]
@@ -50,6 +58,7 @@ WolframMachineControl`TempCtrlGetTemp = LibraryFunctionLoad[$dllPath, "wtemperat
 WolframMachineControl`TempCtrlGetSetpoint = LibraryFunctionLoad[$dllPath, "wtemperature_control_get_setpoint", {UTF8String}, Real];
 WolframMachineControl`TempCtrlSetSetpoint = LibraryFunctionLoad[$dllPath, "wtemperature_control_set_setpoint", {UTF8String, Real}, Real];
 
+WolframMachineControl`ReadLabjack = LibraryFunctionLoad[$dllPath, "wread_labjack_ain", {Integer}, Real]
 
 End[]
 EndPackage[]

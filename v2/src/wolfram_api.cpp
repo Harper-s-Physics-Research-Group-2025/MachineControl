@@ -295,16 +295,19 @@ extern "C" {
 
 
 
-    // /*****************************************************
-    //  * Function name: read_labjack_ain0
-    //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    //  * Side effect: Triggers analog acquisition over USB lines
-    //  * Output: int (LIBRARY_NO_ERROR)
-    //  *****************************************************/
-    // DLLEXPORT int read_labjack_ain0(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-    //     equipment.read_labjack_ain0();
-    //     return LIBRARY_NO_ERROR; 
-    // }
+    /*****************************************************
+     * Function name: read_labjack_ain0
+     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+     * Side effect: Triggers analog acquisition over USB lines
+     * Output: int (LIBRARY_NO_ERROR)
+     *****************************************************/
+    DLLEXPORT int wread_labjack_ain(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+        long channel = static_cast<long>(MArgument_getInteger(Args[0]));
+        double voltage;
+        int return_code = Lab::read_labjack_ain(channel, voltage);
+        MArgument_setReal(Res, voltage);        
+        return return_code; 
+    }
 
     // /*****************************************************
     //  * Function name: record
