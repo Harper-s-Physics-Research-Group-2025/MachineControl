@@ -160,7 +160,7 @@ extern "C" {
         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
         std::string comm_str(comm_c_str);
         
-        return !Lab::temperature_control_on(comm_str); 
+        return Lab::temperature_control_on(comm_str); 
     }
     
     
@@ -174,7 +174,7 @@ extern "C" {
         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
         std::string comm_str(comm_c_str);
         
-        return !Lab::temperature_control_off(comm_str); 
+        return Lab::temperature_control_off(comm_str); 
     }
 
     
@@ -190,7 +190,7 @@ extern "C" {
         int mode;
 
         int return_code = Lab::temperature_control_get_mode(comm_str, mode);
-        MArgument_setInteger(Res, mode);
+        MArgument_setInteger(Res, static_cast<mint>(mode));
 
         return return_code; 
     }
@@ -201,15 +201,15 @@ extern "C" {
      * Side effect: Commits updated state definitions to thermoelectric elements
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
-    DLLEXPORT int temperature_control_set_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+    DLLEXPORT int wtemperature_control_set_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
         if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
         
         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
         std::string comm_str(comm_c_str);
-        int mode = MArgument_getInteger(Args[1]);
+        int mode = static_cast<int>(MArgument_getInteger(Args[1]));
 
         int return_code = Lab::temperature_control_set_mode(comm_str, mode);
-        MArgument_setInteger(Res, mode);
+        MArgument_setInteger(Res, static_cast<mint>(mode));
 
         return return_code;  
     }
@@ -257,7 +257,7 @@ extern "C" {
      * Side effect: Prints set temperatures
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
-    DLLEXPORT int temperature_control_set_setpoint(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+    DLLEXPORT int wtemperature_control_set_setpoint(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
         if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
         
         char* comm_c_str = MArgument_getUTF8String(Args[0]); 
