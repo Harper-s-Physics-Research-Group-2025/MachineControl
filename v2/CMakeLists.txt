@@ -35,14 +35,14 @@ find_library(LABJACK_LIB
 )
 
 
-# find_path(TEKNIC_INCLUDE_DIR 
-#     NAMES pubSysCls.h 
-#     HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/inc"
-# )
-# find_library(TEKNIC_LIB 
-#     NAMES sFoundation20.lib
-#     HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/lib/win/Release/x64"
-# )
+find_path(TEKNIC_INCLUDE_DIR 
+    NAMES pubSysCls.h 
+    HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/inc"
+)
+find_library(TEKNIC_LIB 
+    NAMES sFoundation20.lib
+    HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/lib/win/Release/x64"
+)
 
 
 # 6. Define output library "EquipmentController" and source files

@@ -333,27 +333,27 @@ extern "C" {
     //     return LIBRARY_NO_ERROR; 
     // }
 
-    // /*****************************************************
-    //  * Function name: servo_motor_home
-    //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    //  * Side effect: Resets staging platforms back to index boundaries
-    //  * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
-    //  *****************************************************/
-    // DLLEXPORT int servo_motor_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-    //     if (Argc == 0) {
-    //         equipment.servo_motor_home();
-    //         return LIBRARY_NO_ERROR;
-    //     }
-    //     else if (Argc == 1) { 
-    //         double ms_double = MArgument_getReal(Args[0]);
-    //         int milliseconds = static_cast<int>(ms_double); 
-    //         equipment.servo_motor_home(milliseconds);
-    //         return LIBRARY_NO_ERROR;
-    //     } 
-    //     else {
-    //         return LIBRARY_FUNCTION_ERROR;
-    //     }
-    // }
+
+    /*****************************************************
+     * Function name: servo_motor_home
+     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+     * Side effect: Resets staging platforms back to index boundaries
+     * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
+     *****************************************************/
+    DLLEXPORT int servo_motor_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        if (Argc == 0) {
+            int return_code = Lab::servo_motor_home(20000);
+            return return_code;
+        }
+        else if (Argc == 1) { 
+            int milliseconds = static_cast<int>(MArgument_getReal(Args[0])); 
+            int return_code = Lab::servo_motor_home(milliseconds);
+            return return_code;
+        } 
+        else {
+            return LIBRARY_FUNCTION_ERROR;
+        }
+    }
 
     // /*****************************************************
     //  * Function name: servo_motor_is_home
@@ -377,44 +377,69 @@ extern "C" {
     //     return LIBRARY_NO_ERROR; 
     // }
 
-    // /*****************************************************
-    //  * Function name: servo_motor_read_position
-    //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    //  * Side effect: Evaluates positional feedback frames from connected hardware axes
-    //  * Output: int (LIBRARY_NO_ERROR)
-    //  *****************************************************/
-    // DLLEXPORT int servo_motor_read_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
-    //     // Fixed: maps correctly to the real class implementation method member name
-    //    equipment.servo_motor_read_position();
-       
-    //     return LIBRARY_NO_ERROR; 
-    // }
-
-    // /*****************************************************
-    //  * Function name: servo_motor_set_position
-    //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    //  * Side effect: Passes absolute microstepping dimensional target positions down to node controllers
-    //  * Output: int (LIBRARY_NO_ERROR or error values bounds tracking check)
-    //  *****************************************************/
-    // DLLEXPORT int servo_motor_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-    //     if (Argc < 3 || Argc > 4) {
-    //         return LIBRARY_FUNCTION_ERROR;
-    //     }
-
-    //     double x_pos = MArgument_getReal(Args[0]); 
-    //     double z_pos = MArgument_getReal(Args[1]);
-    //     int vel_rms = static_cast<int>(MArgument_getReal(Args[2]));
-
-    //     if (Argc == 4) {
-    //         double milliseconds = MArgument_getReal(Args[3]);
-    //         equipment.servo_motor_set_position(x_pos, z_pos, vel_rms, milliseconds);
-    //     } else {
-    //         equipment.servo_motor_set_position(x_pos, z_pos, vel_rms);
-    //     }
+    /*****************************************************
+     * Function name: servo_motor_read_position
+     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+     * Side effect: Evaluates positional feedback frames from connected hardware axes
+     * Output: int (LIBRARY_NO_ERROR)
+     *****************************************************/
+    DLLEXPORT int servo_motor_read_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
         
-    
-    //     return LIBRARY_NO_ERROR;
-    // }
+        // 1. set tensor dimensions
+        mint dims[1] = {2}; 
+        MTensor position;
+
+        // 2. Allocate memory for the tensor
+        int err = lp->MTensor_new(MType_Real, 1, dims, &position);
+        if (err) return LIBRARY_MEMORY_ERROR;
+
+        // 3. Extract the underlying C data pointer
+        double* data = lp->MTensor_getRealData(position);
+
+
+        float x_mm;
+        float z_mm;
+
+        int return_code = Lab::servo_motor_get_position(x_mm, z_mm);
+
+        data[0] = x_mm;
+        data[1] = z_mm;
+        
+        MArgument_setMTensor(Res, position);
+
+        return LIBRARY_NO_ERROR;
+    }
+
+    /*****************************************************
+     * Function name: servo_motor_set_position
+     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+     * Side effect: Passes absolute microstepping dimensional target positions down to node controllers
+     * Output: int (LIBRARY_NO_ERROR or error values bounds tracking check)
+     *****************************************************/
+    DLLEXPORT int servo_motor_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+        
+        // 1. set tensor dimensions
+        mint dims[1] = {3}; 
+        MTensor position;
+
+        // 2. Allocate memory for the tensor
+        int err = lp->MTensor_new(MType_Real, 1, dims, &position);
+        if (err) return LIBRARY_MEMORY_ERROR;
+
+        // 3. Extract the underlying C data pointer
+        double* data = lp->MTensor_getRealData(position);
+
+
+        data[0] = MArgument_getReal(Args[0]);
+        data[1] = MArgument_getReal(Args[1]);
+        data[2] = MArgument_getReal(Args[2]);
+
+        int return_code = Lab::servo_motor_set_position(data[0], data[1], data[2]);
+
+        MArgument_setMTensor(Res, position);
+
+        return return_code; 
+    }
 
     
 

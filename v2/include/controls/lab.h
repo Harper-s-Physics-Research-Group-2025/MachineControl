@@ -18,20 +18,19 @@ Date: 06.09.2026
 #include <iostream>
 #include <iomanip>
 #include <variant>
+#include <queue>
+#include <unordered_set>
+
 
 // Equipment classes
 #include "RTE7.h" // For bath controller
 #include "Oven5R6900.h" // For temperature control functions
 
 #include "LabJackUD.h"   // Header for LabJack UD library
-//#pragma comment(lib, "LabJackUD.lib")  // Link UD lib (Windows)
 
 //#include "recorder.h" // For recorder
 
-//#include "sm_homer.h" // For sm_home
-
-//#include "sm_manual_controller.h" // For servo_motor_manual_control
-//#include "pubSysCls.h" // For servo motor functions
+#include "pubSysCls.h" // For servo motor functions
 
 // For servo_motor_set_position
 //#include <windows.h>
@@ -65,18 +64,20 @@ namespace Lab {
     int read_labjack_ain(const long channel, double& voltage);
     // void record(std::string CSV_FILENAME, std::string BATH_PORT, std::string TEMERATURE_PORT) const;
     
-    // // Overloaded servo homing functions
+    // Overloaded servo homing functions
     // int servo_motor_home() const;
-    // int servo_motor_home(int milliseconds) const;  // Returns homing status code
+    int servo_motor_home(int milliseconds);  // Returns homing status code
     
     // bool servo_motor_is_home();
     
-    // void servo_motor_manual_control() const;
-    // void servo_motor_read_position() const;
+    int servo_motor_get_position(float& x_mm, float& y_mm);
     
-    // // Overloaded servo positioning functions
-    // void servo_motor_set_position(double x_pos, double z_pos, int vel_rms) const;
-    // void servo_motor_set_position(double x_pos, double z_pos, int vel_rms, double milliseconds) const;
+    // Overloaded servo positioning functions
+    int servo_motor_set_position(double& x_mm, double& y_mm, double& vel_rms);
+    int servo_motor_manual_control();  
     
+    
+    // function definitions
+    LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);     // keyboard callback
     
 }
