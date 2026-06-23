@@ -28,9 +28,12 @@ Date: 06.09.2026
 
 #include "LabJackUD.h"   // Header for LabJack UD library
 
-//#include "recorder.h" // For recorder
+#include "pubSysCls.h"          // For servo motor functions
 
-#include "pubSysCls.h" // For servo motor functions
+
+
+
+//#include "recorder.h" // For recorder
 
 // For servo_motor_set_position
 //#include <windows.h>
@@ -40,6 +43,15 @@ Date: 06.09.2026
 //                   other integer for error
 //             pass values and results via referenced variables
 namespace Lab {
+
+
+    // Persistent hardware pointers to servo motors
+    extern sFnd::SysManager* Mgr;
+    extern sFnd::IPort* Port;
+    extern sFnd::INode* motorX;
+    extern sFnd::INode* motorZ;
+
+
 
     // RTE7 bath suite
     int bath_on(std::string COMM);
@@ -60,24 +72,23 @@ namespace Lab {
     int temperature_control_set_setpoint(std::string COMM, float& temp);
 
     // int temperature_control_ramp_soak(std::string COMM, double seq_num, int soak_temp, int ramp_dur, double soak_dur, int deviation);
+    // void record(std::string CSV_FILENAME, std::string BATH_PORT, std::string TEMERATURE_PORT) const;
+    // // bool servo_motor_is_home();
 
     int read_labjack_ain(const long channel, double& voltage);
-    // void record(std::string CSV_FILENAME, std::string BATH_PORT, std::string TEMERATURE_PORT) const;
     
-    // Overloaded servo homing functions
-    // int servo_motor_home() const;
+    // Servo motors
+    int initialize_servos();
+    int shutdown_servos();
+    bool servos_ready();
     int servo_motor_home(int milliseconds);  // Returns homing status code
-    
-    // bool servo_motor_is_home();
-    
     int servo_motor_get_position(float& x_mm, float& y_mm);
-    
-    // Overloaded servo positioning functions
     int servo_motor_set_position(double& x_mm, double& y_mm, double& vel_rms);
-    int servo_motor_manual_control();  
+    int servo_motor_manual_control(); 
     
     
-    // function definitions
+    
+    // Keyboard hook callback for manual control
     LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);     // keyboard callback
     
 }

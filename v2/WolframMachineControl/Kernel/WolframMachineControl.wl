@@ -25,12 +25,19 @@ WolframMachineControl`TempCtrlSetSetpoint::usage = "TempCtrlOn[string port, floa
 
 WolframMachineControl`ReadLabjack::usage = "ReadLabjack[int channel] reads voltage on specified channel"
 
-
+WolframMachineControl`ServoOn::usage = "ServoOn[] Initializes the global servo communication structures."
+WolframMachineControl`ServoOff::usage = "ServoOff[] Uninitializes the global servo communication structures."
+WolframMachineControl`ServoHome::usage = "ServoHome[int milliseconds] homes teknic servo motors until timeout (milliseconds)"
+WolframMachineControl`ServoGetPos::usage = "ServoGetPos[real x_mm, real z_mm] gets the float/real position of the sample holder (X, Z) in mm"
+WolframMachineControl`ServoSetPos::usage = "ServoSetPos[real x_mm, real z_mm, real RPM] sets the float/real (X, Z) position of the sample holder in mm"
 
 Begin["`Private`"]
 
 (* 2. Find and track the library path automatically *)
 $dllPath = FindLibrary["wolfram_machine_controller"];
+
+$teknicPath = FindLibrary["sFoundation20"];        (*point mathematica to the teknic .dll*)
+LibraryLoad[$teknicPath];
 
 If[$dllPath === $Failed || !FileExistsQ[$dllPath],
     Message[General::error, "Critical Fault: Failed to locate 'wolfram_machine_controller' binary inside paclet structure runtime paths."];
@@ -59,6 +66,13 @@ WolframMachineControl`TempCtrlGetSetpoint = LibraryFunctionLoad[$dllPath, "wtemp
 WolframMachineControl`TempCtrlSetSetpoint = LibraryFunctionLoad[$dllPath, "wtemperature_control_set_setpoint", {UTF8String, Real}, Real];
 
 WolframMachineControl`ReadLabjack = LibraryFunctionLoad[$dllPath, "wread_labjack_ain", {Integer}, Real]
+
+WolframMachineControl`ServoOn  = LibraryFunctionLoad[$dllPath, "winitialize_servos", {}, Integer];
+WolframMachineControl`ServoOff = LibraryFunctionLoad[$dllPath, "wshutdown_servos", {}, Integer]; 
+WolframMachineControl`ServoHome = LibraryFunctionLoad[$dllPath, "wservo_motor_home", {Integer}, Integer]
+WolframMachineControl`ServoGetPos = LibraryFunctionLoad[$dllPath, "wservo_motor_get_position", {}, {Real, 1}]
+WolframMachineControl`ServoSetPos = LibraryFunctionLoad[$dllPath, "wservo_motor_set_position", {Real, Real, Real}, {Real, 1}]
+
 
 End[]
 EndPackage[]

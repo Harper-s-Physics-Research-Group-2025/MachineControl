@@ -32,7 +32,10 @@ extern "C" {
      * Side effect: Performs low-level runtime integration checks
      * Output: int (0 on initialization tracking)
      *****************************************************/
-    DLLEXPORT int WolframLibrary_initialize(WolframLibraryData lp) {  return 0; }
+    DLLEXPORT int WolframLibrary_initialize(WolframLibraryData lp) {
+        Lab::initialize_servos();
+        return LIBRARY_NO_ERROR; 
+    }
     
     /*****************************************************
      * Function name: WolframLibrary_uninitialize
@@ -40,7 +43,16 @@ extern "C" {
      * Side effect: None
      * Output: None
      *****************************************************/
-    DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData lp) {}
+    DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData lp) {
+        Lab::shutdown_servos();
+    }
+
+
+    // Simple function to pass the boolean state back to Mathematica
+    DLLEXPORT int wservo_hardware_online(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        MArgument_setInteger(Res, Lab::servos_ready() ? 1 : 0);
+        return LIBRARY_NO_ERROR;
+    }
 
 
 
@@ -333,6 +345,27 @@ extern "C" {
     //     return LIBRARY_NO_ERROR; 
     // }
 
+    /*****************************************************
+     * Function name: winitialize_servos
+     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+     * Effect: Sets up communication with servo motors.
+     * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
+     *****************************************************/
+    DLLEXPORT int winitialize_servos(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        return Lab::initialize_servos();
+    }
+
+
+    /*****************************************************
+     * Function name: wshutdown_servos
+     * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+     * Effect: Stop communication with the servo motors
+     * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
+     *****************************************************/
+    DLLEXPORT int wshutdown_servos(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        return Lab::shutdown_servos();
+    }
+
 
     /*****************************************************
      * Function name: servo_motor_home
@@ -340,13 +373,9 @@ extern "C" {
      * Side effect: Resets staging platforms back to index boundaries
      * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
      *****************************************************/
-    DLLEXPORT int servo_motor_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-        if (Argc == 0) {
-            int return_code = Lab::servo_motor_home(20000);
-            return return_code;
-        }
-        else if (Argc == 1) { 
-            int milliseconds = static_cast<int>(MArgument_getReal(Args[0])); 
+    DLLEXPORT int wservo_motor_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        if (Argc == 1) { 
+            int milliseconds = static_cast<int>(MArgument_getInteger(Args[0])); 
             int return_code = Lab::servo_motor_home(milliseconds);
             return return_code;
         } 
@@ -355,27 +384,27 @@ extern "C" {
         }
     }
 
-    // /*****************************************************
-    //  * Function name: servo_motor_is_home
-    //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    //  * Side effect: Validates coordinate configuration integrity indices 
-    //  * Output: int (LIBRARY_NO_ERROR)
-    //  *****************************************************/
-    // DLLEXPORT int servo_motor_is_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-    //     equipment.servo_motor_is_home();
-    //     return LIBRARY_NO_ERROR;
-    // }
+    // // /*****************************************************
+    // //  * Function name: servo_motor_is_home
+    // //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+    // //  * Side effect: Validates coordinate configuration integrity indices 
+    // //  * Output: int (LIBRARY_NO_ERROR)
+    // //  *****************************************************/
+    // // DLLEXPORT int servo_motor_is_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+    // //     equipment.servo_motor_is_home();
+    // //     return LIBRARY_NO_ERROR;
+    // // }
 
-    // /*****************************************************
-    //  * Function name: servo_motor_manual_control
-    //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    //  * Side effect: Redirects terminal pipelines into Interactive driving modes
-    //  * Output: int (LIBRARY_NO_ERROR)
-    //  *****************************************************/
-    // DLLEXPORT int servo_motor_manual_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){  
-    //     equipment.servo_motor_manual_control();
-    //     return LIBRARY_NO_ERROR; 
-    // }
+    // // /*****************************************************
+    // //  * Function name: servo_motor_manual_control
+    // //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
+    // //  * Side effect: Redirects terminal pipelines into Interactive driving modes
+    // //  * Output: int (LIBRARY_NO_ERROR)
+    // //  *****************************************************/
+    // // DLLEXPORT int servo_motor_manual_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){  
+    // //     equipment.servo_motor_manual_control();
+    // //     return LIBRARY_NO_ERROR; 
+    // // }
 
     /*****************************************************
      * Function name: servo_motor_read_position
@@ -383,7 +412,7 @@ extern "C" {
      * Side effect: Evaluates positional feedback frames from connected hardware axes
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
-    DLLEXPORT int servo_motor_read_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
+    DLLEXPORT int wservo_motor_get_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
         
         // 1. set tensor dimensions
         mint dims[1] = {2}; 
@@ -402,12 +431,12 @@ extern "C" {
 
         int return_code = Lab::servo_motor_get_position(x_mm, z_mm);
 
-        data[0] = x_mm;
-        data[1] = z_mm;
+        data[0] = static_cast<double>(x_mm);
+        data[1] = static_cast<double>(z_mm);
         
         MArgument_setMTensor(Res, position);
 
-        return LIBRARY_NO_ERROR;
+        return return_code;
     }
 
     /*****************************************************
@@ -416,7 +445,7 @@ extern "C" {
      * Side effect: Passes absolute microstepping dimensional target positions down to node controllers
      * Output: int (LIBRARY_NO_ERROR or error values bounds tracking check)
      *****************************************************/
-    DLLEXPORT int servo_motor_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+    DLLEXPORT int wservo_motor_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
         
         // 1. set tensor dimensions
         mint dims[1] = {3}; 

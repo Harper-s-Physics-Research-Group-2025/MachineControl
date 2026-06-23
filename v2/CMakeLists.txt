@@ -21,13 +21,13 @@ endif()
 
 find_path(WOLFRAM_INCLUDE_DIR 
     NAMES WolframLibrary.h 
-    PATHS "C:/Program Files/Wolfram Research/Wolfram/14.3/SystemFiles/IncludeFiles/C"
+    HINTS "C:/Program Files/Wolfram Research/Wolfram/14.3/SystemFiles/IncludeFiles/C"
 )
 
 
 find_path(LABJACK_INCLUDE_DIR
     NAMES LabJackUD.h
-    PATHS "C:/Program Files (x86)/LabJack/Drivers"
+    HINTS "C:/Program Files (x86)/LabJack/Drivers"
 )
 find_library(LABJACK_LIB 
     NAMES LabJackUD.lib 
@@ -43,7 +43,10 @@ find_library(TEKNIC_LIB
     NAMES sFoundation20.lib
     HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/lib/win/Release/x64"
 )
-
+find_file(TEKNIC_RUNTIME_DLL
+    NAMES sFoundation20.dll
+    HINTS "C:/Program Files (x86)/Teknic/ClearView/sdk/lib/win/Release/x64"
+)
 
 # 6. Define output library "EquipmentController" and source files
 add_library(wolfram_machine_controller SHARED
@@ -75,6 +78,7 @@ target_link_libraries(wolfram_machine_controller
     ${TEKNIC_LIB}
 )
 
+
 # # 9. Set output directory for the DLL
 # set_target_properties(LabController PROPERTIES
 #     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -104,5 +108,6 @@ set(PACLET_DEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/WolframMachineControl/LibraryRe
 add_custom_command(TARGET wolfram_machine_controller POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${PACLET_DEST_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:wolfram_machine_controller>" "${PACLET_DEST_DIR}/"
-    COMMENT "Copying compiled binary to Wolfram Paclet directory..."
+    COMMAND ${CMAKE_COMMAND} -E copy "${TEKNIC_RUNTIME_DLL}" "${PACLET_DEST_DIR}/"
+    COMMENT "Copying compiled binary and sFoundation20.dll to Wolfram Paclet directory..."
 )
