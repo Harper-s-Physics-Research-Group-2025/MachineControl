@@ -33,10 +33,11 @@ extern "C" {
      * Output: int (0 on initialization tracking)
      *****************************************************/
     DLLEXPORT int WolframLibrary_initialize(WolframLibraryData lp) {
+        Lab::log("\n\n");
         Lab::initialize_servos();
         return LIBRARY_NO_ERROR; 
     }
-    
+
     /*****************************************************
      * Function name: WolframLibrary_uninitialize
      * Input: lp (WolframLibraryData)
@@ -44,14 +45,9 @@ extern "C" {
      * Output: None
      *****************************************************/
     DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData lp) {
+        Lab::delete_bath();
+        Lab::delete_temp_controller();
         Lab::shutdown_servos();
-    }
-
-
-    // Simple function to pass the boolean state back to Mathematica
-    DLLEXPORT int wservo_hardware_online(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-        MArgument_setInteger(Res, Lab::servos_ready() ? 1 : 0);
-        return LIBRARY_NO_ERROR;
     }
 
 
@@ -61,6 +57,67 @@ extern "C" {
        ========================================================================== */
 
 
+
+    // Get logging status. 0 = Off; 1 = On
+    DLLEXPORT int wget_logging_status(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        int return_code;
+        bool verbose;
+        std::string file;
+        
+        return_code = Lab::get_log_settings(verbose, file);
+        MArgument_setInteger(Res, static_cast<int>(verbose));
+        return return_code;
+    }
+
+
+    // Get log file path
+    DLLEXPORT int wget_log_file(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        int return_code;
+        bool verbose;
+        std::string file;
+        return_code = Lab::get_log_settings(verbose, file);
+        MArgument_setUTF8String(Res, const_cast<char*>(file.c_str()));
+        return return_code;
+    }
+
+
+    // Set logging status and log file path.
+    DLLEXPORT int wset_log_settings(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        int return_code;
+        bool verbose = MArgument_getInteger(Args[0]);
+        std::string file = MArgument_getUTF8String(Args[1]);
+
+        if (!Lab::logfile_valid(file)) {
+            std::string err_msg = "File path " + file = " is not a valid path.";
+            lp->Message(err_msg.c_str());
+            return 1;
+        }
+
+        return_code = Lab::set_log_settings(verbose, file);
+        MArgument_setInteger(Res, static_cast<int>(verbose));
+
+        return return_code;
+    }
+
+
+
+
+
+    // Initialize RTE7 bath api object in memory (open the COM port)
+    DLLEXPORT int winitialize_bath(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+        std::string comm_str(comm_c_str);
+
+        return Lab::init_bath(comm_str); 
+    }
+
+
+    // Release bath object memory and set bath pointer to nullptr.
+    DLLEXPORT int wdelete_bath(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+        return Lab::delete_bath(); 
+    }
+
+
     /*****************************************************
      * Function name: bath_on
      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
@@ -68,10 +125,7 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wbath_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-
-        return Lab::bath_on(comm_str); 
+        return Lab::bath_on(); 
     }
 
 
@@ -82,10 +136,7 @@ extern "C" {
     //  * Output: int (LIBRARY_NO_ERROR)
     //  *****************************************************/
     DLLEXPORT int wbath_off(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        
-        return Lab::bath_off(comm_str); 
+        return Lab::bath_off(); 
     }
 
 
@@ -96,10 +147,7 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wbath_manual(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        
-        return Lab::bath_manual(comm_str); 
+        return Lab::bath_manual(); 
     }
 
 
@@ -110,11 +158,9 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wbath_get_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        float temp;
 
-        int return_code = Lab::bath_get_temp(comm_str, temp);
+        float temp;
+        int return_code = Lab::bath_get_temp(temp);
         MArgument_setReal(Res, static_cast<double>(temp));
 
         return return_code; 
@@ -128,11 +174,9 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wbath_get_setpoint(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        float temp;
 
-        int return_code = Lab::bath_get_setpoint(comm_str, temp);
+        float temp;
+        int return_code = Lab::bath_get_setpoint(temp);
         MArgument_setReal(Res, static_cast<double>(temp));
 
         return return_code; 
@@ -146,12 +190,11 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wbath_set_setpoint(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        float temp = static_cast<float>MArgument_getReal(Args[1]);
 
-        int return_code = Lab::bath_set_setpoint(comm_str, temp);
+        float temp = static_cast<float>MArgument_getReal(Args[0]);
+        int return_code = Lab::bath_set_setpoint(temp);
         MArgument_setReal(Res, static_cast<double>(temp));
+        Lab::log("bath setpoint: " + std::to_string(temp) + "return code: " + std::to_string(return_code));
 
         return return_code; 
     }
@@ -161,6 +204,19 @@ extern "C" {
 
 
 
+    // Initialize temp controller hardware api object (open the COM port, etc.)
+    DLLEXPORT int winitialize_temperature_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
+        std::string comm_str(comm_c_str);
+        return Lab::init_temp_controller(comm_str); 
+    }
+
+    
+    // Release temp controller object memory and set pointer to nullptr.
+    DLLEXPORT int wdelete_temperature_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+        return Lab::delete_temp_controller(); 
+    }
+
 
     /*****************************************************
      * Function name: temperature_control_on
@@ -168,11 +224,8 @@ extern "C" {
      * Effect: Turns on H-bridge transistor output
      * Output: int return code
      *****************************************************/
-    DLLEXPORT int wtemperature_control_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        
-        return Lab::temperature_control_on(comm_str); 
+    DLLEXPORT int wtemperature_control_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){        
+        return Lab::temperature_control_on(); 
     }
     
     
@@ -183,10 +236,7 @@ extern "C" {
      * Output: int return code
      *****************************************************/
     DLLEXPORT int wtemperature_control_off(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        
-        return Lab::temperature_control_off(comm_str); 
+        return Lab::temperature_control_off(); 
     }
 
     
@@ -197,11 +247,9 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wtemperature_control_get_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        int mode;
 
-        int return_code = Lab::temperature_control_get_mode(comm_str, mode);
+        int mode;
+        int return_code = Lab::temperature_control_get_mode(mode);
         MArgument_setInteger(Res, static_cast<mint>(mode));
 
         return return_code; 
@@ -213,14 +261,10 @@ extern "C" {
      * Side effect: Commits updated state definitions to thermoelectric elements
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
-    DLLEXPORT int wtemperature_control_set_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
+    DLLEXPORT int wtemperature_control_set_mode(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){       
         
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        int mode = static_cast<int>(MArgument_getInteger(Args[1]));
-
-        int return_code = Lab::temperature_control_set_mode(comm_str, mode);
+        int mode = static_cast<int>(MArgument_getInteger(Args[0]));
+        int return_code = Lab::temperature_control_set_mode(mode);
         MArgument_setInteger(Res, static_cast<mint>(mode));
 
         return return_code;  
@@ -234,11 +278,9 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wtemperature_control_get_temp(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        float temp;
 
-        int return_code = Lab::temperature_control_get_temp(comm_str, temp);
+        float temp;
+        int return_code = Lab::temperature_control_get_temp(temp);
         MArgument_setReal(Res, static_cast<double>(temp));
 
         return return_code; 
@@ -252,11 +294,9 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wtemperature_control_get_setpoint(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        float temp;
 
-        int return_code = Lab::temperature_control_get_setpoint(comm_str, temp);
+        float temp;
+        int return_code = Lab::temperature_control_get_setpoint(temp);
         MArgument_setReal(Res, static_cast<double>(temp));
 
         return return_code; 
@@ -270,13 +310,9 @@ extern "C" {
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
     DLLEXPORT int wtemperature_control_set_setpoint(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        if (Argc != 2) return LIBRARY_FUNCTION_ERROR;
         
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        float temp = static_cast<float>MArgument_getReal(Args[1]);
-
-        int return_code = Lab::temperature_control_set_setpoint(comm_str, temp);
+        float temp = static_cast<float>MArgument_getReal(Args[0]);
+        int return_code = Lab::temperature_control_set_setpoint(temp);
         MArgument_setReal(Res, static_cast<double>(temp));
 
         return return_code; 
@@ -367,13 +403,36 @@ extern "C" {
     }
 
 
+    // Simple function to pass the servo motor boolean state back to Mathematica
+    DLLEXPORT int wservo_hardware_online(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        MArgument_setInteger(Res, Lab::servos_ready());
+        return LIBRARY_NO_ERROR;
+    }
+
+
+    DLLEXPORT int wget_servo_alerts(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        char alertX[256] = {0};
+        char alertZ[256] = {0};
+
+        // Call your hardware function to fill the buffers
+        int return_code = Lab::get_servo_alerts(alertX, alertZ);
+
+        // Combine them into a clean message string
+        std::string combined_alerts = "X: " + std::string(alertX) + " | Z: " + std::string(alertZ);
+
+        // Set the result back to Mathematica as a string
+        MArgument_setUTF8String(Res, const_cast<char*>(combined_alerts.c_str()));
+        return return_code;
+    }
+
+
     /*****************************************************
      * Function name: servo_motor_home
      * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
      * Side effect: Resets staging platforms back to index boundaries
      * Output: int (LIBRARY_NO_ERROR or parameter function issues checking limits)
      *****************************************************/
-    DLLEXPORT int wservo_motor_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+    DLLEXPORT int wservos_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
         if (Argc == 1) { 
             int milliseconds = static_cast<int>(MArgument_getInteger(Args[0])); 
             int return_code = Lab::servo_motor_home(milliseconds);
@@ -384,27 +443,6 @@ extern "C" {
         }
     }
 
-    // // /*****************************************************
-    // //  * Function name: servo_motor_is_home
-    // //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    // //  * Side effect: Validates coordinate configuration integrity indices 
-    // //  * Output: int (LIBRARY_NO_ERROR)
-    // //  *****************************************************/
-    // // DLLEXPORT int servo_motor_is_home(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-    // //     equipment.servo_motor_is_home();
-    // //     return LIBRARY_NO_ERROR;
-    // // }
-
-    // // /*****************************************************
-    // //  * Function name: servo_motor_manual_control
-    // //  * Input: lp (WolframLibraryData), Argc (mint), Args (MArgument*), Res (MArgument)
-    // //  * Side effect: Redirects terminal pipelines into Interactive driving modes
-    // //  * Output: int (LIBRARY_NO_ERROR)
-    // //  *****************************************************/
-    // // DLLEXPORT int servo_motor_manual_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){  
-    // //     equipment.servo_motor_manual_control();
-    // //     return LIBRARY_NO_ERROR; 
-    // // }
 
     /*****************************************************
      * Function name: servo_motor_read_position
@@ -412,7 +450,7 @@ extern "C" {
      * Side effect: Evaluates positional feedback frames from connected hardware axes
      * Output: int (LIBRARY_NO_ERROR)
      *****************************************************/
-    DLLEXPORT int wservo_motor_get_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
+    DLLEXPORT int wservos_get_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){    
         
         // 1. set tensor dimensions
         mint dims[1] = {2}; 
@@ -429,7 +467,7 @@ extern "C" {
         float x_mm;
         float z_mm;
 
-        int return_code = Lab::servo_motor_get_position(x_mm, z_mm);
+        int return_code = Lab::servos_get_position(x_mm, z_mm);
 
         data[0] = static_cast<double>(x_mm);
         data[1] = static_cast<double>(z_mm);
@@ -445,7 +483,7 @@ extern "C" {
      * Side effect: Passes absolute microstepping dimensional target positions down to node controllers
      * Output: int (LIBRARY_NO_ERROR or error values bounds tracking check)
      *****************************************************/
-    DLLEXPORT int wservo_motor_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
+    DLLEXPORT int wservos_set_position(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
         
         // 1. set tensor dimensions
         mint dims[1] = {3}; 
@@ -459,11 +497,17 @@ extern "C" {
         double* data = lp->MTensor_getRealData(position);
 
 
-        data[0] = MArgument_getReal(Args[0]);
-        data[1] = MArgument_getReal(Args[1]);
-        data[2] = MArgument_getReal(Args[2]);
+        float x_mm = static_cast<float>(MArgument_getReal(Args[0]));
+        float z_mm = static_cast<float>(MArgument_getReal(Args[1]));
+        float vel_rms = static_cast<float>(MArgument_getReal(Args[2]));
+        // int timeout_ms = static_cast<int>(MArgument_getReal(Args[3]));
 
-        int return_code = Lab::servo_motor_set_position(data[0], data[1], data[2]);
+        int return_code = Lab::servos_set_position(x_mm, z_mm, vel_rms);
+
+        data[0] = static_cast<double>(x_mm);        
+        data[1] = static_cast<double>(z_mm);
+        data[2] = static_cast<double>(vel_rms);        
+        // data[3] = static_cast<double>(timeout_ms);
 
         MArgument_setMTensor(Res, position);
 
@@ -494,4 +538,44 @@ extern "C" {
     //     equipment.temperature_control_ramp_soak(comm_str, seq_num, soak_temp, ramp_dur, soak_dur, deviation);
     //     return LIBRARY_NO_ERROR;
     // }
+
+
+    DLLEXPORT int wmotors_ready(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        
+        int return_code = Lab::servos_homed();
+        MArgument_setInteger(Res, static_cast<mint>(return_code));
+        return !return_code;
+    }
+
+
+    // Check if motors are homed.
+     DLLEXPORT int wservos_homed(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+                
+        int return_code = Lab::servos_homed();
+        MArgument_setInteger(Res, static_cast<mint>(return_code));
+        return !return_code;
+
+    }
+
+
+    // Manual control of servo motors
+    DLLEXPORT int wmanual_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+
+        int return_code = Lab::servo_motor_manual_control();
+        MArgument_setInteger(Res, static_cast<mint>(return_code));
+        return return_code;
+
+    }
+
+
+    DLLEXPORT int wreturn_success(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+        return LIBRARY_NO_ERROR;
+    }
+
+
+    
+    DLLEXPORT int wreturn_error(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
+            return LIBRARY_FUNCTION_ERROR;
+        }
+
 }

@@ -1,0 +1,958 @@
+log settings modified
+log settings accessed.
+log settings accessed.
+bath setpoint: 0.000000return code: 0
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, -0.001250
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.003750
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.002501
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+log settings modified
+log settings accessed.
+log settings accessed.
+bath setpoint: 25.000000return code: 0
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.004999
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.002501
+log settings modified
+log settings accessed.
+log settings accessed.
+bath setpoint: 25.000000return code: 0
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+log settings modified
+log settings accessed.
+log settings accessed.
+bath setpoint: 25.000000return code: 0
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.001250, 0.000000
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.002501
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.002501
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+log settings modified
+log settings accessed.
+log settings accessed.
+bath setpoint: 25.000000return code: 0
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.003750
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.002501
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+log settings modified
+log settings accessed.
+log settings accessed.
+bath setpoint: 25.000000return code: 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Homing timed out after 30000 milliseconds.
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 0
+	Alerts: 1
+Returning (IsEnabled && !Alerts) : 0
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 0
+	Alerts: 1
+Returning (IsEnabled && !Alerts) : 0
+log settings modified
+log settings accessed.
+log settings accessed.
+bath setpoint: 25.000000return code: 0
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, -0.001250
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.004999
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.003750
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+log settings accessed by get_log_settings().
+log settings accessed by get_log_settings().
+bath setpoint: 25.000000return code: 0
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, -0.001250
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.007500
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.003750
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+
+in int get_servo_alerts()
+One or more motors are nullptr. (!motorX || !motorZ): 1
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+log settings modified by set_log_settings(). LOGFILE: C:\Users\Student\Documents\JuxtapositionOfSampleHolders\MachineControl\v2\log.txt
+log settings accessed by get_log_settings().
+log settings accessed by get_log_settings().
+bath setpoint: 25.000000return code: 0
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, -0.001250
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.007500
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.003750
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+log settings modified by set_log_settings(). LOGFILE: C:\Users\Student\Documents\JuxtapositionOfSampleHolders\MachineControl\v2\log.txt
+log settings accessed by get_log_settings().
+log settings accessed by get_log_settings().
+bath setpoint: 25.000000return code: 0
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, -0.001250
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.008751
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.003750
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+log settings accessed by get_log_settings().
+log settings accessed by get_log_settings().
+bath setpoint: 25.000000return code: 0
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Homing timed out after 30000 milliseconds.
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 1
+Returning (IsEnabled && !Alerts) : 0
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 1
+Returning (IsEnabled && !Alerts) : 0
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0200 0000 
+[25] NetWatchdog
+
+log settings accessed by get_log_settings().
+log settings accessed by get_log_settings().
+bath setpoint: 25.000000return code: 0
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): -0.001250, 0.000000
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.006250
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.003750
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+
+log settings accessed by get_log_settings().
+log settings accessed by get_log_settings().
+bath setpoint: 25.000000return code: 0
+
+in int delete_bath()
+Bath object successfully deleted
+
+In delete_temp_controller().
+temp controller successfully deleted
+
+In servo_motor_home()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servos check complete.
+Initiating homing sequence.
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 0.000000, -0.001250
+
+In servos_set_position()
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+	servo check complete.
+	Setting max RPM.
+	Max RPM set to: 100.000000
+	Starting Movement
+	Finished movement.
+	Refreshing current position buffer.
+	Buffer refreshed.
+	Measuring motor position.
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.006250
+
+In servos_get_position()
+	Current parameters (x_mm, z_mm): 0.000000, 0.000000
+	checking servos_ready()
+
+in bool servos_ready()
+	Refreshing status and alerts.
+	Checking enabling and alert status
+	IsEnabled: 1
+	Alerts: 0
+Returning (IsEnabled && !Alerts) : 1
+
+	servos_ready() check complete
+	Refreshing current position buffer
+	Buffer refreshed.
+	Measuring motor position
+	Measure position complete.
+	Current parameters (x_mm, z_mm): 10.000000, -20.000000
+
+in int get_servo_alerts()
+Checking Alert bits
+MotorX: 0x0000 0000 0000 0000 0000 0000 
+
+MotorZ: 0x0000 0000 0000 0000 0000 0000 
+

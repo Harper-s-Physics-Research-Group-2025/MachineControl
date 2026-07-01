@@ -1,0 +1,986 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[     53867,        976]
+NotebookOptionsPosition[     51920,        937]
+NotebookOutlinePosition[     52321,        953]
+CellTagsIndexPosition[     52278,        950]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"PacletDirectoryLoad", 
+  "[", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
+JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\>\"", "]"}]], "Input",
+ CellLabel->"In[44]:=",ExpressionUUID->"b28d0934-f2b1-814a-aecc-b1540fcde993"],
+
+Cell[BoxData[
+ RowBox[{"{", \
+"\<\"C:\\\\Users\\\\Student\\\\Documents\\\\JuxtapositionOfSampleHolders\\\\\
+MachineControl\\\\v2\"\>", "}"}]], "Output",
+ CellChangeTimes->{3.991736036443218*^9, 3.9917363643110237`*^9, 
+  3.9917499499655895`*^9, 3.9917501113925743`*^9, 3.991750333481865*^9, 
+  3.991750608067562*^9, 3.9917513908648243`*^9, 3.9917516635862503`*^9, 
+  3.9917536605430336`*^9, 3.9917539939244404`*^9, 3.9917549195321255`*^9},
+ CellLabel->"Out[44]=",ExpressionUUID->"1c6221d9-5b60-9048-8b2c-1ea751589f37"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<WolframMachineControl`\>\"", "]"}]], "Input",
+ CellLabel->"In[45]:=",ExpressionUUID->"44ab43a4-d3b1-0d4f-9177-5943fa49ebfe"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"SetLogSettings", "[", 
+  RowBox[{
+  "1", ",", 
+   " ", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
+JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\\\\log.txt\>\""}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.9917363756904316`*^9, 3.9917364130391064`*^9}, {
+  3.991736712227104*^9, 3.9917367197460938`*^9}, {3.99174987117663*^9, 
+  3.991749879447891*^9}, {3.9917503367605705`*^9, 3.991750341272434*^9}, {
+  3.991750462287569*^9, 3.9917504977602844`*^9}},
+ CellLabel->"In[46]:=",ExpressionUUID->"e8b5e50f-5738-764c-9595-752d43fc0f88"],
+
+Cell[BoxData["1"], "Output",
+ CellChangeTimes->{
+  3.991749914778652*^9, 3.991749978771799*^9, {3.9917501378438663`*^9, 
+   3.9917501881524887`*^9}, 3.991750231610155*^9, 3.9917505032867966`*^9, 
+   3.9917506173278217`*^9, 3.991751406900902*^9, 3.991751672251398*^9, 
+   3.9917536707769985`*^9, 3.9917540037130833`*^9, 3.9917549220867577`*^9},
+ CellLabel->"Out[46]=",ExpressionUUID->"7901fd0d-fbdd-e34b-bafe-2f149aa4ece0"]
+}, Open  ]],
+
+Cell[BoxData["\[IndentingNewLine]"], "Input",
+ CellChangeTimes->{{3.991752578373646*^9, 
+  3.9917526176625767`*^9}},ExpressionUUID->"1e99a4b5-69e0-064b-964d-\
+ef153d3d74c6"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", " ", 
+   RowBox[{"Set", " ", "Parameters"}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"bathPort", " ", "=", " ", "\"\<com7\>\""}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"tempPort", " ", "=", " ", "\"\<com5\>\""}], ";"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"samplingInterval", "=", "4"}], ";"}], " ", 
+   RowBox[{"(*", 
+    RowBox[{"Polling", " ", "time", " ", "in", " ", "seconds"}], "*)"}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"dataLog", "=", 
+     RowBox[{"{", "}"}]}], ";"}], " ", 
+   RowBox[{"(*", 
+    RowBox[{
+    "1.", " ", "Initialize", " ", "an", " ", "empty", " ", "list", " ", "to", 
+     " ", "store", " ", "records"}], "*)"}], "\[IndentingNewLine]", 
+   RowBox[{"AppendTo", "[", 
+    RowBox[{"dataLog", ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Timestamp\>\"", ",", " ", "\"\<BathTemp\>\"", 
+       ",", "\"\<SampleTemp\>\"", ",", " ", "\"\<LaserIntensity\>\""}], 
+      "}"}]}], "]"}], "\[IndentingNewLine]", "\n", 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.99175261937455*^9, 3.991752719477545*^9}, {
+  3.9917528607101097`*^9, 3.9917528659098263`*^9}, {3.9917529822785587`*^9, 
+  3.9917530150787525`*^9}, {3.9917530537581406`*^9, 3.9917531054934883`*^9}, {
+  3.9917541889895706`*^9, 3.9917541903414536`*^9}, {3.9917543211431103`*^9, 
+  3.99175433437278*^9}},
+ NumberMarks->False,
+ CellLabel->"In[47]:=",ExpressionUUID->"6885f818-9927-2642-bd4b-b28191ed70d0"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"\<\"Timestamp\"\>", ",", "\<\"BathTemp\"\>", 
+    ",", "\<\"SampleTemp\"\>", ",", "\<\"LaserIntensity\"\>"}], "}"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.9917531223346157`*^9, 3.9917536794971123`*^9, 
+  3.991754008670622*^9, 3.991754193411396*^9, 3.991754336451977*^9, 
+  3.991754924278618*^9},
+ CellLabel->"Out[51]=",ExpressionUUID->"170b2fdd-accb-864d-8b16-b02b54184772"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", "\n", 
+  RowBox[{"(*", 
+   RowBox[{
+   "2.", " ", "Define", " ", "the", " ", "background", " ", "recording", " ", 
+    "action"}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"recordingTask", "=", 
+     RowBox[{"CreateScheduledTask", "[", 
+      RowBox[{
+       RowBox[{"AppendTo", "[", 
+        RowBox[{"dataLog", ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"AbsoluteTime", "[", "]"}], ",", " ", 
+           RowBox[{"BathGetTemp", "[", "bathPort", "]"}], ",", 
+           RowBox[{"TempCtrlGetTemp", "[", "tempPort", "]"}], ",", " ", 
+           RowBox[{"ReadLabjack", "[", "0", "]"}]}], "}"}]}], "]"}], ",", 
+       "samplingInterval"}], "]"}]}], ";"}], "\n", 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.991752549732115*^9, 3.991752549732115*^9}, 
+   3.991752581927088*^9, {3.9917531453110313`*^9, 3.9917531582783356`*^9}, {
+   3.9917531949108524`*^9, 3.991753212486704*^9}, {3.9917532446896744`*^9, 
+   3.991753409791172*^9}},
+ CellLabel->"In[52]:=",ExpressionUUID->"3a68d48b-e155-2c42-80e1-e9eb92fd7139"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{"3.", " ", "Start", " ", "Recording"}], "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"StartScheduledTask", "[", "recordingTask", "]"}], ";"}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]", 
+   RowBox[{"(*", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"--", 
+       RowBox[{"-", "Let"}]}], " ", "it", " ", "run", " ", "in", " ", "the", " ",
+       "background", " ", "while", " ", "you", " ", "do", " ", "other", " ", 
+      RowBox[{"tasks", "--"}]}], "-"}], "*)"}], "\[IndentingNewLine]", 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{3.9917534250070553`*^9},
+ CellLabel->"In[53]:=",ExpressionUUID->"902e65ea-a598-1342-b619-a511d87e6698"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "4.", " ", "Stop", " ", "Recording", " ", "and", " ", "clean", " ", "up"}],
+    "*)"}], "\n", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"StopScheduledTask", "[", "recordingTask", "]"}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{"RemoveScheduledTask", "[", "recordingTask", "]"}], ";"}], 
+   "\[IndentingNewLine]", "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.991749886429964*^9, 3.991749886432909*^9}, 
+   3.9917534346939735`*^9, 3.9917537042544518`*^9, {3.991753968932951*^9, 
+   3.991753974422497*^9}},
+ CellLabel->"In[59]:=",ExpressionUUID->"97631362-bcd7-b24f-83db-e176a76ee3b4"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "StopScheduledTask", "timnf", 
+   "\"The task \
+\\!\\(\\*InterpretationBox[RowBox[{TagBox[\\\"ScheduledTaskObject\\\", \
+\\\"SummaryHead\\\"], \\\"[\\\", DynamicModuleBox[{Typeset`open$$ = False, \
+Set[Typeset`embedState$$, \\\"Ready\\\"]}, \
+TemplateBox[List[PaneSelectorBox[List[Rule[False, \
+GridBox[List[List[PaneBox[ButtonBox[DynamicBox[FEPrivate`FrontEndResource[\\\"\
+FEBitmaps\\\", \\\"SummaryBoxOpener\\\"]], RuleDelayed[ButtonFunction, \
+Set[Typeset`open$$, True]], Rule[Appearance, None], Rule[BaseStyle, List[]], \
+Rule[Evaluator, Automatic], Rule[Method, \\\"Preemptive\\\"]], \
+Rule[Alignment, List[Center, Center]], Rule[ImageSize, \
+Dynamic[List[Automatic, Times[3.5`, \
+Times[CurrentValue[\\\"FontCapHeight\\\"], \
+Power[AbsoluteCurrentValue[Magnification], -1]]]]]]], \
+GraphicsBox[List[Thickness[0.0016806722689075631`], \
+List[FaceForm[List[GrayLevel[0.93`], Opacity[1.`]]], \
+FilledCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[RGBColor[0.699951`, 0.699951`, \
+0.699951`], Opacity[1.`], JoinForm[List[\\\"Miter\\\", 10.`]], \
+JoinedCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[FaceForm[List[RGBColor[0.5`, 0.5`, \
+0.5`], Opacity[1.`]]], FilledCurveBox[List[List[List[1, 4, 3], List[1, 3, 3], \
+List[1, 3, 3], List[1, 3, 3]], List[List[1, 4, 3], List[1, 3, 3], List[1, 3, \
+3], List[1, 3, 3]]], List[List[List[12.732799999999997`, \
+6.3175799999999995`], List[9.160549999999999`, 6.3175799999999995`], \
+List[6.2648399999999995`, 9.213669999999999`], List[6.2648399999999995`, \
+12.785499999999997`], List[6.2648399999999995`, 16.357799999999997`], \
+List[9.160549999999999`, 19.253500000000003`], List[12.732799999999997`, \
+19.253500000000003`], List[16.3051`, 19.253500000000003`], List[19.2008`, \
+16.357799999999997`], List[19.2008`, 12.785499999999997`], List[19.2008`, \
+9.213669999999999`], List[16.3051`, 6.3175799999999995`], \
+List[12.732799999999997`, 6.3175799999999995`]], \
+List[List[12.732799999999997`, 20.7855`], List[8.314449999999999`, 20.7855`], \
+List[4.733199999999999`, 17.2039`], List[4.733199999999999`, \
+12.785499999999997`], List[4.733199999999999`, 8.367579999999997`], \
+List[8.314449999999999`, 4.785939999999999`], List[12.732799999999997`, \
+4.785939999999999`], List[17.1508`, 4.785939999999999`], List[20.7324`, \
+8.367579999999997`], List[20.7324`, 12.785499999999997`], List[20.7324`, \
+17.2039`], List[17.1508`, 20.7855`], List[12.732799999999997`, 20.7855`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0], List[0, \
+1, 0], List[1, 3, 3], List[1, 3, 3], List[0, 1, 0], List[0, 1, 0], List[1, 3, \
+3], List[0, 1, 0], List[0, 1, 0], List[0, 1, 0]], List[List[1, 4, 3], List[1, \
+3, 3], List[1, 3, 3], List[1, 3, 3]]], List[List[List[15.454299999999996`, \
+9.639450000000002`], List[11.979700000000001`, 12.114099999999999`], \
+List[11.9543`, 12.130099999999999`], List[11.931199999999999`, \
+12.147699999999999`], List[11.907399999999999`, 12.165599999999998`], \
+List[11.852699999999999`, 12.2047`], List[11.8566`, 12.207399999999998`], \
+List[11.628499999999999`, 12.4031`], List[11.480899999999998`, \
+12.689499999999999`], List[11.480899999999998`, 13.0133`], \
+List[11.480899999999998`, 13.352299999999998`], List[11.642600000000002`, \
+13.651200000000001`], List[11.8891`, 13.8461`], List[11.8887`, \
+13.846499999999999`], List[11.892600000000002`, 13.848800000000004`], \
+List[11.9496`, 13.893399999999998`], List[12.010499999999999`, 13.9324`], \
+List[12.0758`, 13.964799999999997`], List[16.395300000000002`, \
+16.696499999999997`], List[13.819499999999998`, 12.962899999999998`], \
+List[15.454299999999996`, 9.639450000000002`]], \
+List[List[12.732799999999997`, 18.446499999999997`], List[9.606250000000001`, \
+18.446499999999997`], List[7.071879999999999`, 15.912100000000002`], \
+List[7.071879999999999`, 12.785499999999997`], List[7.071879999999999`, \
+9.659379999999999`], List[9.606250000000001`, 7.124999999999999`], \
+List[12.732799999999997`, 7.124999999999999`], List[15.859000000000002`, \
+7.124999999999999`], List[18.393399999999996`, 9.659379999999999`], \
+List[18.393399999999996`, 12.785499999999997`], List[18.393399999999996`, \
+15.912100000000002`], List[15.859000000000002`, 18.446499999999997`], \
+List[12.732799999999997`, 18.446499999999997`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.892600000000002`, 13.848800000000004`], List[12.0758`, \
+13.964799999999997`], List[12.010499999999999`, 13.9324`], List[11.9496`, \
+13.893399999999998`], List[11.892600000000002`, 13.848800000000004`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.979700000000001`, 12.114099999999999`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.931199999999999`, \
+12.147699999999999`], List[11.9543`, 12.130099999999999`], \
+List[11.979700000000001`, 12.114099999999999`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[11.8887`, 13.846499999999999`], List[11.8891`, 13.8461`], \
+List[11.8902`, 13.846899999999998`], List[11.8914`, 13.847999999999999`], \
+List[11.892600000000002`, 13.848800000000004`], List[11.8887`, \
+13.846499999999999`]]]], FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, \
+3], List[0, 1, 0]]], List[List[List[11.852699999999999`, 12.2047`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.889800000000001`, \
+12.178899999999999`], List[11.8734`, 12.1934`], List[11.8566`, \
+12.207399999999998`], List[11.852699999999999`, 12.2047`]]]]]], Rule[Axes, \
+False], Rule[AspectRatio, 1], Rule[ImageSize, List[Automatic, 31.5`]], \
+Rule[Frame, True], Rule[FrameTicks, None], Rule[FrameStyle, \
+Directive[Thickness[Tiny], GrayLevel[0.7`]]]], \
+GridBox[List[List[RowBox[List[TagBox[\\\"\\\\\\\"Unique ID: \\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"], \\\"\\\\[InvisibleSpace]\\\", \
+TagBox[\\\"9\\\", \\\"SummaryItem\\\"]]]], List[RowBox[List[TagBox[\\\"\\\\\\\
+\"Repetitions: \\\\\\\"\\\", \\\"SummaryItemAnnotation\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"\\\\[Infinity]\\\", \
+\\\"SummaryItem\\\"]]]]], Rule[GridBoxAlignment, List[Rule[\\\"Columns\\\", \
+List[List[Left]]], Rule[\\\"Rows\\\", List[List[Automatic]]]]], \
+Rule[AutoDelete, False], Rule[GridBoxItemSize, List[Rule[\\\"Columns\\\", \
+List[List[Automatic]]], Rule[\\\"Rows\\\", List[List[Automatic]]]]], \
+Rule[GridBoxSpacings, List[Rule[\\\"Columns\\\", List[List[2]]], \
+Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaseStyle, \
+List[Rule[ShowStringCharacters, False], Rule[NumberMarks, False], \
+Rule[PrintPrecision, 3], Rule[ShowSyntaxStyles, False]]]]]], \
+Rule[GridBoxAlignment, List[Rule[\\\"Columns\\\", List[List[Left]]], \
+Rule[\\\"Rows\\\", List[List[Top]]]]], Rule[AutoDelete, False], \
+Rule[GridBoxItemSize, List[Rule[\\\"Columns\\\", List[List[Automatic]]], \
+Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaselinePosition, List[1, \
+1]]]], Rule[True, \
+GridBox[List[List[PaneBox[ButtonBox[DynamicBox[FEPrivate`FrontEndResource[\\\"\
+FEBitmaps\\\", \\\"SummaryBoxCloser\\\"]], RuleDelayed[ButtonFunction, \
+Set[Typeset`open$$, False]], Rule[Appearance, None], Rule[BaseStyle, List[]], \
+Rule[Evaluator, Automatic], Rule[Method, \\\"Preemptive\\\"]], \
+Rule[Alignment, List[Center, Center]], Rule[ImageSize, \
+Dynamic[List[Automatic, Times[3.5`, \
+Times[CurrentValue[\\\"FontCapHeight\\\"], \
+Power[AbsoluteCurrentValue[Magnification], -1]]]]]]], \
+GraphicsBox[List[Thickness[0.0016806722689075631`], \
+List[FaceForm[List[GrayLevel[0.93`], Opacity[1.`]]], \
+FilledCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[RGBColor[0.699951`, 0.699951`, \
+0.699951`], Opacity[1.`], JoinForm[List[\\\"Miter\\\", 10.`]], \
+JoinedCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[FaceForm[List[RGBColor[0.5`, 0.5`, \
+0.5`], Opacity[1.`]]], FilledCurveBox[List[List[List[1, 4, 3], List[1, 3, 3], \
+List[1, 3, 3], List[1, 3, 3]], List[List[1, 4, 3], List[1, 3, 3], List[1, 3, \
+3], List[1, 3, 3]]], List[List[List[12.732799999999997`, \
+6.3175799999999995`], List[9.160549999999999`, 6.3175799999999995`], \
+List[6.2648399999999995`, 9.213669999999999`], List[6.2648399999999995`, \
+12.785499999999997`], List[6.2648399999999995`, 16.357799999999997`], \
+List[9.160549999999999`, 19.253500000000003`], List[12.732799999999997`, \
+19.253500000000003`], List[16.3051`, 19.253500000000003`], List[19.2008`, \
+16.357799999999997`], List[19.2008`, 12.785499999999997`], List[19.2008`, \
+9.213669999999999`], List[16.3051`, 6.3175799999999995`], \
+List[12.732799999999997`, 6.3175799999999995`]], \
+List[List[12.732799999999997`, 20.7855`], List[8.314449999999999`, 20.7855`], \
+List[4.733199999999999`, 17.2039`], List[4.733199999999999`, \
+12.785499999999997`], List[4.733199999999999`, 8.367579999999997`], \
+List[8.314449999999999`, 4.785939999999999`], List[12.732799999999997`, \
+4.785939999999999`], List[17.1508`, 4.785939999999999`], List[20.7324`, \
+8.367579999999997`], List[20.7324`, 12.785499999999997`], List[20.7324`, \
+17.2039`], List[17.1508`, 20.7855`], List[12.732799999999997`, 20.7855`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0], List[0, \
+1, 0], List[1, 3, 3], List[1, 3, 3], List[0, 1, 0], List[0, 1, 0], List[1, 3, \
+3], List[0, 1, 0], List[0, 1, 0], List[0, 1, 0]], List[List[1, 4, 3], List[1, \
+3, 3], List[1, 3, 3], List[1, 3, 3]]], List[List[List[15.454299999999996`, \
+9.639450000000002`], List[11.979700000000001`, 12.114099999999999`], \
+List[11.9543`, 12.130099999999999`], List[11.931199999999999`, \
+12.147699999999999`], List[11.907399999999999`, 12.165599999999998`], \
+List[11.852699999999999`, 12.2047`], List[11.8566`, 12.207399999999998`], \
+List[11.628499999999999`, 12.4031`], List[11.480899999999998`, \
+12.689499999999999`], List[11.480899999999998`, 13.0133`], \
+List[11.480899999999998`, 13.352299999999998`], List[11.642600000000002`, \
+13.651200000000001`], List[11.8891`, 13.8461`], List[11.8887`, \
+13.846499999999999`], List[11.892600000000002`, 13.848800000000004`], \
+List[11.9496`, 13.893399999999998`], List[12.010499999999999`, 13.9324`], \
+List[12.0758`, 13.964799999999997`], List[16.395300000000002`, \
+16.696499999999997`], List[13.819499999999998`, 12.962899999999998`], \
+List[15.454299999999996`, 9.639450000000002`]], \
+List[List[12.732799999999997`, 18.446499999999997`], List[9.606250000000001`, \
+18.446499999999997`], List[7.071879999999999`, 15.912100000000002`], \
+List[7.071879999999999`, 12.785499999999997`], List[7.071879999999999`, \
+9.659379999999999`], List[9.606250000000001`, 7.124999999999999`], \
+List[12.732799999999997`, 7.124999999999999`], List[15.859000000000002`, \
+7.124999999999999`], List[18.393399999999996`, 9.659379999999999`], \
+List[18.393399999999996`, 12.785499999999997`], List[18.393399999999996`, \
+15.912100000000002`], List[15.859000000000002`, 18.446499999999997`], \
+List[12.732799999999997`, 18.446499999999997`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.892600000000002`, 13.848800000000004`], List[12.0758`, \
+13.964799999999997`], List[12.010499999999999`, 13.9324`], List[11.9496`, \
+13.893399999999998`], List[11.892600000000002`, 13.848800000000004`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.979700000000001`, 12.114099999999999`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.931199999999999`, \
+12.147699999999999`], List[11.9543`, 12.130099999999999`], \
+List[11.979700000000001`, 12.114099999999999`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[11.8887`, 13.846499999999999`], List[11.8891`, 13.8461`], \
+List[11.8902`, 13.846899999999998`], List[11.8914`, 13.847999999999999`], \
+List[11.892600000000002`, 13.848800000000004`], List[11.8887`, \
+13.846499999999999`]]]], FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, \
+3], List[0, 1, 0]]], List[List[List[11.852699999999999`, 12.2047`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.889800000000001`, \
+12.178899999999999`], List[11.8734`, 12.1934`], List[11.8566`, \
+12.207399999999998`], List[11.852699999999999`, 12.2047`]]]]]], Rule[Axes, \
+False], Rule[AspectRatio, 1], Rule[ImageSize, List[Automatic, 31.5`]], \
+Rule[Frame, True], Rule[FrameTicks, None], Rule[FrameStyle, \
+Directive[Thickness[Tiny], GrayLevel[0.7`]]]], \
+GridBox[List[List[RowBox[List[TagBox[\\\"\\\\\\\"Unique ID: \\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"], \\\"\\\\[InvisibleSpace]\\\", \
+TagBox[\\\"9\\\", \\\"SummaryItem\\\"]]]], List[RowBox[List[TagBox[\\\"\\\\\\\
+\"Repetitions: \\\\\\\"\\\", \\\"SummaryItemAnnotation\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"\\\\[Infinity]\\\", \
+\\\"SummaryItem\\\"]]]], List[RowBox[List[TagBox[\\\"\\\\\\\"Interval between \
+runs: \\\\\\\"\\\", \\\"SummaryItemAnnotation\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"4\\\", \\\"SummaryItem\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"\\\\\\\" seconds\\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"]]]], \
+List[RowBox[List[TagBox[\\\"\\\\\\\"Minimum start time: \\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"], \\\"\\\\[InvisibleSpace]\\\", \
+TagBox[\\\"Automatic\\\", \\\"SummaryItem\\\"]]]]], Rule[GridBoxAlignment, \
+List[Rule[\\\"Columns\\\", List[List[Left]]], Rule[\\\"Rows\\\", \
+List[List[Automatic]]]]], Rule[AutoDelete, False], Rule[GridBoxItemSize, \
+List[Rule[\\\"Columns\\\", List[List[Automatic]]], Rule[\\\"Rows\\\", \
+List[List[Automatic]]]]], Rule[GridBoxSpacings, List[Rule[\\\"Columns\\\", \
+List[List[2]]], Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaseStyle, \
+List[Rule[ShowStringCharacters, False], Rule[NumberMarks, False], \
+Rule[PrintPrecision, 3], Rule[ShowSyntaxStyles, False]]]]]], \
+Rule[GridBoxAlignment, List[Rule[\\\"Columns\\\", List[List[Left]]], \
+Rule[\\\"Rows\\\", List[List[Top]]]]], Rule[AutoDelete, False], \
+Rule[GridBoxItemSize, List[Rule[\\\"Columns\\\", List[List[Automatic]]], \
+Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaselinePosition, List[1, \
+1]]]]], Dynamic[Typeset`open$$], Rule[ImageSize, Automatic]]], \
+\\\"SummaryPanel\\\"], RuleDelayed[DynamicModuleValues, List[]]], \
+\\\"]\\\"}], ScheduledTaskObject[9, HoldForm[AppendTo[dataLog, \
+List[AbsoluteTime[], BathGetTemp[bathPort], TempCtrlGetTemp[tempPort], \
+ReadLabjack[0]]]], List[4, DirectedInfinity[1]], Automatic, False, \
+Rule[\\\"AutoRemove\\\", False], RuleDelayed[\\\"EpilogFunction\\\", Null], \
+Rule[\\\"TaskGroup\\\", \\\"Global`\\\"]], Rule[Selectable, False], \
+Rule[Editable, False], Rule[SelectWithContents, True]]\\) cannot be found.\"",
+    2, 59, 4, 23666274024244392203, "Local"},
+  "MessageTemplate",
+  BaseStyle->"MSG"]], "Message",
+ CellChangeTimes->{3.991755223581291*^9},
+ CellLabel->
+  "During evaluation of \
+In[59]:=",ExpressionUUID->"cd3e5310-3738-4a45-9aad-e83f41c4cd42"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "RemoveScheduledTask", "timnf", 
+   "\"The task \
+\\!\\(\\*InterpretationBox[RowBox[{TagBox[\\\"ScheduledTaskObject\\\", \
+\\\"SummaryHead\\\"], \\\"[\\\", DynamicModuleBox[{Typeset`open$$ = False, \
+Set[Typeset`embedState$$, \\\"Ready\\\"]}, \
+TemplateBox[List[PaneSelectorBox[List[Rule[False, \
+GridBox[List[List[PaneBox[ButtonBox[DynamicBox[FEPrivate`FrontEndResource[\\\"\
+FEBitmaps\\\", \\\"SummaryBoxOpener\\\"]], RuleDelayed[ButtonFunction, \
+Set[Typeset`open$$, True]], Rule[Appearance, None], Rule[BaseStyle, List[]], \
+Rule[Evaluator, Automatic], Rule[Method, \\\"Preemptive\\\"]], \
+Rule[Alignment, List[Center, Center]], Rule[ImageSize, \
+Dynamic[List[Automatic, Times[3.5`, \
+Times[CurrentValue[\\\"FontCapHeight\\\"], \
+Power[AbsoluteCurrentValue[Magnification], -1]]]]]]], \
+GraphicsBox[List[Thickness[0.0016806722689075631`], \
+List[FaceForm[List[GrayLevel[0.93`], Opacity[1.`]]], \
+FilledCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[RGBColor[0.699951`, 0.699951`, \
+0.699951`], Opacity[1.`], JoinForm[List[\\\"Miter\\\", 10.`]], \
+JoinedCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[FaceForm[List[RGBColor[0.5`, 0.5`, \
+0.5`], Opacity[1.`]]], FilledCurveBox[List[List[List[1, 4, 3], List[1, 3, 3], \
+List[1, 3, 3], List[1, 3, 3]], List[List[1, 4, 3], List[1, 3, 3], List[1, 3, \
+3], List[1, 3, 3]]], List[List[List[12.732799999999997`, \
+6.3175799999999995`], List[9.160549999999999`, 6.3175799999999995`], \
+List[6.2648399999999995`, 9.213669999999999`], List[6.2648399999999995`, \
+12.785499999999997`], List[6.2648399999999995`, 16.357799999999997`], \
+List[9.160549999999999`, 19.253500000000003`], List[12.732799999999997`, \
+19.253500000000003`], List[16.3051`, 19.253500000000003`], List[19.2008`, \
+16.357799999999997`], List[19.2008`, 12.785499999999997`], List[19.2008`, \
+9.213669999999999`], List[16.3051`, 6.3175799999999995`], \
+List[12.732799999999997`, 6.3175799999999995`]], \
+List[List[12.732799999999997`, 20.7855`], List[8.314449999999999`, 20.7855`], \
+List[4.733199999999999`, 17.2039`], List[4.733199999999999`, \
+12.785499999999997`], List[4.733199999999999`, 8.367579999999997`], \
+List[8.314449999999999`, 4.785939999999999`], List[12.732799999999997`, \
+4.785939999999999`], List[17.1508`, 4.785939999999999`], List[20.7324`, \
+8.367579999999997`], List[20.7324`, 12.785499999999997`], List[20.7324`, \
+17.2039`], List[17.1508`, 20.7855`], List[12.732799999999997`, 20.7855`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0], List[0, \
+1, 0], List[1, 3, 3], List[1, 3, 3], List[0, 1, 0], List[0, 1, 0], List[1, 3, \
+3], List[0, 1, 0], List[0, 1, 0], List[0, 1, 0]], List[List[1, 4, 3], List[1, \
+3, 3], List[1, 3, 3], List[1, 3, 3]]], List[List[List[15.454299999999996`, \
+9.639450000000002`], List[11.979700000000001`, 12.114099999999999`], \
+List[11.9543`, 12.130099999999999`], List[11.931199999999999`, \
+12.147699999999999`], List[11.907399999999999`, 12.165599999999998`], \
+List[11.852699999999999`, 12.2047`], List[11.8566`, 12.207399999999998`], \
+List[11.628499999999999`, 12.4031`], List[11.480899999999998`, \
+12.689499999999999`], List[11.480899999999998`, 13.0133`], \
+List[11.480899999999998`, 13.352299999999998`], List[11.642600000000002`, \
+13.651200000000001`], List[11.8891`, 13.8461`], List[11.8887`, \
+13.846499999999999`], List[11.892600000000002`, 13.848800000000004`], \
+List[11.9496`, 13.893399999999998`], List[12.010499999999999`, 13.9324`], \
+List[12.0758`, 13.964799999999997`], List[16.395300000000002`, \
+16.696499999999997`], List[13.819499999999998`, 12.962899999999998`], \
+List[15.454299999999996`, 9.639450000000002`]], \
+List[List[12.732799999999997`, 18.446499999999997`], List[9.606250000000001`, \
+18.446499999999997`], List[7.071879999999999`, 15.912100000000002`], \
+List[7.071879999999999`, 12.785499999999997`], List[7.071879999999999`, \
+9.659379999999999`], List[9.606250000000001`, 7.124999999999999`], \
+List[12.732799999999997`, 7.124999999999999`], List[15.859000000000002`, \
+7.124999999999999`], List[18.393399999999996`, 9.659379999999999`], \
+List[18.393399999999996`, 12.785499999999997`], List[18.393399999999996`, \
+15.912100000000002`], List[15.859000000000002`, 18.446499999999997`], \
+List[12.732799999999997`, 18.446499999999997`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.892600000000002`, 13.848800000000004`], List[12.0758`, \
+13.964799999999997`], List[12.010499999999999`, 13.9324`], List[11.9496`, \
+13.893399999999998`], List[11.892600000000002`, 13.848800000000004`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.979700000000001`, 12.114099999999999`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.931199999999999`, \
+12.147699999999999`], List[11.9543`, 12.130099999999999`], \
+List[11.979700000000001`, 12.114099999999999`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[11.8887`, 13.846499999999999`], List[11.8891`, 13.8461`], \
+List[11.8902`, 13.846899999999998`], List[11.8914`, 13.847999999999999`], \
+List[11.892600000000002`, 13.848800000000004`], List[11.8887`, \
+13.846499999999999`]]]], FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, \
+3], List[0, 1, 0]]], List[List[List[11.852699999999999`, 12.2047`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.889800000000001`, \
+12.178899999999999`], List[11.8734`, 12.1934`], List[11.8566`, \
+12.207399999999998`], List[11.852699999999999`, 12.2047`]]]]]], Rule[Axes, \
+False], Rule[AspectRatio, 1], Rule[ImageSize, List[Automatic, 31.5`]], \
+Rule[Frame, True], Rule[FrameTicks, None], Rule[FrameStyle, \
+Directive[Thickness[Tiny], GrayLevel[0.7`]]]], \
+GridBox[List[List[RowBox[List[TagBox[\\\"\\\\\\\"Unique ID: \\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"], \\\"\\\\[InvisibleSpace]\\\", \
+TagBox[\\\"9\\\", \\\"SummaryItem\\\"]]]], List[RowBox[List[TagBox[\\\"\\\\\\\
+\"Repetitions: \\\\\\\"\\\", \\\"SummaryItemAnnotation\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"\\\\[Infinity]\\\", \
+\\\"SummaryItem\\\"]]]]], Rule[GridBoxAlignment, List[Rule[\\\"Columns\\\", \
+List[List[Left]]], Rule[\\\"Rows\\\", List[List[Automatic]]]]], \
+Rule[AutoDelete, False], Rule[GridBoxItemSize, List[Rule[\\\"Columns\\\", \
+List[List[Automatic]]], Rule[\\\"Rows\\\", List[List[Automatic]]]]], \
+Rule[GridBoxSpacings, List[Rule[\\\"Columns\\\", List[List[2]]], \
+Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaseStyle, \
+List[Rule[ShowStringCharacters, False], Rule[NumberMarks, False], \
+Rule[PrintPrecision, 3], Rule[ShowSyntaxStyles, False]]]]]], \
+Rule[GridBoxAlignment, List[Rule[\\\"Columns\\\", List[List[Left]]], \
+Rule[\\\"Rows\\\", List[List[Top]]]]], Rule[AutoDelete, False], \
+Rule[GridBoxItemSize, List[Rule[\\\"Columns\\\", List[List[Automatic]]], \
+Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaselinePosition, List[1, \
+1]]]], Rule[True, \
+GridBox[List[List[PaneBox[ButtonBox[DynamicBox[FEPrivate`FrontEndResource[\\\"\
+FEBitmaps\\\", \\\"SummaryBoxCloser\\\"]], RuleDelayed[ButtonFunction, \
+Set[Typeset`open$$, False]], Rule[Appearance, None], Rule[BaseStyle, List[]], \
+Rule[Evaluator, Automatic], Rule[Method, \\\"Preemptive\\\"]], \
+Rule[Alignment, List[Center, Center]], Rule[ImageSize, \
+Dynamic[List[Automatic, Times[3.5`, \
+Times[CurrentValue[\\\"FontCapHeight\\\"], \
+Power[AbsoluteCurrentValue[Magnification], -1]]]]]]], \
+GraphicsBox[List[Thickness[0.0016806722689075631`], \
+List[FaceForm[List[GrayLevel[0.93`], Opacity[1.`]]], \
+FilledCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[RGBColor[0.699951`, 0.699951`, \
+0.699951`], Opacity[1.`], JoinForm[List[\\\"Miter\\\", 10.`]], \
+JoinedCurveBox[List[List[List[1, 4, 3], List[0, 1, 0], List[1, 3, 3], List[0, \
+1, 0], List[1, 3, 3], List[0, 1, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[25.499999999999996`, 2.5`], List[25.499999999999996`, \
+1.3953100000000003`], List[24.604699999999998`, 0.49999999999999994`], \
+List[23.5`, 0.49999999999999994`], List[2.5`, 0.49999999999999994`], \
+List[1.3953100000000003`, 0.49999999999999994`], List[0.49999999999999994`, \
+1.3953100000000003`], List[0.49999999999999994`, 2.5`], \
+List[0.49999999999999994`, 23.5`], List[0.49999999999999994`, \
+24.604699999999998`], List[1.3953100000000003`, 25.499999999999996`], \
+List[2.5`, 25.499999999999996`], List[23.5`, 25.499999999999996`], \
+List[24.604699999999998`, 25.499999999999996`], List[25.499999999999996`, \
+24.604699999999998`], List[25.499999999999996`, 23.5`], \
+List[25.499999999999996`, 2.5`]]]]], List[FaceForm[List[RGBColor[0.5`, 0.5`, \
+0.5`], Opacity[1.`]]], FilledCurveBox[List[List[List[1, 4, 3], List[1, 3, 3], \
+List[1, 3, 3], List[1, 3, 3]], List[List[1, 4, 3], List[1, 3, 3], List[1, 3, \
+3], List[1, 3, 3]]], List[List[List[12.732799999999997`, \
+6.3175799999999995`], List[9.160549999999999`, 6.3175799999999995`], \
+List[6.2648399999999995`, 9.213669999999999`], List[6.2648399999999995`, \
+12.785499999999997`], List[6.2648399999999995`, 16.357799999999997`], \
+List[9.160549999999999`, 19.253500000000003`], List[12.732799999999997`, \
+19.253500000000003`], List[16.3051`, 19.253500000000003`], List[19.2008`, \
+16.357799999999997`], List[19.2008`, 12.785499999999997`], List[19.2008`, \
+9.213669999999999`], List[16.3051`, 6.3175799999999995`], \
+List[12.732799999999997`, 6.3175799999999995`]], \
+List[List[12.732799999999997`, 20.7855`], List[8.314449999999999`, 20.7855`], \
+List[4.733199999999999`, 17.2039`], List[4.733199999999999`, \
+12.785499999999997`], List[4.733199999999999`, 8.367579999999997`], \
+List[8.314449999999999`, 4.785939999999999`], List[12.732799999999997`, \
+4.785939999999999`], List[17.1508`, 4.785939999999999`], List[20.7324`, \
+8.367579999999997`], List[20.7324`, 12.785499999999997`], List[20.7324`, \
+17.2039`], List[17.1508`, 20.7855`], List[12.732799999999997`, 20.7855`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0], List[0, \
+1, 0], List[1, 3, 3], List[1, 3, 3], List[0, 1, 0], List[0, 1, 0], List[1, 3, \
+3], List[0, 1, 0], List[0, 1, 0], List[0, 1, 0]], List[List[1, 4, 3], List[1, \
+3, 3], List[1, 3, 3], List[1, 3, 3]]], List[List[List[15.454299999999996`, \
+9.639450000000002`], List[11.979700000000001`, 12.114099999999999`], \
+List[11.9543`, 12.130099999999999`], List[11.931199999999999`, \
+12.147699999999999`], List[11.907399999999999`, 12.165599999999998`], \
+List[11.852699999999999`, 12.2047`], List[11.8566`, 12.207399999999998`], \
+List[11.628499999999999`, 12.4031`], List[11.480899999999998`, \
+12.689499999999999`], List[11.480899999999998`, 13.0133`], \
+List[11.480899999999998`, 13.352299999999998`], List[11.642600000000002`, \
+13.651200000000001`], List[11.8891`, 13.8461`], List[11.8887`, \
+13.846499999999999`], List[11.892600000000002`, 13.848800000000004`], \
+List[11.9496`, 13.893399999999998`], List[12.010499999999999`, 13.9324`], \
+List[12.0758`, 13.964799999999997`], List[16.395300000000002`, \
+16.696499999999997`], List[13.819499999999998`, 12.962899999999998`], \
+List[15.454299999999996`, 9.639450000000002`]], \
+List[List[12.732799999999997`, 18.446499999999997`], List[9.606250000000001`, \
+18.446499999999997`], List[7.071879999999999`, 15.912100000000002`], \
+List[7.071879999999999`, 12.785499999999997`], List[7.071879999999999`, \
+9.659379999999999`], List[9.606250000000001`, 7.124999999999999`], \
+List[12.732799999999997`, 7.124999999999999`], List[15.859000000000002`, \
+7.124999999999999`], List[18.393399999999996`, 9.659379999999999`], \
+List[18.393399999999996`, 12.785499999999997`], List[18.393399999999996`, \
+15.912100000000002`], List[15.859000000000002`, 18.446499999999997`], \
+List[12.732799999999997`, 18.446499999999997`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.892600000000002`, 13.848800000000004`], List[12.0758`, \
+13.964799999999997`], List[12.010499999999999`, 13.9324`], List[11.9496`, \
+13.893399999999998`], List[11.892600000000002`, 13.848800000000004`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3]]], \
+List[List[List[11.979700000000001`, 12.114099999999999`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.931199999999999`, \
+12.147699999999999`], List[11.9543`, 12.130099999999999`], \
+List[11.979700000000001`, 12.114099999999999`]]]], \
+FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, 3], List[0, 1, 0]]], \
+List[List[List[11.8887`, 13.846499999999999`], List[11.8891`, 13.8461`], \
+List[11.8902`, 13.846899999999998`], List[11.8914`, 13.847999999999999`], \
+List[11.892600000000002`, 13.848800000000004`], List[11.8887`, \
+13.846499999999999`]]]], FilledCurveBox[List[List[List[0, 2, 0], List[1, 3, \
+3], List[0, 1, 0]]], List[List[List[11.852699999999999`, 12.2047`], \
+List[11.907399999999999`, 12.165599999999998`], List[11.889800000000001`, \
+12.178899999999999`], List[11.8734`, 12.1934`], List[11.8566`, \
+12.207399999999998`], List[11.852699999999999`, 12.2047`]]]]]], Rule[Axes, \
+False], Rule[AspectRatio, 1], Rule[ImageSize, List[Automatic, 31.5`]], \
+Rule[Frame, True], Rule[FrameTicks, None], Rule[FrameStyle, \
+Directive[Thickness[Tiny], GrayLevel[0.7`]]]], \
+GridBox[List[List[RowBox[List[TagBox[\\\"\\\\\\\"Unique ID: \\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"], \\\"\\\\[InvisibleSpace]\\\", \
+TagBox[\\\"9\\\", \\\"SummaryItem\\\"]]]], List[RowBox[List[TagBox[\\\"\\\\\\\
+\"Repetitions: \\\\\\\"\\\", \\\"SummaryItemAnnotation\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"\\\\[Infinity]\\\", \
+\\\"SummaryItem\\\"]]]], List[RowBox[List[TagBox[\\\"\\\\\\\"Interval between \
+runs: \\\\\\\"\\\", \\\"SummaryItemAnnotation\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"4\\\", \\\"SummaryItem\\\"], \
+\\\"\\\\[InvisibleSpace]\\\", TagBox[\\\"\\\\\\\" seconds\\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"]]]], \
+List[RowBox[List[TagBox[\\\"\\\\\\\"Minimum start time: \\\\\\\"\\\", \
+\\\"SummaryItemAnnotation\\\"], \\\"\\\\[InvisibleSpace]\\\", \
+TagBox[\\\"Automatic\\\", \\\"SummaryItem\\\"]]]]], Rule[GridBoxAlignment, \
+List[Rule[\\\"Columns\\\", List[List[Left]]], Rule[\\\"Rows\\\", \
+List[List[Automatic]]]]], Rule[AutoDelete, False], Rule[GridBoxItemSize, \
+List[Rule[\\\"Columns\\\", List[List[Automatic]]], Rule[\\\"Rows\\\", \
+List[List[Automatic]]]]], Rule[GridBoxSpacings, List[Rule[\\\"Columns\\\", \
+List[List[2]]], Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaseStyle, \
+List[Rule[ShowStringCharacters, False], Rule[NumberMarks, False], \
+Rule[PrintPrecision, 3], Rule[ShowSyntaxStyles, False]]]]]], \
+Rule[GridBoxAlignment, List[Rule[\\\"Columns\\\", List[List[Left]]], \
+Rule[\\\"Rows\\\", List[List[Top]]]]], Rule[AutoDelete, False], \
+Rule[GridBoxItemSize, List[Rule[\\\"Columns\\\", List[List[Automatic]]], \
+Rule[\\\"Rows\\\", List[List[Automatic]]]]], Rule[BaselinePosition, List[1, \
+1]]]]], Dynamic[Typeset`open$$], Rule[ImageSize, Automatic]]], \
+\\\"SummaryPanel\\\"], RuleDelayed[DynamicModuleValues, List[]]], \
+\\\"]\\\"}], ScheduledTaskObject[9, HoldForm[AppendTo[dataLog, \
+List[AbsoluteTime[], BathGetTemp[bathPort], TempCtrlGetTemp[tempPort], \
+ReadLabjack[0]]]], List[4, DirectedInfinity[1]], Automatic, False, \
+Rule[\\\"AutoRemove\\\", False], RuleDelayed[\\\"EpilogFunction\\\", Null], \
+Rule[\\\"TaskGroup\\\", \\\"Global`\\\"]], Rule[Selectable, False], \
+Rule[Editable, False], Rule[SelectWithContents, True]]\\) cannot be found.\"",
+    2, 60, 5, 23666274024244392203, "Local"},
+  "MessageTemplate",
+  BaseStyle->"MSG"]], "Message",
+ CellChangeTimes->{3.9917552237204285`*^9},
+ CellLabel->
+  "During evaluation of \
+In[59]:=",ExpressionUUID->"800bbad2-bf8d-7547-b57b-b4c706ff871f"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "5.", " ", "Export", " ", "or", " ", "view", " ", "your", " ", "data"}], 
+   "*)"}], "\n", 
+  RowBox[{
+   RowBox[{"Export", "[", 
+    RowBox[{"\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
+JuxtapositionOfSampleHolders\\\\data\\\\data.csv\>\"", ",", "dataLog"}], 
+    "]"}], ";"}]}]], "Input",
+ CellChangeTimes->{3.991753710469324*^9},
+ CellLabel->"In[36]:=",ExpressionUUID->"f8b5fefd-5ba4-8a49-aeed-af24778a23e3"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Panel", "[", 
+  RowBox[{"Column", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"Style", "[", 
+      RowBox[{"\"\<System Run Dashboard\>\"", ",", "16", ",", "Bold", ",", 
+       RowBox[{"Darker", "@", "Blue"}]}], "]"}], ",", 
+     RowBox[{"Dynamic", "[", 
+      RowBox[{"Grid", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"\"\<Total Samples Logged: \>\"", ",", 
+            RowBox[{"Length", "[", "dataLog", "]"}]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"\"\<Current Bath Temp: \>\"", ",", 
+            RowBox[{"If", "[", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"Length", "[", "dataLog", "]"}], ">", "0"}], ",", 
+              RowBox[{
+               RowBox[{"Last", "[", "dataLog", "]"}], "[", 
+               RowBox[{"[", "2", "]"}], "]"}], ",", "\"\<---\>\""}], "]"}]}], 
+           "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"\"\<Current Sample Temp: \>\"", ",", 
+            RowBox[{"If", "[", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"Length", "[", "dataLog", "]"}], ">", "0"}], ",", 
+              RowBox[{
+               RowBox[{"Last", "[", "dataLog", "]"}], "[", 
+               RowBox[{"[", "3", "]"}], "]"}], ",", "\"\<---\>\""}], "]"}]}], 
+           "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"\"\<Current Laser Power: \>\"", ",", 
+            RowBox[{"If", "[", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"Length", "[", "dataLog", "]"}], ">", "0"}], ",", 
+              RowBox[{
+               RowBox[{"Last", "[", "dataLog", "]"}], "[", 
+               RowBox[{"[", "4", "]"}], "]"}], ",", "\"\<---\>\""}], "]"}]}], 
+           "}"}]}], "}"}], ",", 
+        RowBox[{"Alignment", "->", "Left"}]}], "]"}], "]"}], ",", "Delimiter",
+      ",", 
+     RowBox[{"(*", 
+      RowBox[{"Live", " ", "Plot", " ", "Display"}], "*)"}], 
+     RowBox[{"Dynamic", "[", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Length", "[", "dataLog", "]"}], "<", "2"}], ",", 
+        RowBox[{"Text", "[", "\"\<Streaming hardware matrices...\>\"", "]"}], 
+        ",", 
+        RowBox[{"Column", "[", 
+         RowBox[{"{", 
+          RowBox[{"(*", 
+           RowBox[{"Panel", " ", 
+            RowBox[{"A", ":", 
+             RowBox[{"Thermal", " ", "Vectors"}]}]}], "*)"}], 
+          RowBox[{
+           RowBox[{"ListLinePlot", "[", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"dataLog", "[", 
+                RowBox[{"[", 
+                 RowBox[{"All", ",", 
+                  RowBox[{"{", 
+                   RowBox[{"1", ",", "2"}], "}"}]}], "]"}], "]"}], ",", 
+               RowBox[{"dataLog", "[", 
+                RowBox[{"[", 
+                 RowBox[{"All", ",", 
+                  RowBox[{"{", 
+                   RowBox[{"1", ",", "3"}], "}"}]}], "]"}], "]"}]}], "}"}], ",", 
+             RowBox[{"PlotLegends", "->", 
+              RowBox[{"{", 
+               
+               RowBox[{"\"\<Bath Temperature\>\"", 
+                ",", "\"\<Sample Temperature\>\""}], "}"}]}], ",", 
+             RowBox[{"PlotStyle", "->", 
+              RowBox[{"{", 
+               RowBox[{"Blue", ",", "Orange"}], "}"}]}], ",", 
+             RowBox[{"Frame", "->", "True"}], ",", 
+             RowBox[{"FrameLabel", "->", 
+              RowBox[{"{", 
+               RowBox[{"None", ",", "\"\<Temperature (\[Degree]C)\>\""}], 
+               "}"}]}], ",", 
+             RowBox[{"ImageSize", "->", "500"}], ",", 
+             RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
+           RowBox[{"Spacer", "[", "10", "]"}], ",", 
+           RowBox[{"(*", 
+            RowBox[{"Panel", " ", 
+             RowBox[{"B", ":", 
+              RowBox[{"Optical", " ", "Vectors"}]}]}], "*)"}], 
+           RowBox[{"ListLinePlot", "[", 
+            RowBox[{
+             RowBox[{"dataLog", "[", 
+              RowBox[{"[", 
+               RowBox[{"All", ",", 
+                RowBox[{"{", 
+                 RowBox[{"1", ",", "4"}], "}"}]}], "]"}], "]"}], ",", 
+             RowBox[{"PlotStyle", "->", 
+              RowBox[{"Directive", "[", 
+               RowBox[{"Thick", ",", "Purple"}], "]"}]}], ",", 
+             RowBox[{"Frame", "->", "True"}], ",", 
+             RowBox[{"FrameLabel", "->", 
+              RowBox[{"{", 
+               
+               RowBox[{"\"\<Time (Absolute)\>\"", 
+                ",", "\"\<Laser Intensity (V)\>\""}], "}"}]}], ",", 
+             RowBox[{"ImageSize", "->", "500"}], ",", 
+             RowBox[{"PlotRange", "->", "All"}]}], "]"}]}], "}"}], "]"}]}], 
+       "]"}], "]"}]}], "}"}], "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.9917537824062023`*^9, 3.991753795960539*^9}, {
+   3.9917541750136356`*^9, 3.9917541821727448`*^9}, {3.991754347045267*^9, 
+   3.9917543688685055`*^9}, 3.9917548569334965`*^9, 3.991755125883301*^9},
+ CellLabel->"In[56]:=",ExpressionUUID->"73e91d29-532c-bb40-947e-992ef0447141"],
+
+Cell[BoxData[
+ PanelBox[
+  TagBox[GridBox[{
+     {
+      StyleBox["\<\"System Run Dashboard\"\>",
+       StripOnInput->False,
+       LineColor->RGBColor[0, 0, 
+         Rational[2, 3]],
+       FrontFaceColor->RGBColor[0, 0, 
+         Rational[2, 3]],
+       BackFaceColor->RGBColor[0, 0, 
+         Rational[2, 3]],
+       GraphicsColor->RGBColor[0, 0, 
+         Rational[2, 3]],
+       FontSize->16,
+       FontWeight->Bold,
+       FontColor->RGBColor[0, 0, 
+         Rational[2, 3]]]},
+     {
+      DynamicBox[ToBoxes[
+        Grid[{{"Total Samples Logged: ", 
+           Length[$CellContext`dataLog]}, {"Current Bath Temp: ", 
+           If[Length[$CellContext`dataLog] > 0, 
+            Part[
+             Last[$CellContext`dataLog], 2], "---"]}, {
+          "Current Sample Temp: ", 
+           If[Length[$CellContext`dataLog] > 0, 
+            Part[
+             Last[$CellContext`dataLog], 3], "---"]}, {
+          "Current Laser Power: ", 
+           If[Length[$CellContext`dataLog] > 0, 
+            Part[
+             Last[$CellContext`dataLog], 4], "---"]}}, Alignment -> Left], 
+        StandardForm],
+       ImageSizeCache->{
+        151.92480313777924`, {23.187011253554374`, 27.836425316054374`}}]},
+     {"Delimiter"},
+     {
+      DynamicBox[ToBoxes[
+        If[Length[$CellContext`dataLog] < 2, 
+         Text["Streaming hardware matrices..."], 
+         Column[{
+           ListLinePlot[{
+             Part[$CellContext`dataLog, All, {1, 2}], 
+             Part[$CellContext`dataLog, All, {1, 3}]}, 
+            PlotLegends -> {"Bath Temperature", "Sample Temperature"}, 
+            PlotStyle -> {Blue, Orange}, Frame -> True, 
+            FrameLabel -> {None, "Temperature (\[Degree]C)"}, ImageSize -> 
+            500, PlotRange -> All], 
+           Spacer[10], 
+           ListLinePlot[
+            Part[$CellContext`dataLog, All, {1, 4}], PlotStyle -> 
+            Directive[Thick, Purple], Frame -> True, 
+            FrameLabel -> {"Time (Absolute)", "Laser Intensity (V)"}, 
+            ImageSize -> 500, PlotRange -> All]}]], StandardForm],
+       ImageSizeCache->{
+        632.930660545826, {312.9702224934541, 317.6196365559541}}]}
+    },
+    DefaultBaseStyle->"Column",
+    GridBoxAlignment->{"Columns" -> {{Left}}},
+    GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
+   "Column"]]], "Output",
+ CellChangeTimes->{{3.991753798129318*^9, 3.9917538483890934`*^9}, {
+   3.9917539637735577`*^9, 3.991753979556513*^9}, 3.991754019545576*^9, {
+   3.99175417903026*^9, 3.9917541968969193`*^9}, {3.9917543414034023`*^9, 
+   3.991754379771475*^9}, {3.991754859884039*^9, 3.9917549095904694`*^9}, {
+   3.991754951729738*^9, 3.9917549593975353`*^9}, 3.991755128194416*^9},
+ CellLabel->"Out[56]=",ExpressionUUID->"ec87c2ab-d7a2-a445-bb40-68f1b8653efe"]
+}, Open  ]]
+},
+WindowSize->{1440, 741.75},
+WindowMargins->{{-6, Automatic}, {Automatic, -6}},
+FrontEndVersion->"14.3 for Microsoft Windows (64-bit) (July 8, 2025)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"09d195c7-5f68-7a4c-9872-aca839c00aa2"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[576, 22, 254, 4, 28, "Input",ExpressionUUID->"b28d0934-f2b1-814a-aecc-b1540fcde993"],
+Cell[833, 28, 518, 8, 32, "Output",ExpressionUUID->"1c6221d9-5b60-9048-8b2c-1ea751589f37"]
+}, Open  ]],
+Cell[1366, 39, 166, 2, 28, "Input",ExpressionUUID->"44ab43a4-d3b1-0d4f-9177-5943fa49ebfe"],
+Cell[CellGroupData[{
+Cell[1557, 45, 563, 11, 28, "Input",ExpressionUUID->"e8b5e50f-5738-764c-9595-752d43fc0f88"],
+Cell[2123, 58, 422, 6, 32, "Output",ExpressionUUID->"7901fd0d-fbdd-e34b-bafe-2f149aa4ece0"]
+}, Open  ]],
+Cell[2560, 67, 173, 3, 47, "Input",ExpressionUUID->"1e99a4b5-69e0-064b-964d-ef153d3d74c6"],
+Cell[CellGroupData[{
+Cell[2758, 74, 1530, 34, 199, "Input",ExpressionUUID->"6885f818-9927-2642-bd4b-b28191ed70d0"],
+Cell[4291, 110, 435, 9, 32, "Output",ExpressionUUID->"170b2fdd-accb-864d-8b16-b02b54184772"]
+}, Open  ]],
+Cell[4741, 122, 1118, 25, 123, "Input",ExpressionUUID->"3a68d48b-e155-2c42-80e1-e9eb92fd7139"],
+Cell[5862, 149, 731, 18, 123, "Input",ExpressionUUID->"902e65ea-a598-1342-b619-a511d87e6698"],
+Cell[CellGroupData[{
+Cell[6618, 171, 643, 15, 104, "Input",ExpressionUUID->"97631362-bcd7-b24f-83db-e176a76ee3b4"],
+Cell[7264, 188, 18150, 268, 55, "Message",ExpressionUUID->"cd3e5310-3738-4a45-9aad-e83f41c4cd42"],
+Cell[25417, 458, 18154, 268, 55, "Message",ExpressionUUID->"800bbad2-bf8d-7547-b57b-b4c706ff871f"]
+}, Open  ]],
+Cell[43586, 729, 468, 12, 47, "Input",ExpressionUUID->"f8b5fefd-5ba4-8a49-aeed-af24778a23e3"],
+Cell[CellGroupData[{
+Cell[44079, 745, 5027, 120, 180, "Input",ExpressionUUID->"73e91d29-532c-bb40-947e-992ef0447141"],
+Cell[49109, 867, 2795, 67, 743, "Output",ExpressionUUID->"ec87c2ab-d7a2-a445-bb40-68f1b8653efe"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+

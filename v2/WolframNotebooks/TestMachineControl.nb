@@ -1,0 +1,1441 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[     74525,       1433]
+NotebookOptionsPosition[     71550,       1375]
+NotebookOutlinePosition[     71954,       1391]
+CellTagsIndexPosition[     71911,       1388]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"PacletDirectoryLoad", 
+  "[", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
+JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\>\"", "]"}]], "Input",
+ CellChangeTimes->{{3.9907942977300053`*^9, 3.990794314178753*^9}, 
+   3.9907947355308075`*^9},
+ CellLabel->"In[1]:=",ExpressionUUID->"b678aaf2-116b-7146-978e-852bfbcff58c"],
+
+Cell[BoxData[
+ RowBox[{"{", \
+"\<\"C:\\\\Users\\\\Student\\\\Documents\\\\JuxtapositionOfSampleHolders\\\\\
+MachineControl\\\\v2\"\>", "}"}]], "Output",
+ CellChangeTimes->{
+  3.990794316455946*^9, 3.9907947431496315`*^9, 3.9907948411230583`*^9, 
+   3.990794905755888*^9, 3.99079499149387*^9, 3.9907955386277294`*^9, 
+   3.990795624860718*^9, 3.990795677242998*^9, 3.990795911556816*^9, 
+   3.991131058657467*^9, 3.9911311686743603`*^9, 3.9911316982613087`*^9, 
+   3.9911320316673927`*^9, 3.991132348369375*^9, 3.991132440584564*^9, 
+   3.9911359785833225`*^9, 3.991136188854679*^9, 3.9911365664119415`*^9, 
+   3.991136756248951*^9, 3.991136800990715*^9, 3.991136883134775*^9, 
+   3.991136985778429*^9, 3.9911370583627644`*^9, 3.991137121143839*^9, 
+   3.991137169578682*^9, 3.9911385422424774`*^9, 3.9911386075681953`*^9, 
+   3.991139335254471*^9, 3.991139930687956*^9, 3.991141375796686*^9, 
+   3.9911423424410973`*^9, 3.9911425392058315`*^9, 3.991150184430399*^9, 
+   3.991214284963663*^9, 3.991215066817091*^9, 3.9912152085574074`*^9, 
+   3.9912157034417515`*^9, 3.9912169819945927`*^9, 3.9912170625060825`*^9, 
+   3.9912254793855076`*^9, 3.99122677547534*^9, 3.9912268062670937`*^9, 
+   3.991226863380844*^9, 3.991228171861971*^9, 3.99122894696842*^9, 
+   3.9912312121268005`*^9, 3.9912317103886127`*^9, 3.9912318225557537`*^9, 
+   3.9913010643548527`*^9, 3.9913023935999737`*^9, 3.9913033123778305`*^9, 
+   3.991304205946871*^9, {3.9913104906684723`*^9, 3.991310518984808*^9}, 
+   3.991310941584175*^9, 3.991311128866972*^9, 3.991311284228651*^9, 
+   3.991311688488798*^9, 3.991312173210615*^9, 3.991317396895996*^9, 
+   3.991317462711256*^9, 3.991317854605385*^9, 3.9913222041459904`*^9, 
+   3.9913904879126205`*^9, 3.9914064878527985`*^9, 3.991406608913574*^9, 
+   3.9914093185602875`*^9, 3.991409496180086*^9, 3.9914095707236156`*^9, 
+   3.9914749036433563`*^9, 3.9914759997675476`*^9, 3.9914761964524193`*^9, 
+   3.991477627449955*^9, 3.9914778267218933`*^9, 3.991482440035637*^9, 
+   3.991822344929537*^9, 3.9918224529772797`*^9, 3.9918236605171223`*^9, 
+   3.9918283396291523`*^9, 3.991828417921049*^9, 3.991828520887327*^9, 
+   3.9918308644618835`*^9, 3.991830938471712*^9, 3.9918310031210804`*^9, 
+   3.991831782079792*^9, 3.991831853513479*^9, 3.9918419467300663`*^9, 
+   3.991909694373144*^9, 3.991909765451704*^9, 3.9919098467802296`*^9, 
+   3.9919099552788277`*^9, 3.9919103112567425`*^9, 3.991914818924465*^9, 
+   3.9919150767476444`*^9, 3.9919152076247044`*^9, 3.991915517224869*^9, {
+   3.991915553464239*^9, 3.9919155638453636`*^9}, 3.9919159645287895`*^9, 
+   3.9919165943495636`*^9, 3.991926329278204*^9, 3.9919264075920773`*^9, 
+   3.991926582262087*^9, 3.9919267667474785`*^9, 3.991926942267004*^9},
+ CellLabel->"Out[1]=",ExpressionUUID->"91ef3d7b-ea64-5542-9527-7bc064ed52ef"]
+}, Open  ]],
+
+Cell[BoxData[" "], "Input",
+ CellChangeTimes->{
+  3.9918317790013924`*^9},ExpressionUUID->"459754b0-a4d6-c549-a692-\
+b50b3a4889d6"],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<WolframMachineControl`\>\"", "]"}]], "Input",
+ CellChangeTimes->{{3.99079434354204*^9, 3.990794355157984*^9}},
+ CellLabel->"In[2]:=",ExpressionUUID->"179bac10-0213-1f48-b544-b0e2f20e319f"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"ReadLabjack", "[", "0", "]"}]], "Input",
+ CellChangeTimes->{{3.9907944353277416`*^9, 3.990794486933468*^9}},
+ CellLabel->"In[3]:=",ExpressionUUID->"e98de180-4c24-9c49-b191-dfc84b6850f4"],
+
+Cell[BoxData["0.07948877778835595`"], "Output",
+ CellChangeTimes->{{3.9911311176792374`*^9, 3.9911311281121273`*^9}, 
+   3.991131179905779*^9, {3.991131714299015*^9, 3.991131717103964*^9}, {
+   3.9911320456028175`*^9, 3.9911320497444077`*^9}, {3.9911362033546295`*^9, 
+   3.991136204747856*^9}, 3.991136582358572*^9, 3.991136769933975*^9, {
+   3.9911368137587624`*^9, 3.99113681488546*^9}, 3.9911369087035866`*^9, 
+   3.9911371814065895`*^9, {3.9911384939340954`*^9, 3.9911384969378796`*^9}, 
+   3.991138560334528*^9, 3.991138619437996*^9, 3.991139348364382*^9, 
+   3.991139943545246*^9, 3.9911413925576916`*^9, 3.991142355939966*^9, 
+   3.991142553280899*^9, 3.9911502128422565`*^9, {3.9912143017393017`*^9, 
+   3.99121430861014*^9}, {3.991215075330185*^9, 3.99121507870216*^9}, 
+   3.991215179264761*^9, 3.9912152214090195`*^9, {3.9912157155799866`*^9, 
+   3.991215717678253*^9}, {3.99121699264287*^9, 3.991216993964161*^9}, {
+   3.9912170724876842`*^9, 3.991217074808111*^9}, {3.991225482431122*^9, 
+   3.991225493294441*^9}, {3.9912267563166904`*^9, 3.991226786768263*^9}, 
+   3.991226838560137*^9, 3.991226872195263*^9, {3.9912281820582695`*^9, 
+   3.9912281835365562`*^9}, {3.991228960629751*^9, 3.99122896219611*^9}, {
+   3.9912312225242977`*^9, 3.9912312238265953`*^9}, {3.991231713024122*^9, 
+   3.991231715994793*^9}, {3.9912318347464314`*^9, 3.991231835585882*^9}, {
+   3.991301073282711*^9, 3.991301077630247*^9}, {3.991302396200447*^9, 
+   3.9913023994888554`*^9}, {3.9913033237447147`*^9, 3.9913033264071217`*^9}, 
+   3.991304214329075*^9, 3.9913105295043983`*^9, {3.9913105630651913`*^9, 
+   3.9913105652182827`*^9}, 3.991310959014059*^9, 3.991311137746729*^9, {
+   3.991311301279335*^9, 3.991311302766941*^9}, 3.9913117046880894`*^9, {
+   3.9913121825934505`*^9, 3.991312184404806*^9}, 3.9913174062134533`*^9, 
+   3.9913174716392365`*^9, 3.9913178648052025`*^9, 3.991318018241926*^9, {
+   3.991322213165697*^9, 3.991322218002983*^9}, 3.991390490969925*^9, {
+   3.991406504645788*^9, 3.9914065054543743`*^9}, 3.9914066176867657`*^9, 
+   3.991406648652588*^9, {3.9914093220214024`*^9, 3.991409323402294*^9}, {
+   3.9914095050441513`*^9, 3.991409506350031*^9}, {3.9914095802692413`*^9, 
+   3.9914095842862377`*^9}, {3.9914748957720222`*^9, 3.9914749312689*^9}, {
+   3.9914760086405106`*^9, 3.9914760113120937`*^9}, {3.9914762045946503`*^9, 
+   3.9914762051094437`*^9}, 3.991477636144638*^9, {3.9914776725701904`*^9, 
+   3.9914776736145706`*^9}, {3.991477836018265*^9, 3.9914778363318787`*^9}, 
+   3.99147805729986*^9, {3.991482468655163*^9, 3.9914824698387833`*^9}, 
+   3.9914826284348373`*^9, 3.9918223477811127`*^9, 3.991822462779293*^9, {
+   3.9918283289746075`*^9, 3.991828336648081*^9}, 3.991828366648676*^9, {
+   3.9918419595128193`*^9, 3.9918419614647064`*^9}, 3.991909698804138*^9, 
+   3.991909849359934*^9, {3.991909960888712*^9, 3.9919099626953773`*^9}, 
+   3.991910320833494*^9, 3.9919148221957645`*^9, 3.991915085637102*^9, 
+   3.991915216200672*^9, {3.9919155494004917`*^9, 3.9919155809496193`*^9}, 
+   3.991915973236929*^9, 3.991916597715851*^9, 3.9919263334438343`*^9, 
+   3.991926414220951*^9, 3.991926590937334*^9, 3.991926775178383*^9, 
+   3.9919269755593376`*^9},
+ CellLabel->"Out[3]=",ExpressionUUID->"f69b55c5-e7ed-e045-b575-128f6fe25e29"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"report", "=", 
+  RowBox[{
+  "TestReport", 
+   "[", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
+JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\\\\WolframMachineControl\
+\\\\Tests\\\\Test_WolframMachineControl.wlt\>\"", "]"}]}]], "Input",
+ CellChangeTimes->{{3.991406654344887*^9, 3.9914066749150715`*^9}},
+ CellLabel->"In[6]:=",ExpressionUUID->"19a75eee-e7a8-6c40-b28e-2a80f3488c41"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{
+   TagBox["TestReportObject",
+    "SummaryHead"], "[", 
+   DynamicModuleBox[{Typeset`open$$ = False, Typeset`embedState$$ = "Ready"}, 
+    TemplateBox[{
+      PaneSelectorBox[{False -> GridBox[{{
+            PaneBox[
+             ButtonBox[
+              DynamicBox[
+               FEPrivate`FrontEndResource["FEBitmaps", "SummaryBoxOpener"]], 
+              ButtonFunction :> (Typeset`open$$ = True), Appearance -> None, 
+              BaseStyle -> {}, Evaluator -> Automatic, Method -> 
+              "Preemptive"], Alignment -> {Center, Center}, ImageSize -> 
+             Dynamic[{
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}]], 
+            GraphicsBox[{
+              InsetBox[
+               BoxData[
+                FormBox[
+                 PaneBox[
+                  DynamicBox[
+                   FEPrivate`FrontEndResource[
+                   "MUnitExpressions", "TestFailureIcon"]], Alignment -> 
+                  Center, ImageSize -> 
+                  Dynamic[{
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+             PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+             Axes -> False, AspectRatio -> 1, ImageSize -> 
+             Dynamic[{
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}], Frame -> True, FrameTicks -> None, 
+             FrameStyle -> Directive[
+               Thickness[Tiny], 
+               GrayLevel[0.55]]], 
+            GridBox[{{
+               RowBox[{
+                 TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox[
+                 "\"Test Report: Test_WolframMachineControl.wlt\"", 
+                  "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox[
+                  TagBox[
+                   InterpretationBox[
+                    StyleBox["\"96.55%\"", ShowStringCharacters -> False], 
+                    0.9655172413793104, AutoDelete -> True], PercentForm], 
+                  "SummaryItem"]}], 
+               RowBox[{
+                 TagBox["\"Tests count: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["29", "SummaryItem"]}]}}, 
+             GridBoxAlignment -> {
+              "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+             False, GridBoxItemSize -> {
+              "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+             GridBoxSpacings -> {"Columns" -> {{2}}, "Rows" -> {{Automatic}}},
+              BaseStyle -> {
+              ShowStringCharacters -> False, NumberMarks -> False, 
+               PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+          GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+          AutoDelete -> False, 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+          BaselinePosition -> {1, 1}], True -> GridBox[{{
+            PaneBox[
+             ButtonBox[
+              DynamicBox[
+               FEPrivate`FrontEndResource["FEBitmaps", "SummaryBoxCloser"]], 
+              ButtonFunction :> (Typeset`open$$ = False), Appearance -> None, 
+              BaseStyle -> {}, Evaluator -> Automatic, Method -> 
+              "Preemptive"], Alignment -> {Center, Center}, ImageSize -> 
+             Dynamic[{
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}]], 
+            GraphicsBox[{
+              InsetBox[
+               BoxData[
+                FormBox[
+                 PaneBox[
+                  DynamicBox[
+                   FEPrivate`FrontEndResource[
+                   "MUnitExpressions", "TestFailureIcon"]], Alignment -> 
+                  Center, ImageSize -> 
+                  Dynamic[{
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+             PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+             Axes -> False, AspectRatio -> 1, ImageSize -> 
+             Dynamic[{
+               Automatic, 
+                3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                 Magnification])}], Frame -> True, FrameTicks -> None, 
+             FrameStyle -> Directive[
+               Thickness[Tiny], 
+               GrayLevel[0.55]]], 
+            GridBox[{{
+               RowBox[{
+                 TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox[
+                 "\"Test Report: Test_WolframMachineControl.wlt\"", 
+                  "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox[
+                  TagBox[
+                   InterpretationBox[
+                    StyleBox["\"96.55%\"", ShowStringCharacters -> False], 
+                    0.9655172413793104, AutoDelete -> True], PercentForm], 
+                  "SummaryItem"]}], 
+               RowBox[{
+                 TagBox["\"Tests count: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["29", "SummaryItem"]}]}, {
+               RowBox[{
+                 TagBox["\"Success count: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["28", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Failure count: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox["1", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+               RowBox[{
+                 TagBox["\"Time elapsed: \"", "SummaryItemAnnotation"], 
+                 "\[InvisibleSpace]", 
+                 TagBox[
+                  
+                  TemplateBox[{
+                   "8.5018196999999999999`6.617628890481167", "\"s\"", 
+                    "seconds", "\"Seconds\""}, "Quantity", SyntaxForm -> Mod],
+                   "SummaryItem"]}], "\[SpanFromLeft]"}}, 
+             GridBoxAlignment -> {
+              "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+             False, GridBoxItemSize -> {
+              "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+             GridBoxSpacings -> {"Columns" -> {{2}}, "Rows" -> {{Automatic}}},
+              BaseStyle -> {
+              ShowStringCharacters -> False, NumberMarks -> False, 
+               PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+          GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+          AutoDelete -> False, 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+          BaselinePosition -> {1, 1}]}, 
+       Dynamic[Typeset`open$$], ImageSize -> Automatic]},
+     "SummaryPanel"],
+    DynamicModuleValues:>{}], "]"}],
+  TestReportObject[<|
+   "Title" -> "Test Report: Test_WolframMachineControl.wlt", "Aborted" -> 
+    False, "TestResults" -> <|
+     5266651432367725475 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269884931614`16.654787574356973*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "cb6d3a14-f9ab-4707-ab48-5b248aa92673", "TestID" -> 
+         "Package-Load-Verification", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "cc03b795-7c6a-435c-9385-5f70d4f29b05", "Input" -> 
+         HoldForm[
+          PacletDirectoryLoad[
+            "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2"]; Needs["WolframMachineControl`"]; 
+           NameQ["WolframMachineControl`*"]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[True], 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.0213386`5.479680920314079, "CPUTimeUsed" -> 0.016000000000000014`, 
+         "MemoryUsed" -> 3832, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[True], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 8846761191898248923 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269885155798`16.65478757435941*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "b566ceb4-32cd-4b9f-b0ec-26e959f014de", "TestID" -> 
+         "WolframMachineControl`SetLogSettings[1, \
+C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\\
+v2\\log.txt]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "66cc57cd-d169-4906-8d1a-ac3205f60aa9", "Input" -> 
+         HoldForm[
+           WolframMachineControl`SetLogSettings[1, $CellContext`LogFile]], 
+         "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> HoldForm[1], 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 0``7.150514997831988, 
+         "CPUTimeUsed" -> 0., "MemoryUsed" -> 4376, 
+         "IntermediateTestsTree" -> {}, "ExpectedOutput" -> HoldForm[1], 
+         "Outcome" -> "Success", "FailureType" -> None|>], 
+      3638922015477079623 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269885166725`16.65478757435953*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "0d078d35-9313-4659-bfbe-1af6d71fca0e", "TestID" -> 
+         "WolframMachineControl`GetLogStatus[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "42a43a4c-6d7d-430d-a12b-0d11fb79d496", "Input" -> 
+         HoldForm[
+           WolframMachineControl`GetLogStatus[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[1], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0010968`4.190642439613444, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[1], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 5212994079560225291 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269885177693`16.654787574359652*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "5d1cd09c-7f07-4410-b017-49f9416f2a6f", "TestID" -> 
+         "WolframMachineControl`GetLogFile[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "1cead3ad-1b80-43d0-832a-8d0e2547c42d", "Input" -> 
+         HoldForm[
+           WolframMachineControl`GetLogFile[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> 
+         HoldForm[
+          "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\log.txt"], "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0``7.150514997831988, "CPUTimeUsed" -> 0.015000000000000568`, 
+         "MemoryUsed" -> 3928, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> 
+         HoldForm[
+          "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\log.txt"], "Outcome" -> "Success", "FailureType" -> 
+         None|>], 6418400306939502398 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269885199259`16.654787574359887*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "7623c65e-3c12-4677-9382-aee3f71c2669", "TestID" -> 
+         "BathInit[COM7]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "1abcd5fc-0c0a-41fc-8785-3900843cb0b4", "Input" -> 
+         HoldForm[
+           WolframMachineControl`BathInit[$CellContext`BathPort]], 
+         "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> HoldForm[0], 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.1530353`6.335306617061048, "CPUTimeUsed" -> 0.03200000000000003, 
+         "MemoryUsed" -> 3912, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 5223702364280310637 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269886729612`16.654787574376535*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "a8ce5e71-1f07-4ae9-a178-4e31ac899a55", "TestID" -> 
+         "BathOn[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "83060ac5-4fd3-44a7-a4fd-ae66e63739ac", "Input" -> 
+         HoldForm[
+           WolframMachineControl`BathOn[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0778749`6.041912499817338, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 3438129607298365735 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269887508361`16.654787574385008*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "81c1489e-997e-43e0-aa92-8766874bbef9", "TestID" -> 
+         "MatchQ[BathGetTemp[], _Real]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "57c64e97-3980-487b-a4a3-9915a109e6e4", "Input" -> 
+         HoldForm[
+           MatchQ[
+            WolframMachineControl`BathGetTemp[], 
+            Blank[Real]]], "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> 
+         HoldForm[True], "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.15072`6.328685883280789, "CPUTimeUsed" -> 0., "MemoryUsed" -> 4008,
+          "IntermediateTestsTree" -> {}, "ExpectedOutput" -> HoldForm[True], 
+         "Outcome" -> "Success", "FailureType" -> None|>], 
+      8405280124556814538 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269889024357`16.6547875744015*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "e60fd24b-b655-4dfe-8032-51f20ec1b591", "TestID" -> 
+         "BathSetSetpoint[25.0]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "91bd0cd8-d290-4c42-9fbb-b82e38c4cfb6", "Input" -> 
+         HoldForm[
+           WolframMachineControl`BathSetSetpoint[25.]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[25.], 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.0800374`6.05380797005012, "CPUTimeUsed" -> 0., "MemoryUsed" -> 
+         3832, "IntermediateTestsTree" -> {}, "ExpectedOutput" -> 
+         HoldForm[25.], "Outcome" -> "Success", "FailureType" -> None|>], 
+      737654524235726192 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269889843595`16.654787574410413*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "7bd7f219-0c22-46d8-9d8f-37a5659a60cf", "TestID" -> 
+         "BathGetSetpoint[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "81e6ff0a-420a-4f3d-96e3-d529d802096d", "Input" -> 
+         HoldForm[
+           WolframMachineControl`BathGetSetpoint[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[25.], 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.1486214`6.32259634583505, "CPUTimeUsed" -> 0., "MemoryUsed" -> 
+         3896, "IntermediateTestsTree" -> {}, "ExpectedOutput" -> 
+         HoldForm[25.], "Outcome" -> "Success", "FailureType" -> None|>], 
+      8308487169228825321 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269921336517`16.654787574753033*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "fa6f63c6-703d-4c33-90f2-c986dc9438af", "TestID" -> 
+         "BathOff[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "23c54018-6b44-4873-88bb-77e1a42dfe5c", "Input" -> 
+         HoldForm[
+           WolframMachineControl`BathOff[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0801275`6.054296590677326, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3880, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 4600691187393406762 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269922147156`16.654787574761855*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "a444db65-94cd-4e35-81f5-107270d468f3", "TestID" -> 
+         "DeleteBath[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "2f44d1eb-69d2-49ea-af4b-a080c75059d4", "Input" -> 
+         HoldForm[
+           WolframMachineControl`DeleteBath[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0427528`5.781479560983384, "CPUTimeUsed" -> 
+         0.031000000000000583`, "MemoryUsed" -> 3896, 
+         "IntermediateTestsTree" -> {}, "ExpectedOutput" -> HoldForm[0], 
+         "Outcome" -> "Success", "FailureType" -> None|>], 996551166426139020 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269922574684`16.654787574766505*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "5256451b-6bb5-42e2-947e-453c23ff6df4", "TestID" -> 
+         "TempCtrlInit[COM5]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "6f7f04a1-39fb-4350-a674-57e1a6046b23", "Input" -> 
+         HoldForm[
+           WolframMachineControl`TempCtrlInit[$CellContext`TempPort]], 
+         "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> HoldForm[0], 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.1175414`6.220705856991154, "CPUTimeUsed" -> 0., "MemoryUsed" -> 
+         3824, "IntermediateTestsTree" -> {}, "ExpectedOutput" -> HoldForm[0],
+          "Outcome" -> "Success", "FailureType" -> None|>], 
+      5875230658204867028 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269923760103`16.6547875747794*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "b11b51b3-af81-422e-ac09-e3f0abd5323c", "TestID" -> 
+         "TempCtrlOn[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "51f6f894-1f9a-4688-b288-033e0f301192", "Input" -> 
+         HoldForm[
+           WolframMachineControl`TempCtrlOn[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0985484`6.144164575439718, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 6499039221405316727 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269924755597`16.65478757479023*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "8706bda2-6d24-40c8-a3fd-7a1cd030f84c", "TestID" -> 
+         "TempCtrlSetMode[0]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "a9c27e92-5f0b-4bb5-af79-0b7740ba921b", "Input" -> 
+         HoldForm[
+           WolframMachineControl`TempCtrlSetMode[0]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0908607`6.108891076171989, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3880, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 6593695593383122246 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269925664204`16.654787574800118*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "0c26286b-7c09-4b2c-b914-385f28040e95", "TestID" -> 
+         "TempCtrlGetMode[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "6635b258-b92c-4e59-9c8a-424ea513238c", "Input" -> 
+         HoldForm[
+           WolframMachineControl`TempCtrlGetMode[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0909746`6.109435152574737, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 4614089636842903723 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269926582804`16.654787574810108*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "c71445e8-249b-49a2-9e61-f4cfa504f9f8", "TestID" -> 
+         "MatchQ[TempCtrlGetTemp[], _Real]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "3f083b10-b95c-41fa-b5ed-1aa60a70f1f8", "Input" -> 
+         HoldForm[
+           MatchQ[
+            WolframMachineControl`TempCtrlGetTemp[], 
+            Blank[Real]]], "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> 
+         HoldForm[True], "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.0903704`6.106541202403339, "CPUTimeUsed" -> 0., "MemoryUsed" -> 
+         4008, "IntermediateTestsTree" -> {}, "ExpectedOutput" -> 
+         HoldForm[True], "Outcome" -> "Success", "FailureType" -> None|>], 
+      8173684421581394227 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269927504765`16.65478757482014*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "7a4f24e4-bc6e-4d90-b490-e7918a9391a7", "TestID" -> 
+         "TempCtrlSetSetpoint[37.5]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "09f18f2d-4471-4e9e-a273-6790671303d2", "Input" -> 
+         HoldForm[
+           WolframMachineControl`TempCtrlSetSetpoint[37.5]], 
+         "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> HoldForm[37.5],
+          "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.0909153`6.109151973973955, "CPUTimeUsed" -> 0., "MemoryUsed" -> 
+         3832, "IntermediateTestsTree" -> {}, "ExpectedOutput" -> 
+         HoldForm[37.5], "Outcome" -> "Success", "FailureType" -> None|>], 
+      8275082370501467410 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269928413918`16.65478757483003*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "d240d9dc-4a27-49ba-a5b1-51f39f80057f", "TestID" -> 
+         "TempCtrlSetSetpoint[37.5]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "859740de-5cff-4c75-87b5-4b7b40729296", "Input" -> 
+         HoldForm[
+           WolframMachineControl`TempCtrlGetSetpoint[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[37.5], 
+         "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.0924724`6.116527127151381, "CPUTimeUsed" -> 0., "MemoryUsed" -> 
+         3896, "IntermediateTestsTree" -> {}, "ExpectedOutput" -> 
+         HoldForm[37.5], "Outcome" -> "Success", "FailureType" -> None|>], 
+      142558221612059097 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269929347498`16.65478757484019*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "56365083-1c2e-46a9-ba34-7ab14d0d6ce5", "TestID" -> 
+         "TempCtrlOff[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "b2d76856-eee6-4690-8019-d6c9711f7362", "Input" -> 
+         HoldForm[
+           WolframMachineControl`TempCtrlOff[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.1048567`6.171111183516175, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 8680171095383949910 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269930404867`16.654787574851692*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "df23fb33-13e4-4395-a47b-8fae85a6c9fb", "TestID" -> 
+         "DeleteTempCtrl[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "1889572a-bbdd-4f19-9858-6649b67fe94b", "Input" -> 
+         HoldForm[
+           WolframMachineControl`DeleteTempCtrl[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.043322`5.787223495852534, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 2415962730524519149 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269930838087`16.654787574856403*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "dbd0b1b6-8611-4e17-859c-95543cc96f6c", "TestID" -> 
+         "LabJack-Read-AIN0", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "38d9304a-5681-4036-8c80-293da902d953", "Input" -> 
+         HoldForm[
+           MatchQ[
+            WolframMachineControl`ReadLabjack[0], 
+            Blank[Real]]], "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> 
+         HoldForm[True], "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         0.0040002`4.752596703341195, "CPUTimeUsed" -> 0., "MemoryUsed" -> 
+         3936, "IntermediateTestsTree" -> {}, "ExpectedOutput" -> 
+         HoldForm[True], "Outcome" -> "Success", "FailureType" -> None|>], 
+      6385997582330030316 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269930901884`16.6547875748571*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "32af83d5-c07c-4d58-bc73-32c0fb719f59", "TestID" -> 
+         "ServoEnable[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "5bee9a86-6056-4104-b571-1af7ba599fca", "Input" -> 
+         HoldForm[
+           WolframMachineControl`ServoEnable[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 1.9197574`7.433761348151059, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 8030036230616492821 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269950109482`16.654787575066063*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "c4b37ca8-f755-46b9-a433-9fed44d01711", "TestID" -> 
+         "ServosReady[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "c758dc42-bdcb-45ea-a647-61c9679d3f3e", "Input" -> 
+         HoldForm[
+           WolframMachineControl`ServoReady[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[1], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0080585`5.056769208080205, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[1], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 4625100975934848538 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269950200059`16.654787575067047*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "88fe0b6e-8902-4767-a93b-dde34692dd23", "TestID" -> 
+         "ServoHome[30000]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "526e4c33-4884-4687-9260-a0d7495ba32d", "Input" -> 
+         HoldForm[
+           WolframMachineControl`ServoHome[30000]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 2.9513381`7.620533962178926, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 6455576115909164230 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269979723443`16.654787575388244*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "e90086e7-f086-44f9-babf-07b56e900824", "TestID" -> 
+         "ServoHomed[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "0537c6e0-266b-4fe1-a8e4-6a786e98b29f", "Input" -> 
+         HoldForm[
+           WolframMachineControl`ServoHomed[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[1], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0050995`4.858042593952253, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3744, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[1], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 4747409191836527266 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269979774438`16.6547875753888*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "c9bf2e01-08bd-4c72-8ad3-ae3ba13c6b58", "TestID" -> 
+         "ServoSetPos[10, -20, 100]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "a8d44fe8-3443-4c09-9d2d-a601c66b7c9c", "Input" -> 
+         HoldForm[
+           Round[
+            WolframMachineControl`ServoSetPos[10., -20., 100]]], 
+         "ExpectedMessages" -> HoldForm[{}], "ActualOutput" -> 
+         HoldForm[{10, -20, 100}], "ActualMessages" -> {}, "AbsoluteTimeUsed" -> 
+         1.5732845`7.3473222618462, "CPUTimeUsed" -> 0.016000000000000014`, 
+         "MemoryUsed" -> 4008, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[{10., -20., 100}], "Outcome" -> 
+         "Failure", "FailureType" -> "SameTestFailure"|>], 
+      3024739209584694084 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269996027409`16.65478757556562*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "c83d2100-8266-40fe-a834-f0ca618b399e", "TestID" -> 
+         "MatchQ[WolframMachineControl`ServoGetPos[], {_Real, _Real}]", 
+         "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "3a44d068-6e1b-4bc2-9e51-664e2d25e58a", "Input" -> 
+         HoldForm[
+           MatchQ[
+            WolframMachineControl`ServoGetPos[], {
+             Blank[Real], 
+             Blank[Real]}]], "ExpectedMessages" -> HoldForm[{}], 
+         "ActualOutput" -> HoldForm[True], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0238933`5.528791133886393, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 4112, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[True], "Outcome" -> "Success", 
+         "FailureType" -> None|>], 5219796923576974264 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269996276344`16.654787575568328*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "a6ea625e-eb97-4ea4-99c4-d670657e44cc", "TestID" -> 
+         "MatchQ[WolframMachineControl`ServoGetAlerts[], \
+_UTF8String[String]]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "713c0580-8efa-491d-8a7a-01f23d4d45ae", "Input" -> 
+         HoldForm[
+           MatchQ[
+            WolframMachineControl`ServoGetAlerts[], 
+            Blank[String]]], "ExpectedMessages" -> HoldForm[{}], 
+         "ActualOutput" -> HoldForm[True], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.0120701`5.232225866046013, "CPUTimeUsed" -> 
+         0.015000000000000568`, "MemoryUsed" -> 3952, 
+         "IntermediateTestsTree" -> {}, "ExpectedOutput" -> HoldForm[True], 
+         "Outcome" -> "Success", "FailureType" -> None|>], 
+      9006920947667227443 -> 
+      TestObject[<|
+        "MetaInformation" -> None, "AbsoluteTime" -> 
+         3.9919269996397045`16.654787575569642*^9, "SameTest" -> SameQ, 
+         "SameMessages" -> Testing`MessageMatchQ, "MemoryConstraint" -> 
+         DirectedInfinity[1], "TimeConstraint" -> DirectedInfinity[1], 
+         "CreationID" -> "8b4c1bd6-6822-4f63-a2e8-d96e914274eb", "TestID" -> 
+         "ServoDisable[]", "TestFileName" -> 
+         "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\\
+MachineControl\\v2\\WolframMachineControl\\Tests\\Test_WolframMachineControl.\
+wlt", "EvaluationID" -> "c1a79d41-0f08-4667-93f0-3fc533d1870e", "Input" -> 
+         HoldForm[
+           WolframMachineControl`ServoDisable[]], "ExpectedMessages" -> 
+         HoldForm[{}], "ActualOutput" -> HoldForm[0], "ActualMessages" -> {}, 
+         "AbsoluteTimeUsed" -> 0.4288515`6.7828219312863105, "CPUTimeUsed" -> 
+         0., "MemoryUsed" -> 3816, "IntermediateTestsTree" -> {}, 
+         "ExpectedOutput" -> HoldForm[0], "Outcome" -> "Success", 
+         "FailureType" -> None|>]|>, "FailureResults" -> <||>, 
+    "TestsNotEvaluatedKeys" -> {}, "TestsFailedWithMessagesKeys" -> {}, 
+    "TestsSucceededKeys" -> {5266651432367725475, 8846761191898248923, 
+     3638922015477079623, 5212994079560225291, 6418400306939502398, 
+     5223702364280310637, 3438129607298365735, 8405280124556814538, 
+     737654524235726192, 8308487169228825321, 4600691187393406762, 
+     996551166426139020, 5875230658204867028, 6499039221405316727, 
+     6593695593383122246, 4614089636842903723, 8173684421581394227, 
+     8275082370501467410, 142558221612059097, 8680171095383949910, 
+     2415962730524519149, 6385997582330030316, 8030036230616492821, 
+     4625100975934848538, 6455576115909164230, 3024739209584694084, 
+     5219796923576974264, 9006920947667227443}, 
+    "TestsFailedWrongResultsKeys" -> {4747409191836527266}|>],
+  Editable->False,
+  SelectWithContents->True,
+  Selectable->False]], "Output",
+ CellChangeTimes->{{3.9914066579229183`*^9, 3.9914066804626007`*^9}, 
+   3.9914085650010567`*^9, 3.9914742045202007`*^9, {3.991474362659567*^9, 
+   3.9914744065058575`*^9}, 3.991474941636896*^9, 3.9914751954835205`*^9, 
+   3.991475374936672*^9, 3.991475660694397*^9, 3.9914762129901886`*^9, 
+   3.9914762508596745`*^9, 3.9914776856724834`*^9, 3.991477850855068*^9, 
+   3.991478211231003*^9, 3.991482480600895*^9, 3.991482606642267*^9, 
+   3.9914826419794407`*^9, 3.991909975011778*^9, 3.991910056929676*^9, 
+   3.9919103325198097`*^9, 3.991914844645918*^9, 3.9919151074844*^9, 
+   3.9919152311948833`*^9, 3.9919156051271725`*^9, 3.9919159842440586`*^9, 
+   3.991916640125948*^9, 3.991916765874363*^9, 3.991926010026428*^9, 
+   3.991926346486511*^9, 3.991926428010582*^9, 3.991926632001528*^9, 
+   3.9919268433153706`*^9, 3.991927000443119*^9},
+ CellLabel->"Out[6]=",ExpressionUUID->"557715cc-8964-ba4c-b24a-ff6c1cc311ff"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "1.", " ", "Extract", " ", "the", " ", "sequential", " ", "results"}], 
+   "*)"}], 
+  RowBox[{
+   RowBox[{
+    RowBox[{"reportKeys", "=", 
+     RowBox[{"Keys", "[", 
+      RowBox[{"report", "[", "\"\<TestResults\>\"", "]"}], "]"}]}], ";"}], 
+   "\n", "\n", 
+   RowBox[{
+    RowBox[{"gridData", "=", 
+     RowBox[{"Prepend", "[", 
+      RowBox[{
+       RowBox[{"Table", "[", 
+        RowBox[{
+         RowBox[{"With", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"key", "=", 
+              RowBox[{"reportKeys", "[", 
+               RowBox[{"[", "i", "]"}], "]"}]}], ",", 
+             RowBox[{"res", "=", 
+              RowBox[{
+               RowBox[{"report", "[", "\"\<TestResults\>\"", "]"}], "[", 
+               RowBox[{"[", "i", "]"}], "]"}]}]}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"(*", 
+             RowBox[{"1.", " ", "Test", " ", "ID", " ", "string"}], "*)"}], 
+            RowBox[{
+             RowBox[{"res", "[", "\"\<TestID\>\"", "]"}], ",", 
+             RowBox[{"(*", 
+              RowBox[{"2.", " ", "Visual", " ", 
+               RowBox[{"Pass", "/", "Fail"}], " ", "Status"}], "*)"}], 
+             RowBox[{"If", "[", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"res", "[", "\"\<Outcome\>\"", "]"}], 
+                "===", "\"\<Success\>\""}], ",", 
+               RowBox[{"Item", "[", 
+                RowBox[{
+                 RowBox[{"Style", "[", 
+                  RowBox[{"\"\<PASS\>\"", ",", "White", ",", "Bold"}], "]"}], 
+                 ",", 
+                 RowBox[{"Background", "->", 
+                  RowBox[{"Darker", "[", 
+                   RowBox[{"Green", ",", "0.2"}], "]"}]}], ",", 
+                 RowBox[{"Alignment", "->", "Center"}]}], "]"}], ",", 
+               RowBox[{"Item", "[", 
+                RowBox[{
+                 RowBox[{"Style", "[", 
+                  RowBox[{"\"\<FAIL\>\"", ",", "White", ",", "Bold"}], "]"}], 
+                 ",", 
+                 RowBox[{"Background", "->", "Red"}], ",", 
+                 RowBox[{"Alignment", "->", "Center"}]}], "]"}]}], "]"}], ",", 
+             RowBox[{"(*", 
+              RowBox[{"3.", " ", "Actual", " ", "Result", " ", 
+               RowBox[{"(", 
+                RowBox[{"Function", " ", "Output"}], ")"}]}], "*)"}], 
+             RowBox[{"res", "[", "\"\<ActualOutput\>\"", "]"}], ",", 
+             RowBox[{"(*", 
+              RowBox[{"4.", " ", "Expected", " ", 
+               RowBox[{"Result", "/", "Range"}], " ", "Check", " ", 
+               "Formula"}], "*)"}], 
+             RowBox[{"res", "[", "\"\<ExpectedOutput\>\"", "]"}]}], "}"}]}], 
+          "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"i", ",", "1", ",", 
+           RowBox[{"Length", "[", "reportKeys", "]"}]}], "}"}]}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"\"\<Test ID\>\"", ",", "\"\<Status\>\"", 
+         ",", "\"\<Actual Result\>\"", ",", "\"\<Expected Result\>\""}], 
+        "}"}]}], "]"}]}], ";"}], "\n", "\n", 
+   RowBox[{"(*", 
+    RowBox[{
+    "2.", " ", "Render", " ", "the", " ", "clean", " ", "evaluation", " ", 
+     "report", " ", "window"}], "*)"}], "\n", 
+   RowBox[{
+    RowBox[{"CreateDocument", "[", 
+     RowBox[{
+      RowBox[{"Grid", "[", 
+       RowBox[{"gridData", ",", 
+        RowBox[{"Frame", "->", "All"}], ",", 
+        RowBox[{"Alignment", "->", "Left"}], ",", 
+        RowBox[{"Background", "->", 
+         RowBox[{"{", 
+          RowBox[{"None", ",", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"Lighter", "[", 
+              RowBox[{"Gray", ",", "0.8"}], "]"}], ",", 
+             RowBox[{"{", "White", "}"}]}], "}"}]}], "}"}]}], ",", 
+        RowBox[{"ItemStyle", "->", 
+         RowBox[{"{", 
+          RowBox[{"\"\<Text\>\"", ",", 
+           RowBox[{"FontSize", "->", "12"}]}], "}"}]}], ",", 
+        RowBox[{"DividerStyle", "->", 
+         RowBox[{"Directive", "[", 
+          RowBox[{"Gray", ",", "Thin"}], "]"}]}]}], "]"}], ",", 
+      RowBox[{"WindowSize", "->", 
+       RowBox[{"{", 
+        RowBox[{"900", ",", "450"}], "}"}]}], ",", 
+      RowBox[{
+      "WindowTitle", 
+       "->", "\"\<Hardware Test Suite Verification Grid\>\""}]}], "]"}], 
+    ";"}]}]}]], "Input",
+ CellChangeTimes->{{3.9914092923674107`*^9, 3.9914092970475483`*^9}, {
+   3.991409340800083*^9, 3.991409361088005*^9}, {3.991409415583971*^9, 
+   3.991409416071684*^9}, {3.9914095106323223`*^9, 3.991409511239519*^9}, {
+   3.991409963647648*^9, 3.9914099640552063`*^9}, 3.991474451145029*^9, 
+   3.991474597786726*^9},
+ CellLabel->"In[7]:=",ExpressionUUID->"91565402-c673-4c42-9320-d839ccec02ad"],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.991409631038725*^9, 
+  3.9914096310397224`*^9}},ExpressionUUID->"486cbf14-5094-dd4d-9a1b-\
+62f5f7a00507"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"TempCtrlSetMode", "[", "0", "]"}]], "Input",
+ CellChangeTimes->{{3.991142698975195*^9, 3.9911427214208374`*^9}, 
+   3.99121509880986*^9, {3.9913024253017063`*^9, 3.9913024351261578`*^9}, {
+   3.991303351366987*^9, 3.9913033717684937`*^9}, {3.9913042371970577`*^9, 
+   3.991304250869919*^9}, 3.991310746213333*^9, {3.9913120163276215`*^9, 
+   3.991312016831047*^9}, {3.9913121011540604`*^9, 3.991312134262787*^9}, {
+   3.9913122132331142`*^9, 3.991312220503191*^9}, {3.991317500313238*^9, 
+   3.9913175551368084`*^9}, {3.991317594201689*^9, 3.9913175969846134`*^9}, {
+   3.9913178881129303`*^9, 3.991317888504757*^9}, {3.991317957985422*^9, 
+   3.9913179584641685`*^9}, 3.9913222989722233`*^9, {3.9919161975926857`*^9, 
+   3.991916207856024*^9}},
+ CellLabel->"In[9]:=",ExpressionUUID->"66defbae-33f6-0c48-bb38-8d9579a806c0"],
+
+Cell[BoxData[
+ RowBox[{"LibraryFunctionError", "[", 
+  RowBox[{"\<\"LIBRARY_FUNCTION_ERROR\"\>", ",", "6"}], "]"}]], "Output",
+ CellChangeTimes->{{3.9912151503024693`*^9, 3.991215154632532*^9}, 
+   3.991215292855423*^9, 3.991301115438593*^9, {3.991302431493643*^9, 
+   3.991302435902937*^9}, {3.9913033583982487`*^9, 3.9913033723483353`*^9}, {
+   3.991304241732191*^9, 3.991304251932337*^9}, 3.9913107512136383`*^9, 
+   3.991311483999031*^9, 3.9913119829049625`*^9, 3.991312019040411*^9, {
+   3.991312103278061*^9, 3.991312138658123*^9}, {3.991312202585228*^9, 
+   3.991312221324789*^9}, {3.9913175130439434`*^9, 3.9913175984640827`*^9}, {
+   3.9913179652079945`*^9, 3.9913179729698887`*^9}, 3.9913223089800873`*^9, 
+   3.9913223919599476`*^9, 3.9913905399071674`*^9, 3.991475781065584*^9, 
+   3.9914777176452065`*^9, 3.9914780154998035`*^9, 3.991916208793949*^9},
+ CellLabel->"Out[9]=",ExpressionUUID->"5108ead0-6e61-7d42-8384-b141bd5626f8"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ServoHomed", "[", "]"}], "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.991215114943901*^9, 3.9912151617640133`*^9}, {
+   3.9912152385722675`*^9, 3.9912152485841255`*^9}, {3.991215307891695*^9, 
+   3.991215308547678*^9}, {3.9912153418756485`*^9, 3.991215342794945*^9}, {
+   3.991229451709181*^9, 3.9912294907809258`*^9}, {3.9913011557072372`*^9, 
+   3.9913011563467655`*^9}, 3.9913033624640408`*^9, {3.991310794260025*^9, 
+   3.9913107968785934`*^9}, {3.9918223666691227`*^9, 3.991822368662752*^9}, {
+   3.991822499448082*^9, 3.991822526860882*^9}, {3.9918283907718964`*^9, 
+   3.991828391434124*^9}},
+ CellLabel->"In[5]:=",ExpressionUUID->"19c6397a-1a3f-7e47-944d-9092ecc41023"],
+
+Cell[BoxData["1"], "Output",
+ CellChangeTimes->{
+  3.991390847192137*^9, 3.9913908821955376`*^9, 3.9913909346440525`*^9, {
+   3.9914762961843624`*^9, 3.991476300265682*^9}, 3.9914763404781475`*^9, 
+   3.9914766299938183`*^9, 3.99147816960865*^9, {3.9918223888251057`*^9, 
+   3.9918224100434895`*^9}, 3.99182244572674*^9, {3.9918224798001556`*^9, 
+   3.9918225199564724`*^9}, {3.9918284084531765`*^9, 3.991828439287571*^9}, {
+   3.9918285331243668`*^9, 3.991828539421665*^9}, 3.991828598266468*^9, {
+   3.991830882803108*^9, 3.9918308847767677`*^9}, 3.991830959532385*^9, {
+   3.991831012191593*^9, 3.991831015815033*^9}, {3.991831794014414*^9, 
+   3.991831795641533*^9}, 3.991831860243515*^9, {3.9919264604408665`*^9, 
+   3.991926465218931*^9}, {3.9919267918763523`*^9, 3.991926794912693*^9}, 
+   3.9919269818631935`*^9},
+ CellLabel->"Out[5]=",ExpressionUUID->"aa584fcf-c78a-b64e-b6f8-72f3b1d1f1e5"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"ServoEnable", "[", "]"}]], "Input",
+ CellChangeTimes->{{3.991390840478777*^9, 3.9913908550416603`*^9}},
+ CellLabel->"In[1]:=",ExpressionUUID->"34f3ceae-466c-1542-adf3-3f8ab71e5090"],
+
+Cell[BoxData[
+ RowBox[{"ServoEnable", "[", "]"}]], "Output",
+ CellChangeTimes->{{3.991475408395111*^9, 3.991475416507736*^9}, {
+   3.991476308885084*^9, 3.99147633833366*^9}, 3.991476628157528*^9, 
+   3.991477996029196*^9, 3.991478067275141*^9, 3.9914819947476883`*^9, {
+   3.991482029134857*^9, 3.9914820534533463`*^9}, 3.991482123172205*^9, 
+   3.991482213568968*^9, 3.9914823003140087`*^9, 3.99192623832806*^9, 
+   3.9919264583215675`*^9, 3.9919267590806007`*^9, 3.9919267898951283`*^9, 
+   3.9919268260501976`*^9, 3.9919269265440407`*^9},
+ CellLabel->"Out[1]=",ExpressionUUID->"8de1df20-692c-d84c-aec1-3b71d26670c9"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.9913120219037437`*^9, 
+  3.9913120308550777`*^9}},ExpressionUUID->"ca452ff8-a256-384f-a1fb-\
+754f232c03a2"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"ServoGetAlerts", "[", "]"}]], "Input",
+ CellChangeTimes->{{3.9913120347020817`*^9, 3.991312034935713*^9}, {
+  3.991474948163334*^9, 3.9914749535653*^9}, {3.991475442359894*^9, 
+  3.9914754433994865`*^9}, {3.9914817876592693`*^9, 3.9914817994816895`*^9}, {
+  3.9919262246219234`*^9, 3.9919263013574753`*^9}, {3.991926814693596*^9, 
+  3.991926819525297*^9}},
+ CellLabel->"In[4]:=",ExpressionUUID->"2695e559-da16-ec46-b250-01fd95aadd7d"],
+
+Cell[BoxData["\<\"X: 0x0000 0000 0000 0000 0000 0000 \\n | Z: 0x0000 0000 \
+0000 0000 0000 0000 \\n\"\>"], "Output",
+ CellChangeTimes->{
+  3.9914749548859253`*^9, 3.991475197174532*^9, {3.9914753811008167`*^9, 
+   3.991475397411873*^9}, {3.99147542964406*^9, 3.991475459893654*^9}, {
+   3.9914817941546917`*^9, 3.9914818002948265`*^9}, 3.99148212976894*^9, {
+   3.991926229583048*^9, 3.991926261477316*^9}, 3.991926302142107*^9, {
+   3.9919268204392204`*^9, 3.9919268268198605`*^9}, 3.991926979587658*^9},
+ CellLabel->"Out[4]=",ExpressionUUID->"ef93f9b2-2a7d-114f-a1f0-ef737557de04"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"BathOff", "[", "]"}]], "Input",
+ CellChangeTimes->{
+  3.9914754247178497`*^9, {3.991910035471775*^9, 3.99191004125531*^9}, {
+   3.991914881034952*^9, 3.9919149210651035`*^9}, {3.991915260249901*^9, 
+   3.991915262870928*^9}, {3.9919155333250904`*^9, 3.991915538387251*^9}, {
+   3.9919155867396774`*^9, 3.991915590027212*^9}},
+ CellLabel->"In[9]:=",ExpressionUUID->"5c72060f-8c7d-b349-9b4e-6125945920fa"],
+
+Cell[BoxData["0"], "Output",
+ CellChangeTimes->{{3.99147542654998*^9, 3.9914754945158215`*^9}, {
+   3.9919100366838493`*^9, 3.991910041855089*^9}, 3.991910167056076*^9, {
+   3.991914882213827*^9, 3.99191492166753*^9}, 3.991915263971798*^9, 
+   3.9919155045639687`*^9, 3.991915542671257*^9, {3.9919155833913116`*^9, 
+   3.9919156069651165`*^9}, 3.991916123048294*^9, 3.9919167681117496`*^9},
+ CellLabel->"Out[9]=",ExpressionUUID->"a57f94d9-0e36-1f45-8aab-25b675db82ba"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"SetLogSettings", "[", 
+  RowBox[{
+  "1", ",", 
+   " ", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
+JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\\\\log.txt\>\""}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.9914777249675884`*^9, 3.9914777358492947`*^9}, {
+  3.991828575798174*^9, 3.991828592812977*^9}},
+ CellLabel->"In[6]:=",ExpressionUUID->"9b0afbf8-d9d3-5a4c-b54b-ea2d5f440ab2"],
+
+Cell[BoxData["1"], "Output",
+ CellChangeTimes->{
+  3.9914777367893543`*^9, 3.991477886233204*^9, 3.9914779985491505`*^9, 
+   3.9914780705328827`*^9, 3.9914819554658985`*^9, 3.991482000125231*^9, 
+   3.991482057066923*^9, 3.9914821254417286`*^9, 3.9914822158468266`*^9, 
+   3.9914823037077065`*^9, {3.991822427492216*^9, 3.991822443316595*^9}, 
+   3.9918285942127666`*^9},
+ CellLabel->"Out[6]=",ExpressionUUID->"043a932d-20fb-d345-b670-8d62ab05e4d5"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.9919262866485424`*^9, 3.9919262924294014`*^9}, {
+  3.9919268000854626`*^9, 
+  3.99192680354126*^9}},ExpressionUUID->"ffea878a-150f-dc49-961d-\
+9bfe67d5e49f"],
+
+Cell[BoxData[
+ InterpretationBox[
+  StyleBox[
+   FrameBox[
+    DynamicModuleBox[{System`InformationDump`open$$ = True, 
+     System`InformationDump`mouseOver$$ = False}, 
+     PaneSelectorBox[{True->
+      TagBox[GridBox[{
+         {
+          ItemBox[
+           PaneBox[
+            StyleBox[
+             TagBox[
+              TooltipBox[
+               StyleBox["\<\" Symbol\"\>", "InformationRowLabel",
+                StripOnInput->False],
+               "\"Symbol\"",
+               TooltipStyle->"TextStyling"],
+              Annotation[#, "Symbol", "Tooltip"]& ], "InformationTitleText",
+             StripOnInput->False,
+             BaseStyle -> None],
+            FrameMargins->{{4, 0}, {-1, 1}}],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False]},
+         {
+          ItemBox[
+           PaneBox[
+            StyleBox["\<\"Global`Type\"\>", "InformationUsageText",
+             StripOnInput->False,
+             LineSpacing->{1.5, 1.5, 3.}],
+            FrameMargins->{{10, 10}, {8, 10}}],
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False]},
+         {
+          PaneBox[GridBox[{
+             {
+              
+              DynamicModuleBox[{System`InformationDump`open$$ = {
+               False, False, False, False, False, False}}, 
+               StyleBox[GridBox[{
+                  {
+                   TagBox[
+                    TooltipBox[
+                    StyleBox["\<\" Full Name\"\>", "InformationRowLabel",
+                    StripOnInput->False],
+                    "\"FullName\"",
+                    TooltipStyle->"TextStyling"],
+                    
+                    Annotation[#, "FullName", 
+                    "Tooltip"]& ], "\<\"Global`Type\"\>"}
+                 },
+                 AutoDelete->False,
+                 GridBoxAlignment->{"Columns" -> {Right, Left}},
+                 GridBoxDividers->None,
+                 GridBoxItemSize->{"Columns" -> {Automatic, Automatic}},
+                 GridBoxSpacings->{"Columns" -> {
+                    Offset[0.27999999999999997`], {
+                    Offset[0.5599999999999999]}, 
+                    Offset[0.27999999999999997`]}, "Rows" -> {
+                    Offset[0.2], {
+                    Offset[0.8]}, 
+                    Offset[0.2]}}], "DialogStyle",
+                StripOnInput->False],
+               DynamicModuleValues:>{}]}
+            },
+            DefaultBaseStyle->"Column",
+            GridBoxAlignment->{"Columns" -> {{Left}}},
+            GridBoxDividers->{"Columns" -> {{False}}, "Rows" -> {{False}}},
+            
+            GridBoxItemSize->{
+             "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
+            GridBoxSpacings->{"Columns" -> {
+                Offset[0.27999999999999997`], {
+                 Offset[0.5599999999999999]}, 
+                Offset[0.27999999999999997`]}, "Rows" -> {
+                Offset[0.2], {
+                 Offset[3.6]}, 
+                Offset[0.2]}}],
+           FrameMargins->{{6, 6}, {6, 3}}], ""},
+         {
+          ItemBox[
+           TagBox[
+            ButtonBox[
+             PaneSelectorBox[{False->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "UpPointerOpener"],
+               ImageSizeCache->{10., {2.67529296875, 7.32470703125}}], True->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "UpPointerOpenerHot"],
+               ImageSizeCache->{10., {2.67529296875, 7.32470703125}}]}, 
+              Dynamic[System`InformationDump`mouseOver$$]],
+             Alignment->Left,
+             Appearance->{"Default" -> None},
+             ButtonFunction:>FEPrivate`Set[
+              System`InformationDump`open$$, False],
+             Evaluator->Automatic,
+             FrameMargins->{{9, 0}, {0, 0}},
+             ImageMargins->0,
+             ImageSize->Full,
+             Method->"Preemptive"],
+            
+            EventHandlerTag[{
+             "MouseEntered" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, True], 
+              "MouseExited" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, False], 
+              Method -> "Preemptive", PassEventsDown -> Automatic, 
+              PassEventsUp -> True}]],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], "\[SpanFromLeft]"}
+        },
+        AutoDelete->False,
+        FrameStyle->Directive[
+          LightDarkSwitched[
+           GrayLevel[0.8]], 
+          Thickness[Tiny]],
+        GridBoxAlignment->{"Columns" -> {Left, Right}, "Rows" -> {{Center}}},
+        GridBoxDividers->{
+         "Columns" -> {{None}}, "Rows" -> {False, {True}, False}},
+        GridBoxItemSize->{
+         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
+       "Grid"], False->
+      TagBox[GridBox[{
+         {
+          ItemBox[
+           PaneBox[
+            StyleBox[
+             TagBox[
+              TooltipBox[
+               StyleBox["\<\" Symbol\"\>", "InformationRowLabel",
+                StripOnInput->False],
+               "\"Symbol\"",
+               TooltipStyle->"TextStyling"],
+              Annotation[#, "Symbol", "Tooltip"]& ], "InformationTitleText",
+             StripOnInput->False],
+            FrameMargins->{{4, 0}, {-1, 1}}],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False]},
+         {
+          ItemBox[
+           PaneBox[
+            StyleBox["\<\"Global`Type\"\>", "InformationUsageText",
+             StripOnInput->False,
+             LineSpacing->{1.5, 1.5, 3.}],
+            FrameMargins->{{10, 10}, {8, 10}}],
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False], 
+          ItemBox["\<\"\"\>",
+           BaseStyle->"InformationUsageSubtitleBackground",
+           StripOnInput->False]},
+         {
+          ItemBox[
+           TagBox[
+            ButtonBox[
+             PaneSelectorBox[{False->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "DownPointerOpener"]], True->
+              
+              DynamicBox[FEPrivate`FrontEndResource[
+               "FEBitmaps", "DownPointerOpenerHot"]]}, Dynamic[
+              System`InformationDump`mouseOver$$]],
+             Alignment->Left,
+             Appearance->{"Default" -> None},
+             
+             ButtonFunction:>FEPrivate`Set[
+              System`InformationDump`open$$, True],
+             Evaluator->Automatic,
+             FrameMargins->{{9, 0}, {0, 0}},
+             ImageMargins->0,
+             ImageSize->Full,
+             Method->"Preemptive"],
+            
+            EventHandlerTag[{
+             "MouseEntered" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, True], 
+              "MouseExited" :> 
+              FEPrivate`Set[System`InformationDump`mouseOver$$, False], 
+              Method -> "Preemptive", PassEventsDown -> Automatic, 
+              PassEventsUp -> True}]],
+           BaseStyle->"InformationTitleBackground",
+           StripOnInput->False], "\[SpanFromLeft]"}
+        },
+        AutoDelete->False,
+        FrameStyle->Directive[
+          LightDarkSwitched[
+           GrayLevel[0.8]], 
+          Thickness[Tiny]],
+        GridBoxAlignment->{"Columns" -> {Left, Right}, "Rows" -> {{Center}}},
+        GridBoxDividers->{
+         "Columns" -> {{None}}, "Rows" -> {False, {True}, False}},
+        GridBoxItemSize->{
+         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
+       "Grid"]}, Dynamic[System`InformationDump`open$$],
+      BaselinePosition->Baseline,
+      FrameMargins->0,
+      ImageSize->Automatic],
+     DynamicModuleValues:>{}],
+    BaseStyle->"InformationGridFrame",
+    StripOnInput->False], "InformationGridPlain",
+   StripOnInput->False],
+  InformationData[<|
+   "ObjectType" -> "Symbol", "Usage" -> "Global`Type", "Documentation" -> 
+    None, "OwnValues" -> None, "UpValues" -> None, "DownValues" -> None, 
+    "SubValues" -> None, "DefaultValues" -> None, "NValues" -> None, 
+    "FormatValues" -> None, "Options" -> None, "Attributes" -> {}, "FullName" -> 
+    "Global`Type"|>, False]]], "Output",
+ CellChangeTimes->{3.9919262931005726`*^9},
+ CellLabel->"Out[10]=",ExpressionUUID->"7d4182b5-275a-524a-92a8-3c32843c828c"]
+}, Open  ]]
+},
+WindowSize->{1428, 729.75},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+FrontEndVersion->"14.3 for Microsoft Windows (64-bit) (July 8, 2025)",
+StyleDefinitions->"ReverseColor.nb",
+ExpressionUUID->"bb1e8e87-5780-e14e-a616-f5d7be2d374b"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[576, 22, 349, 6, 28, "Input",ExpressionUUID->"b678aaf2-116b-7146-978e-852bfbcff58c"],
+Cell[928, 30, 2802, 40, 32, "Output",ExpressionUUID->"91ef3d7b-ea64-5542-9527-7bc064ed52ef"]
+}, Open  ]],
+Cell[3745, 73, 131, 3, 28, "Input",ExpressionUUID->"459754b0-a4d6-c549-a692-b50b3a4889d6"],
+Cell[3879, 78, 230, 3, 28, "Input",ExpressionUUID->"179bac10-0213-1f48-b544-b0e2f20e319f"],
+Cell[CellGroupData[{
+Cell[4134, 85, 210, 3, 28, "Input",ExpressionUUID->"e98de180-4c24-9c49-b191-dfc84b6850f4"],
+Cell[4347, 90, 3273, 44, 32, "Output",ExpressionUUID->"f69b55c5-e7ed-e045-b575-128f6fe25e29"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7657, 139, 414, 8, 28, "Input",ExpressionUUID->"19a75eee-e7a8-6c40-b28e-2a80f3488c41"],
+Cell[8074, 149, 42233, 720, 59, "Output",ExpressionUUID->"557715cc-8964-ba4c-b24a-ff6c1cc311ff"]
+}, Open  ]],
+Cell[50322, 872, 4702, 114, 289, "Input",ExpressionUUID->"91565402-c673-4c42-9320-d839ccec02ad"],
+Cell[55027, 988, 154, 3, 28, "Input",ExpressionUUID->"486cbf14-5094-dd4d-9a1b-62f5f7a00507"],
+Cell[CellGroupData[{
+Cell[55206, 995, 847, 12, 28, "Input",ExpressionUUID->"66defbae-33f6-0c48-bb38-8d9579a806c0"],
+Cell[56056, 1009, 942, 13, 32, "Output",ExpressionUUID->"5108ead0-6e61-7d42-8384-b141bd5626f8"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[57035, 1027, 724, 11, 47, "Input",ExpressionUUID->"19c6397a-1a3f-7e47-944d-9092ecc41023"],
+Cell[57762, 1040, 899, 13, 32, "Output",ExpressionUUID->"aa584fcf-c78a-b64e-b6f8-72f3b1d1f1e5"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[58698, 1058, 205, 3, 28, "Input",ExpressionUUID->"34f3ceae-466c-1542-adf3-3f8ab71e5090"],
+Cell[58906, 1063, 620, 9, 32, "Output",ExpressionUUID->"8de1df20-692c-d84c-aec1-3b71d26670c9"]
+}, Open  ]],
+Cell[59541, 1075, 156, 3, 28, "Input",ExpressionUUID->"ca452ff8-a256-384f-a1fb-754f232c03a2"],
+Cell[CellGroupData[{
+Cell[59722, 1082, 458, 7, 28, "Input",ExpressionUUID->"2695e559-da16-ec46-b250-01fd95aadd7d"],
+Cell[60183, 1091, 583, 8, 70, "Output",ExpressionUUID->"ef93f9b2-2a7d-114f-a1f0-ef737557de04"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[60803, 1104, 427, 7, 28, "Input",ExpressionUUID->"5c72060f-8c7d-b349-9b4e-6125945920fa"],
+Cell[61233, 1113, 468, 6, 32, "Output",ExpressionUUID->"a57f94d9-0e36-1f45-8aab-25b675db82ba"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[61738, 1124, 413, 9, 28, "Input",ExpressionUUID->"9b0afbf8-d9d3-5a4c-b54b-ea2d5f440ab2"],
+Cell[62154, 1135, 449, 7, 32, "Output",ExpressionUUID->"043a932d-20fb-d345-b670-8d62ab05e4d5"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[62640, 1147, 206, 4, 28, "Input",ExpressionUUID->"ffea878a-150f-dc49-961d-9bfe67d5e49f"],
+Cell[62849, 1153, 8685, 219, 118, "Output",ExpressionUUID->"7d4182b5-275a-524a-92a8-3c32843c828c"]
+}, Open  ]]
+}
+]
+*)
+

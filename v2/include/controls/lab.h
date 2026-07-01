@@ -20,6 +20,9 @@ Date: 06.09.2026
 #include <variant>
 #include <queue>
 #include <unordered_set>
+#include <fstream>
+#include <filesystem>
+#include <stdexcept>
 
 
 // Equipment classes
@@ -44,6 +47,10 @@ Date: 06.09.2026
 //             pass values and results via referenced variables
 namespace Lab {
 
+    // Persistent pointers to bath, temp controller
+    extern RTE7* bath;
+    extern Oven5R6900* tc;
+
 
     // Persistent hardware pointers to servo motors
     extern sFnd::SysManager* Mgr;
@@ -51,25 +58,36 @@ namespace Lab {
     extern sFnd::INode* motorX;
     extern sFnd::INode* motorZ;
 
+    extern bool LOG;
+    extern std::string LOG_FILE;
+
+    void log(const std::string& msg);
+    int get_log_settings(bool& verbose, std::string& file);
+    int set_log_settings(bool& verbose, std::string& file);
+    bool logfile_valid(std::string& filepath);
 
 
     // RTE7 bath suite
-    int bath_on(std::string COMM);
-    int bath_off(std::string COMM);
-    int bath_manual(std::string COMM);
-    int bath_get_temp(std::string COMM, float& temp);
-    int bath_get_setpoint(std::string COMM, float& temp);
-    int bath_set_setpoint(std::string COMM, float& temp); 
+    int init_bath(std::string COMM);
+    int delete_bath();
+    int bath_on();
+    int bath_off();
+    int bath_manual();
+    int bath_get_temp(float& temp);
+    int bath_get_setpoint(float& temp);
+    int bath_set_setpoint(float& temp); 
 
 
     // Oven industries 5R6-900 temperature control suite
-    int temperature_control_on(std::string COMM);
-    int temperature_control_off(std::string COMM);
-    int temperature_control_get_mode(std::string COMM, int& mode);
-    int temperature_control_set_mode(std::string COMM, int& mode); 
-    int temperature_control_get_temp(std::string COMM, float& temp);
-    int temperature_control_get_setpoint(std::string COMM, float& temp);
-    int temperature_control_set_setpoint(std::string COMM, float& temp);
+    int init_temp_controller(std::string COMM);
+    int delete_temp_controller();
+    int temperature_control_on();
+    int temperature_control_off();
+    int temperature_control_get_mode(int& mode);
+    int temperature_control_set_mode(int& mode); 
+    int temperature_control_get_temp(float& temp);
+    int temperature_control_get_setpoint(float& temp);
+    int temperature_control_set_setpoint(float& temp);
 
     // int temperature_control_ramp_soak(std::string COMM, double seq_num, int soak_temp, int ramp_dur, double soak_dur, int deviation);
     // void record(std::string CSV_FILENAME, std::string BATH_PORT, std::string TEMERATURE_PORT) const;
@@ -81,9 +99,11 @@ namespace Lab {
     int initialize_servos();
     int shutdown_servos();
     bool servos_ready();
+    bool servos_homed();
+    int get_servo_alerts(char* alertX, char* alertZ);
     int servo_motor_home(int milliseconds);  // Returns homing status code
-    int servo_motor_get_position(float& x_mm, float& y_mm);
-    int servo_motor_set_position(double& x_mm, double& y_mm, double& vel_rms);
+    int servos_get_position(float& x_mm, float& y_mm);
+    int servos_set_position(float& x_mm, float& y_mm, float& vel_rms);
     int servo_motor_manual_control(); 
     
     

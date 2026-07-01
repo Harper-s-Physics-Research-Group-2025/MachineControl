@@ -13,94 +13,199 @@ Date: 06.09.2026 1400
 
 namespace Lab {
 
-    // Initialize servo motor hardware
+    // RTE7 Bath
+    RTE7* bath = nullptr;
+
+    // Temp controller
+    Oven5R6900* tc = nullptr;
+
+
+    // servo motor hardware
     sFnd::SysManager* Mgr = nullptr;
     sFnd::IPort* Port = nullptr;
     sFnd::INode* motorX = nullptr; 
     sFnd::INode* motorZ = nullptr; 
 
+    // logging
+    bool LOG = false;
+    std::string LOG_FILE = "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\v2\\log.txt";
+
+
+    
+    
+    // Initialize global variables for manual control
+
+    // Event structure to hold key events
+    struct KeyEvent {
+        DWORD vkCode;
+        bool pressed;  // true = down, false = up
+    };
+
+
+    // Shared queue and synchronization
+    std::queue<KeyEvent> keyQueue;
+    CRITICAL_SECTION cs;
+
+    HHOOK g_keyboardHook;
+    volatile bool g_running = true;
+    DWORD g_mainThreadId;       // for posting messages?
+    
+    
+    
+    
+    
+    
+    // logging functions
+    void log(const std::string& msg) {                      // Write to file if desired.
+        if (LOG) {
+            std::ofstream f(LOG_FILE, std::ios::app);
+            f << msg << std::endl;
+        }
+    }
+
+
+    int get_log_settings(bool& verbose, std::string& file) {        // Get current logging settings.
+        verbose = LOG;
+        file = LOG_FILE;
+        log("log settings accessed by get_log_settings().");
+        return 0;
+    }
+
+
+    int set_log_settings(bool& verbose, std::string& file) {        // Turn logging on/off. Specify log location.
+        log("log settings modified by set_log_settings(). LOGFILE: " + file);
+        LOG = verbose;
+        LOG_FILE = file;
+        return 0;
+    }
+
+
+    bool logfile_valid(std::string& filepath) {
+        return std::filesystem::exists(std::filesystem::path(filepath).parent_path());
+    }
+
+
+
 
     // RTE7 Bath functions
-    int bath_on(std::string COMM) {
-        RTE7 bath = RTE7(COMM);
-        return !bath.turn_on();
+    int init_bath(std::string COMM) {
+        // 1. Clean up an existing connection if called a second time
+        if (bath != nullptr) {
+            delete bath;
+        }
+        
+        // 2. Instantiate a fresh connection on the heap
+        bath = new RTE7(COMM);
+        
+        // 3. Return a success token (e.g., check if the pointer is valid)
+        return (bath == nullptr);
     }
 
 
-    int bath_off(std::string COMM) {
-        RTE7 bath = RTE7(COMM);
-        return !bath.turn_off();
+    int delete_bath() {
+        log("\nin int delete_bath()");
+
+        delete bath;
+        bath = nullptr;
+
+        log("Bath object successfully deleted");
+
+        return 0;
     }
 
 
-    int bath_manual(std::string COMM) {
-        RTE7 bath = RTE7(COMM);
-        return !bath.manual();
+    int bath_on() {
+        return !bath->turn_on();
     }
 
 
-    int bath_get_temp(std::string COMM, float& temp) {
-        RTE7 bath = RTE7(COMM);
-        return !bath.get_temp(temp);
+    int bath_off() {
+        return !bath->turn_off();
     }
 
 
-    int bath_get_setpoint(std::string COMM, float& temp) {
-        RTE7 bath = RTE7(COMM);
-        return !bath.get_setpoint(temp);
+    int bath_manual() {
+        return !bath->manual();
     }
 
 
-    int bath_set_setpoint(std::string COMM, float& temp) {
-        RTE7 bath = RTE7(COMM);
-        return !bath.set_setpoint(temp);
+    int bath_get_temp(float& temp) {
+        return !bath->get_temp(temp);
+    }
+
+
+    int bath_get_setpoint(float& temp) {
+        return !bath->get_setpoint(temp);
+    }
+
+
+    int bath_set_setpoint(float& temp) {
+        return !bath->set_setpoint(temp);
     }
 
 
 
 
     // Oven Industries 5R6-900 Temperature Controller
-    int temperature_control_on(std::string COMM) {         // Enable H-bridge output
-        Oven5R6900 tc = Oven5R6900(COMM);
+    int init_temp_controller(std::string COMM) {
+        // 1. Clean up an existing connection if called a second time
+        if (tc != nullptr) {
+            delete tc;
+        }
+        
+        // 2. Instantiate a fresh connection on the heap
+        tc = new Oven5R6900(COMM);
+        
+        // 3. Return a success token (e.g., check if the pointer is valid)
+        return (tc == nullptr);
+    }
+
+
+    int delete_temp_controller() {
+        log("\nIn delete_temp_controller().");
+        
+        delete tc;
+        tc = nullptr;
+
+        log("temp controller successfully deleted");
+        return 0;
+    }
+
+
+    int temperature_control_on() {         // Enable H-bridge output
         bool state = 1;
-        return !tc.enable(state);
+        return !tc->enable(state);
     }
 
 
-    int temperature_control_off(std::string COMM) {        // Disable H-bridge output
-        Oven5R6900 tc = Oven5R6900(COMM);
+    int temperature_control_off() {        // Disable H-bridge output
         bool state = 0;
-        return !tc.enable(state);
+        return !tc->enable(state);
     }
 
 
-    int temperature_control_get_mode(std::string COMM, int& mode) {
-        Oven5R6900 tc = Oven5R6900(COMM);
-        return !tc.get_mode(mode);
+    int temperature_control_get_mode(int& mode) {
+        return !tc->get_mode(mode);
     }
 
 
-    int temperature_control_set_mode(std::string COMM, int& mode) {
-        Oven5R6900 tc = Oven5R6900(COMM);
-        return !tc.set_mode(mode);
+    int temperature_control_set_mode(int& mode) {
+        return !tc->set_mode(mode);
     }
 
 
-    int temperature_control_get_temp(std::string COMM, float& temp) {
-        Oven5R6900 tc = Oven5R6900(COMM);
-        return !tc.get_temp(temp);
+    int temperature_control_get_temp(float& temp) {
+        return !tc->get_temp(temp);
     }
 
 
-    int temperature_control_get_setpoint(std::string COMM, float& temp) {
-        Oven5R6900 tc = Oven5R6900(COMM);
-        return !tc.get_setpoint(temp);
+    int temperature_control_get_setpoint(float& temp) {
+        return !tc->get_setpoint(temp);
     }
 
 
-    int temperature_control_set_setpoint(std::string COMM, float& temp) {
-        Oven5R6900 tc = Oven5R6900(COMM);
-        return !tc.set_setpoint(temp);
+    int temperature_control_set_setpoint(float& temp) {
+        return !tc->set_setpoint(temp);
     }
 
 
@@ -137,9 +242,7 @@ namespace Lab {
 
 
     // TODO:
-    // 1. Wolfram initialize and uninitialize functions
-    // 2. Troubleshoot get position
-    // 3. Troubleshoot set position
+    
 
 
     int initialize_servos() {
@@ -208,58 +311,136 @@ namespace Lab {
 
     bool servos_ready() {
         
-        std::cout << "checking motor status \n";
+        log("\nin bool servos_ready()");
 
-        if (!motorX || !motorZ) return false;
+        // return false if motors are nullptr
+        if (!motorX || !motorZ) {
+            log("One or more motors are nullptr. (!motorX || !motorZ): " + std::to_string((!motorX || !motorZ)));   
+            return false;
+        }
 
+
+        // Check enabling and alerts
         try {
+            log("\tRefreshing status and alerts.");
+            // 1. Force a hardware sync
+            motorX->Status.RT.Refresh();
+            motorZ->Status.RT.Refresh();
+            motorX->Status.Alerts.Refresh();
+            motorZ->Status.Alerts.Refresh();
+
+            log("\tChecking enabling and alert status");
+
 
             // Read safety flags
-            bool IsEnabled = motorX->Motion.IsReady() && motorZ->Motion.IsReady(); // Checks if enabled and fully operational
-            bool NoAlerts = (motorX->Status.Alerts.Value().bits == 0) && 
-                            (motorZ->Status.Alerts.Value().bits == 0);      // Checks for active faults
+            int IsEnabled = motorX->Motion.IsReady() && motorZ->Motion.IsReady(); // Checks if enabled and fully operational
+            int Alerts = (motorX->Status.RT.Value().cpm.AlertPresent) || 
+                            (motorZ->Status.RT.Value().cpm.AlertPresent);      // Checks for active faults
             
-            return IsEnabled && NoAlerts;
+            log("\tIsEnabled: " + std::to_string(IsEnabled));
+            log("\tAlerts: " + std::to_string(Alerts));
+            log("Returning (IsEnabled && !Alerts) : " + std::to_string(IsEnabled && !Alerts));
+
+            return IsEnabled && !Alerts;
+
         } catch (...) {
+            // log("unknown error caught, returning 1.");
+            log("\tCaught some kind of generic error.");
+            log("Returning false");
             return false; // Communication dropped or node became invalid
         }
     }
 
 
 
+    bool servos_homed() {
+
+
+        try {
+
+            return (motorX->Motion.Homing.WasHomed() && motorX->Motion.Homing.HomingValid()) && 
+                (motorZ->Motion.Homing.WasHomed() && motorZ->Motion.Homing.HomingValid());
+
+        } catch (...) {
+            log("\tCaught some kind of generic error.");
+            log("Returning false");
+            return false;
+        }
+    }
+
+
+    int get_servo_alerts(char* alertX, char* alertZ) {
+
+        log("\nin int get_servo_alerts()");
+
+        // return false if motors are nullptr
+        if (!motorX || !motorZ) {
+            log("One or more motors are nullptr. (!motorX || !motorZ): " + std::to_string((!motorX || !motorZ)));   
+            return 1;
+        }
+
+        log("Checking Alert bits");
+
+        // 1. make sure registers are up to date
+        motorX->Status.RT.Refresh();
+        motorZ->Status.RT.Refresh();
+        motorX->Status.Alerts.Refresh();
+        motorZ->Status.Alerts.Refresh();
+
+
+        // 2. Fetch the raw integer bitmasks correctly
+        motorX->Status.Alerts.Value().StateStr(alertX, 256);
+        motorZ->Status.Alerts.Value().StateStr(alertZ, 256);
+        log("MotorX: " + std::string(alertX));
+        log("MotorZ: " + std::string(alertZ));
+
+        return 0;
+
+    }
 
 
     int servo_motor_home(int milliseconds) {
         
+        log("\nIn servo_motor_home()");
+        log("\tchecking servos_ready()");
 
-        // if (!servos_ready()) return 1;      // servos uninitialized
-                        
-        std::vector<int> args = {milliseconds};    
+        if (!servos_ready()) {      // servos uninitialized
+            return 1;
+        }      
+        
+        log("\tservos check complete.");
 
         try {
 
+            log("Initiating homing sequence.");
             motorX->Motion.Homing.Initiate();
             motorZ->Motion.Homing.Initiate();
-            int home_timestamp = Mgr->TimeStampMsec() + args[0];    
+            int home_timestamp = Mgr->TimeStampMsec() + milliseconds;    
             
             while (!motorX->Motion.Homing.WasHomed() || !motorZ->Motion.Homing.WasHomed()) {
                 if (Mgr->TimeStampMsec() > home_timestamp) {
-                    // cerr << "Homing timed out after "<< timeout << " milliseconds" << endl;
+                    log("\tHoming timed out after " + std::to_string(milliseconds) + " milliseconds.");
                     return 1;
                 }
                 Sleep(10);
             }
 
+            log("\tRefreshing current position buffer");
             motorX->Motion.PosnMeasured.Refresh();
             motorZ->Motion.PosnMeasured.Refresh();
+            log("\tBuffer refreshed.");
+            log("\tMeasuring motor position");
+            float x_mm = static_cast<float>(motorX->Motion.PosnMeasured.Value()) / 800;
+            float z_mm = static_cast<float>(motorZ->Motion.PosnMeasured.Value()) / 800;
+            log("\tMeasure position complete.");
+            log("\tCurrent parameters (x_mm, z_mm): " + std::to_string(x_mm) + ", " + std::to_string(z_mm));
 
 
-            // cout << "Final position (mm):  (" << motorX->Motion.PosnMeasured.Value() / 800 << ", " << motorZ->Motion.PosnMeasured.Value() / 800 << ")" << endl;
         } catch (sFnd::mnErr& theErr) {
-            // cerr << "Caught error: " << theErr.ErrorMsg << "\n";
+            log("\tsFoundation error: "); // + std::to_string(theErr.ErrorMsg));
             return 1;
         } catch (std::exception& e) {
-            // cerr << "Caught error: " << e.what() << endl;
+            log("generic error occured");
             return 1;
         }
 
@@ -268,23 +449,32 @@ namespace Lab {
     }
 
 
-    int servo_motor_get_position(float& x_mm, float& z_mm) { 
+    int servos_get_position(float& x_mm, float& z_mm) { 
 
+        log("\nIn servos_get_position()");
+        log("\tCurrent parameters (x_mm, z_mm): " + std::to_string(x_mm) + ", " + std::to_string(z_mm));
+        log("\tchecking servos_ready()");
 
         if (!servos_ready()) return 1;      // servos uninitialized
 
+        log("\n\tservos_ready() check complete");
 
         try {
-            
+            log("\tRefreshing current position buffer");
+            motorX->Motion.PosnMeasured.Refresh();
+            motorZ->Motion.PosnMeasured.Refresh();
+            log("\tBuffer refreshed.");
+            log("\tMeasuring motor position");
             x_mm = static_cast<float>(motorX->Motion.PosnMeasured.Value()) / 800;
             z_mm = static_cast<float>(motorZ->Motion.PosnMeasured.Value()) / 800;
-            // cout << "mm: (" << x_pos << ", " << z_pos << ")" << endl;
+            log("\tMeasure position complete.");
+            log("\tCurrent parameters (x_mm, z_mm): " + std::to_string(x_mm) + ", " + std::to_string(z_mm));
 
         } catch (sFnd::mnErr& theErr) {
-            // cerr << "Caught error: " << theErr.ErrorMsg << "\n";
+            log("sFoundation error");
             return 1;
         } catch (std::exception& e) {
-            // cerr << "Caught error: " << e.what() << endl;
+            log("generic error occured"); // + std::to_string(e));
             return 1;
         }
 
@@ -293,63 +483,71 @@ namespace Lab {
     } 
 
 
-    int servo_motor_set_position(double& x_mm, double& z_mm, double& vel_rms) {
+    int servos_set_position(float& x_mm, float& z_mm, float& vel_rms) {
         
-                      
-        if (!servos_ready()) return 1;      // servos uninitialized
+        log("\nIn servos_set_position()");
+        log("\tchecking servos_ready()");
 
+        if (!servos_ready()) return 1;      // check servo status
 
-        const int vel_limit = 1000;     
-        std::vector<double> args = {0, 0, 240, 10000};     
+        log("\tservo check complete.");
 
-        args[0] = x_mm;
-        args[1] = z_mm;
-        args[2] = vel_rms;
+        const int vel_limit = 1000;         // hardcoded velocity limit
     
-        if (args[2] > vel_limit) {
-            std::cerr << "Desired velocity exceeds limit" << std::endl;
+        if (vel_rms > vel_limit) {
+            log("Desired RPM exceeds limit, exiting...");
+            // std::cerr << "Desired velocity exceeds limit of " << std::to_string(vel_limit) << std::endl;
             return 1;
         }
-
-        args[0] *= 800;     
-        args[1] *= 800;     
 
         try {
 
             if (!(motorX->Motion.Homing.WasHomed() && motorX->Motion.Homing.HomingValid()) ||       
                 !(motorZ->Motion.Homing.WasHomed() && motorZ->Motion.Homing.HomingValid())) {
-                    std::cerr << "Motors are not homed. Please home before continuing" << std::endl;
+                    log("\tMotors are not homed. Please home before continuing");
                     return 1;
             }
 
+            // Set max RPM
+            log("\tSetting max RPM.");
             motorX->VelUnit(sFnd::INode::RPM);                        
             motorZ->VelUnit(sFnd::INode::RPM);                        
-            motorX->Motion.VelLimit = args[2];              
-            motorZ->Motion.VelLimit = args[2];              
-            
-            motorX->Motion.MovePosnStart(args[0], true);
-            motorZ->Motion.MovePosnStart(args[1], true);
+            motorX->Motion.VelLimit = vel_rms;              
+            motorZ->Motion.VelLimit = vel_rms;              
+            log("\tMax RPM set to: " + std::to_string(vel_rms));
 
-            args[3] = Mgr->TimeStampMsec() + 100 + max(motorX->Motion.MovePosnDurationMsec(args[0], true), motorZ->Motion.MovePosnDurationMsec(args[1], true));
+            log("\tStarting Movement");
+            motorX->Motion.MovePosnStart(x_mm*800, true);
+            motorZ->Motion.MovePosnStart(z_mm*800, true);
+
+            int timeout_timestamp = Mgr->TimeStampMsec() + 100 + max(motorX->Motion.MovePosnDurationMsec(x_mm*800, true), motorZ->Motion.MovePosnDurationMsec(z_mm*800, true));
 
             while (!motorX->Motion.MoveIsDone() || !motorZ->Motion.MoveIsDone()) {
-                if (Mgr->TimeStampMsec() > args[3]) {
-                    std::cerr << "Movement timed out" << std::endl;
+                if (Mgr->TimeStampMsec() > timeout_timestamp) {
+                    log("Movement timed out.");
                     return 1;
                 }
             }
             
+            log("\tFinished movement.");
+            
+            log("\tRefreshing current position buffer.");
+            motorX->Motion.PosnMeasured.Refresh();
+            motorZ->Motion.PosnMeasured.Refresh();
+            log("\tBuffer refreshed.");
+            
+            log("\tMeasuring motor position.");
             x_mm = static_cast<float>(motorX->Motion.PosnMeasured.Value()) / 800;
             z_mm = static_cast<float>(motorZ->Motion.PosnMeasured.Value()) / 800;
-
+            log("\tMeasure position complete.");
+            log("\tCurrent parameters (x_mm, z_mm): " + std::to_string(x_mm) + ", " + std::to_string(z_mm));
 
         } catch (sFnd::mnErr& theErr) {
-            std::cerr << "Caught error: " << theErr.ErrorMsg << "\n";
+            log("Caught error: " + std::string(theErr.ErrorMsg));
             return 1;
         } catch (std::exception& e) {
-            std::cerr << "Caught error: " << e.what() << std::endl;
+            log("Global error.");          // std::string(e.what())
             return 1;
-        
         }
 
 
@@ -360,227 +558,153 @@ namespace Lab {
 
 
 
-    // // Initialize global variables for manual control
+    // Callback function to handle keyboard functionality (presumably called by the keyboard handler)
+    LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+        if (nCode == HC_ACTION) {
 
-    // // Event structure to hold key events
-    // struct KeyEvent {
-    //     DWORD vkCode;
-    //     bool pressed;  // true = down, false = up
-    // };
+            KBDLLHOOKSTRUCT* pKeyInfo = (KBDLLHOOKSTRUCT*)lParam;
+            KeyEvent evt{ pKeyInfo->vkCode, wParam == WM_KEYDOWN };
 
+            // Emergency stop on 'Esc'
+            if (evt.pressed && evt.vkCode == VK_ESCAPE) {
+                printf("E-stop called");
+                if (Port) {
+                    Port->GrpShutdown.ShutdownInitiate();
+                }
+                g_running = false;
+                PostQuitMessage(0);
+            }
 
-    // // Shared queue and synchronization
-    // std::queue<KeyEvent> keyQueue;
-    // CRITICAL_SECTION cs;
+            // Store the event in the shared queue
+            EnterCriticalSection(&cs);
+            keyQueue.push(evt);
+            LeaveCriticalSection(&cs);
 
-    // HHOOK g_keyboardHook;
-    // volatile bool g_running = true;
-    // bool g_initialized_motors = false;
-    // volatile bool g_emergency_stop = false;
-    // DWORD g_mainThreadId;       // for posting messages?
-        
-        
-    // // Teknic motors
-    // sFnd::SysManager* Mgr = nullptr;
-    // sFnd::IPort* Port;
-    // sFnd::INode* motorX; // Controlled with Left/Right
-    // sFnd::INode* motorZ; // Controlled with Up/Down
+            // wake main thread
+            PostThreadMessage(g_mainThreadId, WM_KEY_EVENT, 0, 0);
 
+            // Exit if 'q' is pressed
+            if (evt.pressed && evt.vkCode == 'Q') {
+                g_running = false;
+                PostQuitMessage(0);
+            }
 
-
-
-    // // Callback function to handle keyboard functionality (presumably called by the keyboard handler)
-    // LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    //     if (nCode == HC_ACTION) {
-
-    //         KBDLLHOOKSTRUCT* pKeyInfo = (KBDLLHOOKSTRUCT*)lParam;
-    //         KeyEvent evt{ pKeyInfo->vkCode, wParam == WM_KEYDOWN };
-
-    //         // Emergency stop on 'Esc'
-    //         if (evt.pressed && evt.vkCode == VK_ESCAPE) {
-    //             printf("E-stop called");
-    //             if (Port) {
-    //                 Port->GrpShutdown.ShutdownInitiate();
-    //             }
-    //             g_running = false;
-    //             PostQuitMessage(0);
-    //         }
-
-    //         // Store the event in the shared queue
-    //         EnterCriticalSection(&cs);
-    //         keyQueue.push(evt);
-    //         LeaveCriticalSection(&cs);
-
-    //         // wake main thread
-    //         PostThreadMessage(g_mainThreadId, WM_KEY_EVENT, 0, 0);
-
-    //         // Exit if 'q' is pressed
-    //         if (evt.pressed && evt.vkCode == 'Q') {
-    //             g_running = false;
-    //             PostQuitMessage(0);
-    //         }
-
-    //         // Suppress only arrow keys and Escape
-    //         if (evt.vkCode == VK_LEFT || evt.vkCode == VK_RIGHT || evt.vkCode == VK_UP || evt.vkCode == VK_DOWN || evt.vkCode == 'Q') {
-    //             return 1; // Block this key from reaching other apps
-    //         }
+            // Suppress only arrow keys and Escape
+            if (evt.vkCode == VK_LEFT || evt.vkCode == VK_RIGHT || evt.vkCode == VK_UP || evt.vkCode == VK_DOWN || evt.vkCode == 'Q') {
+                return 1; // Block this key from reaching other apps
+            }
             
-    //     }
+        }
 
-    //     return CallNextHookEx(g_keyboardHook, nCode, wParam, lParam);
-    // }
-
-
-    // int servo_motor_manual_control() {
-
-    //     // Initialize variables
-    //     std::vector<std::string> comHubPorts;                 // usually only one port (board) and up to 4 motors per port
-    //     std::unordered_set<DWORD> keys;
-    //     int v_x;                            // possibly should be double
-    //     int v_z;
+        return CallNextHookEx(g_keyboardHook, nCode, wParam, lParam);
+    }
 
 
-    //     // Initialize synchronization
-    //     InitializeCriticalSection(&cs);
-    //     g_mainThreadId = GetCurrentThreadId();      // get for PostThreadMessage
+    int servo_motor_manual_control() {
+
+        log("In int servo_motor_manual_control()");
+
+        // Initialize variables
+        std::unordered_set<DWORD> keys;
+        int v_x;                            // possibly should be double
+        int v_z;
+        g_running = true;
+
+
+        log("\tInitializing critical section");
+        // Initialize synchronization
+        InitializeCriticalSection(&cs);
+        g_mainThreadId = GetCurrentThreadId();      // get for PostThreadMessage
         
-        
-    //     // Install keyboard hook
-    //     g_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
-    //     if (g_keyboardHook == NULL) {
-    //         std::cerr << "Failed to install keyboard hook. Error: " << GetLastError() << std::endl;
-    //         DeleteCriticalSection(&cs);
-    //         return 1;
-    //     }
+        log("\tCritical section initialized, installing keyboard hook...");
+        // Install keyboard hook
+        g_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
+        if (g_keyboardHook == NULL) {
+            log("Failed to install keyboard hook.");
+            // std::cerr << "Failed to install keyboard hook. Error: " << GetLastError() << std::endl;
+            DeleteCriticalSection(&cs);
+            return 1;
+        }
 
-    //     // Run Program
-    //     // Ensure message queue exists
-    //     MSG msg;
-    //     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+        log("\tKeyboard hook installed, starting message queue...");
+        // Run Program
+        // Ensure message queue exists
+        MSG msg;
+        PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
 
-    //     try {
-    //         // Main message + event handling loop
-    //         while (g_running) {
+        try {
 
-    //             if (!g_initialized_motors) {
-    //                 Mgr = sFnd::SysManager::Instance();
+            log("Use arrow keys to move motors. Press 'q' to quit.");
+            log("Entering main message loop...");
 
-    //                 // Find Ports
-    //                 sFnd::SysManager::FindComHubPorts(comHubPorts);
-    //                 printf("Found %llu SC Hubs\n", comHubPorts.size());
-
-    //                 if (comHubPorts.size() == 1) {
-    //                     // assign ports
-    //                     Mgr->ComHubPort(0, comHubPorts[0].c_str()); // for our use case we will only ever be using one com port (circuit board controller)
-    //                 } else {
-    //                     printf("Found number (%llu) ports that is not 1\n", comHubPorts.size()); // handle case with more than one port found
-    //                     // msgUser("Press any key to confirm and exit");
-    //                     return 1;
-    //                 }
-
-    //                 // Open the port(s)
-    //                 Mgr->PortsOpen(1);
-
-    //                 Port = &Mgr->Ports(0);
-    //                 motorX = &Port->Nodes(0); // Controlled with Left/Right
-    //                 motorZ = &Port->Nodes(1); // Controlled with Up/Down
-                    
-    //                 // print motor (Node) information
-
-    //                 printf("Motor X  Serial #: %d\n", motorX->Info.SerialNumber.Value());
-    //                 printf("Motor Z  Serial #: %d\n", motorZ->Info.SerialNumber.Value());
-    //                 // printf("Press enter to continue, any other key to exit...");
-    //                 // char c = _getch();
-    //                 // if (c != '\n' && c != '\r') break;
-    //                 // printf("Enabling and Homing Motors\n");
+            // Main message + event handling loop
+            while (g_running) {
 
 
-    //                 motorX->Status.AlertsClear();                   //Clear Alerts on node 
-    //                 motorZ->Status.AlertsClear();
-
-    //                 motorX->Motion.NodeStopClear();                  // Clear Nodestops ?
-    //                 motorZ->Motion.NodeStopClear();
-                    
-    //                 motorX->EnableReq(true);
-    //                 motorZ->EnableReq(true);
-    //                 Sleep(200); // wait for enabling
-
-    //                 // Homing
-    //                 printf("current position (X, Z): (%.0f,%.0f)\n", motorX->Motion.PosnMeasured.Value(), motorZ->Motion.PosnMeasured.Value());
-    //                 // home(Mgr, motorX, "X-axis", 20000);
-    //                 // home(Mgr, motorZ, "Z-axis", 20000);
-    //                 printf("current position (X, Z): (%.0f,%.0f)\n", motorX->Motion.PosnMeasured.Value(), motorZ->Motion.PosnMeasured.Value());
-
-    //                 g_initialized_motors = true;
-    //                 std::cout << "Use arrow keys to move motors. Press 'q' to quit.\n";
-    //             }
-
-                    
-
-    //             if(GetMessage(&msg, NULL, 0, 0)) {
-    //                 if (msg.message == WM_KEY_EVENT) {
+                if(GetMessage(&msg, NULL, 0, 0)) {
+                    if (msg.message == WM_KEY_EVENT) {
                         
-    //                     // Process key events
-    //                     EnterCriticalSection(&cs);
+                        // Process key events
+                        EnterCriticalSection(&cs);
 
-    //                     while (!keyQueue.empty()) {
-    //                         KeyEvent evt = keyQueue.front();
-    //                         keyQueue.pop();
-    //                         LeaveCriticalSection(&cs);  // Unlock while processing
+                        while (!keyQueue.empty()) {
+                            KeyEvent evt = keyQueue.front();
+                            keyQueue.pop();
+                            LeaveCriticalSection(&cs);  // Unlock while processing
 
-    //                         // Add actions to set
-    //                         if (evt.pressed) {
-    //                             // add to set
-    //                             keys.insert(evt.vkCode);
-    //                         } else {
-    //                             // remove from set
-    //                             keys.erase(evt.vkCode);
-    //                         }
+                            // Add actions to set
+                            if (evt.pressed) {
+                                // add to set
+                                keys.insert(evt.vkCode);
+                            } else {
+                                // remove from set
+                                keys.erase(evt.vkCode);
+                            }
 
-    //                         EnterCriticalSection(&cs);  // Re-lock before next iteration
-    //                     }
+                            EnterCriticalSection(&cs);  // Re-lock before next iteration
+                        }
 
-    //                     LeaveCriticalSection(&cs);
+                        LeaveCriticalSection(&cs);
 
-    //                     // move motors according to key strokes
-    //                     v_x = (keys.find(39) != keys.end()) - (keys.find(37) != keys.end());
-    //                     v_z = (keys.find(38) != keys.end()) - (keys.find(40) != keys.end());
+                        // move motors according to key strokes
+                        v_x = (keys.find(39) != keys.end()) - (keys.find(37) != keys.end());
+                        v_z = (keys.find(38) != keys.end()) - (keys.find(40) != keys.end());
 
-    //                     motorX->Motion.MoveVelStart(500*v_x);
-    //                     motorZ->Motion.MoveVelStart(500*v_z);
+                        motorX->Motion.MoveVelStart(50*v_x);
+                        motorZ->Motion.MoveVelStart(50*v_z);
 
 
-    //                 } else {
-    //                     TranslateMessage(&msg);     // idk what this does
-    //                     DispatchMessage(&msg);
-    //                 }
+                    } else {
+                        TranslateMessage(&msg);     // idk what this does
+                        DispatchMessage(&msg);
+                    }
 
-    //             }
+                }
 
-    //             }
+            }
 
-    //     } catch (sFnd::mnErr& theErr) {
-    //         std::cout << "Caught error: " << theErr.ErrorMsg << "\n";
-    //     } catch (std::exception& e) {
-    //         std::cout << "Caught error: " << e.what() << std::endl;
-    //         printf("Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.\n");
+            log("\tExited main loop");
 
-    //     }
+        } catch (sFnd::mnErr& theErr) {
+            log("\tsFoundation error.");
+            // std::cout << "Caught error: " << theErr.ErrorMsg << "\n";
+        } catch (std::exception& e) {
+            log("\tGeneric error.");
+            // std::cout << "Caught error: " << e.what() << std::endl;
+            // printf("Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.\n");
 
-    //     // Safe disable. May want wrapper for this
-    //     if (motorX) motorX->EnableReq(false);
-    //     if (motorZ) motorZ->EnableReq(false);
-    //     if (Mgr) Mgr->PortsClose();
+        }
 
-        
+        //shutdown_servos();
 
-    //     // Unload the hook
-    //     UnhookWindowsHookEx(g_keyboardHook);
-    //     DeleteCriticalSection(&cs);
-    //     std::cout << "exiting..." << std::endl;
+        log("\tUnloading keyboard hook and deleting critical section");
+        // Unload the hook
+        UnhookWindowsHookEx(g_keyboardHook);
+        DeleteCriticalSection(&cs);
+        log("exiting...");
 
-    //     return 0;
-    // }
+        return 0;
+    }
 
 
 
