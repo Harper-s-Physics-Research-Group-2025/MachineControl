@@ -13,10 +13,13 @@ Date: 06.09.2026 1400
 
 namespace Lab {
 
-    // RTE7 Bath
+    // Create namespace instances of the hardware managers
+    // Avoid reinitializing and uninitializing them every function call.
+
+    // pointer to RTE7 bath object
     RTE7* bath = nullptr;
 
-    // Temp controller
+    // pointer to temp controller object
     Oven5R6900* tc = nullptr;
 
 
@@ -26,36 +29,37 @@ namespace Lab {
     sFnd::INode* motorX = nullptr; 
     sFnd::INode* motorZ = nullptr; 
 
-    // logging
+    // logging defaults
     bool LOG = false;
     std::string LOG_FILE = "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\v2\\log.txt";
 
 
     
     
-    // Initialize global variables for manual control
-
+    // A few global variables for manual control
     // Event structure to hold key events
     struct KeyEvent {
-        DWORD vkCode;
-        bool pressed;  // true = down, false = up
+        DWORD vkCode;   // unique code for each keyboard key
+        bool pressed;   // true = down, false = up
     };
 
 
     // Shared queue and synchronization
-    std::queue<KeyEvent> keyQueue;
-    CRITICAL_SECTION cs;
+    std::queue<KeyEvent> keyQueue;      // queue for passing KeyEvent structs
+    CRITICAL_SECTION cs;                // critical section for multithread safe queue. (probably not completely necessary in this case)
 
-    HHOOK g_keyboardHook;
-    volatile bool g_running = true;
+    HHOOK g_keyboardHook;               // operational status of keyboard callback function
+    volatile bool g_running = true;     // whether the manual control for motors is running
     DWORD g_mainThreadId;       // for posting messages?
     
     
     
     
     
-    
-    // logging functions
+    // -------------------------------------------------------------------------
+    // Logging
+    // -------------------------------------------------------------------------
+
     void log(const std::string& msg) {                      // Write to file if desired.
         if (LOG) {
             std::ofstream f(LOG_FILE, std::ios::app);
@@ -72,7 +76,13 @@ namespace Lab {
     }
 
 
-    int set_log_settings(bool& verbose, std::string& file) {        // Turn logging on/off. Specify log location.
+    int set_log_settings(bool& verbose, std::string& file) {        // Turn logging on/off. Specify log file location.
+        
+        if (!logfile_valid(file)) {         // For invalid file path, do nothing.
+            log("Invalid file path: " + file);
+            return 1;
+        }
+
         log("log settings modified by set_log_settings(). LOGFILE: " + file);
         LOG = verbose;
         LOG_FILE = file;
@@ -80,25 +90,24 @@ namespace Lab {
     }
 
 
-    bool logfile_valid(std::string& filepath) {
+    bool logfile_valid(std::string& filepath) {                     // file path validity check
         return std::filesystem::exists(std::filesystem::path(filepath).parent_path());
     }
 
 
 
 
-    // RTE7 Bath functions
+    // -------------------------------------------------------------------------
+    // RTE7 Fluid Bath
+    // -------------------------------------------------------------------------
+
     int init_bath(std::string COMM) {
-        // 1. Clean up an existing connection if called a second time
-        if (bath != nullptr) {
-            delete bath;
-        }
         
-        // 2. Instantiate a fresh connection on the heap
-        bath = new RTE7(COMM);
-        
-        // 3. Return a success token (e.g., check if the pointer is valid)
-        return (bath == nullptr);
+        if (bath != nullptr) { delete bath;}   // 1. Clean up an existing connection if called a second time
+            
+        bath = new RTE7(COMM);          // 2. Instantiate a fresh connection on the heap
+        return (bath == nullptr);       // 3. Return a success token (e.g., check if the pointer is valid)
+
     }
 
 
@@ -114,50 +123,24 @@ namespace Lab {
     }
 
 
-    int bath_on() {
-        return !bath->turn_on();
-    }
-
-
-    int bath_off() {
-        return !bath->turn_off();
-    }
-
-
-    int bath_manual() {
-        return !bath->manual();
-    }
-
-
-    int bath_get_temp(float& temp) {
-        return !bath->get_temp(temp);
-    }
-
-
-    int bath_get_setpoint(float& temp) {
-        return !bath->get_setpoint(temp);
-    }
-
-
-    int bath_set_setpoint(float& temp) {
-        return !bath->set_setpoint(temp);
-    }
+    int bath_on()                       { return !bath->turn_on(); }
+    int bath_off()                      { return !bath->turn_off(); }
+    int bath_manual()                   { return !bath->manual(); }
+    int bath_get_temp(float& temp)      { return !bath->get_temp(temp); }
+    int bath_get_setpoint(float& temp)  { return !bath->get_setpoint(temp); }
+    int bath_set_setpoint(float& temp)  { return !bath->set_setpoint(temp); }
 
 
 
 
+    // -------------------------------------------------------------------------
     // Oven Industries 5R6-900 Temperature Controller
+    // -------------------------------------------------------------------------
+
     int init_temp_controller(std::string COMM) {
-        // 1. Clean up an existing connection if called a second time
-        if (tc != nullptr) {
-            delete tc;
-        }
-        
-        // 2. Instantiate a fresh connection on the heap
-        tc = new Oven5R6900(COMM);
-        
-        // 3. Return a success token (e.g., check if the pointer is valid)
-        return (tc == nullptr);
+        if (tc != nullptr) { delete tc;}    // 1. Clean up an existing connection if called a second time
+        tc = new Oven5R6900(COMM);     // 2. Instantiate a fresh connection on the heap
+        return (tc == nullptr);        // 3. Return a success token (e.g., check if the pointer is valid)
     }
 
 
@@ -172,47 +155,20 @@ namespace Lab {
     }
 
 
-    int temperature_control_on() {         // Enable H-bridge output
-        bool state = 1;
-        return !tc->enable(state);
-    }
-
-
-    int temperature_control_off() {        // Disable H-bridge output
-        bool state = 0;
-        return !tc->enable(state);
-    }
-
-
-    int temperature_control_get_mode(int& mode) {
-        return !tc->get_mode(mode);
-    }
-
-
-    int temperature_control_set_mode(int& mode) {
-        return !tc->set_mode(mode);
-    }
-
-
-    int temperature_control_get_temp(float& temp) {
-        return !tc->get_temp(temp);
-    }
-
-
-    int temperature_control_get_setpoint(float& temp) {
-        return !tc->get_setpoint(temp);
-    }
-
-
-    int temperature_control_set_setpoint(float& temp) {
-        return !tc->set_setpoint(temp);
-    }
+    int temperature_control_on()                        { bool s = 1;; return !tc->enable(s); }      // Enable H-bridge output
+    int temperature_control_off()                       { bool s = 0; return !tc->enable(s); }      // Disable H-bridge output
+    int temperature_control_get_mode(int& mode)         { return !tc->get_mode(mode); }
+    int temperature_control_set_mode(int& mode)         { return !tc->set_mode(mode); }
+    int temperature_control_get_temp(float& temp)       { return !tc->get_temp(temp); }
+    int temperature_control_get_setpoint(float& temp)   { return !tc->get_setpoint(temp); }
+    int temperature_control_set_setpoint(float& temp)   { return !tc->set_setpoint(temp); }
 
 
 
+    // -------------------------------------------------------------------------
+    // LabJack U3 Analog Input
+    // -------------------------------------------------------------------------
 
-
-    // Labjack read channel
     int read_labjack_ain(const long channel, double& voltage) {
         LJ_HANDLE h;       // Handle for the device
         int errorcode;
@@ -238,17 +194,15 @@ namespace Lab {
 
 
 
-    // Teknic Servo Motors
+    // -------------------------------------------------------------------------
+    // Teknic ClearPath Servo Motors
+    // -------------------------------------------------------------------------
 
-
-    // TODO:
-    
-
-
+    // Create managers to control the servo motors
+    // set the namespace pointers to the locations of these objects.
     int initialize_servos() {
 
         std::vector<std::string> comHubPorts;
-
 
         try {
             Mgr = sFnd::SysManager::Instance();
@@ -261,25 +215,24 @@ namespace Lab {
                 return 1;
             }
 
+            // Connect to motors
             Mgr->PortsOpen(1);
             Port = &Mgr->Ports(0);
             motorX = &Port->Nodes(0);
             motorZ = &Port->Nodes(1);
 
+            // Clear alerts and faults. Enable motors.
             motorX->Status.AlertsClear();                   
             motorZ->Status.AlertsClear();
-
             motorX->Motion.NodeStopClear();                  
             motorZ->Motion.NodeStopClear();
-            
             motorX->EnableReq(true);
             motorZ->EnableReq(true);
-            Sleep(200); 
+            Sleep(200);     // wait for enable to complete
 
             return 0;
         
-        } catch (sFnd::mnErr& theErr) {
-            // If an SDK error occurs (e.g., motor has a hard fault), shut down
+        } catch (sFnd::mnErr& theErr) {    // If an SDK error occurs (e.g., motor has a hard fault), shut down
             shutdown_servos(); 
             return -1;
         } catch (...) {
@@ -290,9 +243,11 @@ namespace Lab {
     }
 
 
+    // Release controller memory back to the system
+    // set pointers to null
     int shutdown_servos() {
 
-        // Safely kill power to the motor coils before severing communication
+        // Safely kill power to the motor coils before closing communication
         if (motorX) motorX->EnableReq(false);
         if (motorZ) motorZ->EnableReq(false);
 
@@ -309,13 +264,13 @@ namespace Lab {
     }
 
 
+    // Servo motor status check
     bool servos_ready() {
         
         log("\nin bool servos_ready()");
 
-        // return false if motors are nullptr
-        if (!motorX || !motorZ) {
-            log("One or more motors are nullptr. (!motorX || !motorZ): " + std::to_string((!motorX || !motorZ)));   
+        if (!motorX || !motorZ) {       // return false if motors are nullptr
+            log("One or more motors are nullptr.");   
             return false;
         }
 
@@ -345,30 +300,26 @@ namespace Lab {
 
         } catch (...) {
             // log("unknown error caught, returning 1.");
-            log("\tCaught some kind of generic error.");
-            log("Returning false");
-            return false; // Communication dropped or node became invalid
-        }
-    }
-
-
-
-    bool servos_homed() {
-
-
-        try {
-
-            return (motorX->Motion.Homing.WasHomed() && motorX->Motion.Homing.HomingValid()) && 
-                (motorZ->Motion.Homing.WasHomed() && motorZ->Motion.Homing.HomingValid());
-
-        } catch (...) {
-            log("\tCaught some kind of generic error.");
-            log("Returning false");
+            log("\tGeneric error in servos_ready(), Returning false");
             return false;
         }
     }
 
 
+    // Returns true if both motors have completed a valid homing sequence
+    bool servos_homed() {
+
+        try {
+            return (motorX->Motion.Homing.WasHomed() && motorX->Motion.Homing.HomingValid()) && 
+                (motorZ->Motion.Homing.WasHomed() && motorZ->Motion.Homing.HomingValid());
+        } catch (...) {
+            log("\tGeneric error in servos_homed(), Returning false");
+            return false;
+        }
+    }
+
+    
+    // Writes human-readable alert strings for each axis into caller-provided buffers (256 bytes each)
     int get_servo_alerts(char* alertX, char* alertZ) {
 
         log("\nin int get_servo_alerts()");
@@ -387,31 +338,27 @@ namespace Lab {
         motorX->Status.Alerts.Refresh();
         motorZ->Status.Alerts.Refresh();
 
-
-        // 2. Fetch the raw integer bitmasks correctly
+        // 2. Fetch alert bits and descriptions.
         motorX->Status.Alerts.Value().StateStr(alertX, 256);
         motorZ->Status.Alerts.Value().StateStr(alertZ, 256);
         log("MotorX: " + std::string(alertX));
         log("MotorZ: " + std::string(alertZ));
 
         return 0;
-
     }
 
 
+    // home the system
     int servo_motor_home(int milliseconds) {
         
         log("\nIn servo_motor_home()");
         log("\tchecking servos_ready()");
 
-        if (!servos_ready()) {      // servos uninitialized
-            return 1;
-        }      
+        if (!servos_ready()) { return 1; }     // servos uninitialized 
         
         log("\tservos check complete.");
 
         try {
-
             log("Initiating homing sequence.");
             motorX->Motion.Homing.Initiate();
             motorZ->Motion.Homing.Initiate();
@@ -437,7 +384,7 @@ namespace Lab {
 
 
         } catch (sFnd::mnErr& theErr) {
-            log("\tsFoundation error: "); // + std::to_string(theErr.ErrorMsg));
+            log("\tsFoundation error: ");
             return 1;
         } catch (std::exception& e) {
             log("generic error occured");
@@ -449,6 +396,7 @@ namespace Lab {
     }
 
 
+    // Get current apparatus position (mm)
     int servos_get_position(float& x_mm, float& z_mm) { 
 
         log("\nIn servos_get_position()");
@@ -483,6 +431,7 @@ namespace Lab {
     } 
 
 
+    // move apparatus to new position (mm)
     int servos_set_position(float& x_mm, float& z_mm, float& vel_rms) {
         
         log("\nIn servos_set_position()");
@@ -496,14 +445,12 @@ namespace Lab {
     
         if (vel_rms > vel_limit) {
             log("Desired RPM exceeds limit, exiting...");
-            // std::cerr << "Desired velocity exceeds limit of " << std::to_string(vel_limit) << std::endl;
             return 1;
         }
 
         try {
 
-            if (!(motorX->Motion.Homing.WasHomed() && motorX->Motion.Homing.HomingValid()) ||       
-                !(motorZ->Motion.Homing.WasHomed() && motorZ->Motion.Homing.HomingValid())) {
+            if (!servos_homed()) {
                     log("\tMotors are not homed. Please home before continuing");
                     return 1;
             }
@@ -546,19 +493,20 @@ namespace Lab {
             log("Caught error: " + std::string(theErr.ErrorMsg));
             return 1;
         } catch (std::exception& e) {
-            log("Global error.");          // std::string(e.what())
+            log("Generic error: " + std::string(e.what()));
             return 1;
         }
 
-
         return 0;
-    
     }
 
 
 
+    // -------------------------------------------------------------------------
+    // Manual Motor Control (keyboard-driven)
+    // -------------------------------------------------------------------------
 
-    // Callback function to handle keyboard functionality (presumably called by the keyboard handler)
+    // Callback function to handle keyboard functionality (low level keyboard hook called by the keyboard handler)
     LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         if (nCode == HC_ACTION) {
 
@@ -600,14 +548,14 @@ namespace Lab {
     }
 
 
+    // Runs a blocking manual control loop: arrow keys drive motors, Esc = E-stop, Q = quit
     int servo_motor_manual_control() {
 
         log("In int servo_motor_manual_control()");
 
         // Initialize variables
-        std::unordered_set<DWORD> keys;
-        int v_x;                            // possibly should be double
-        int v_z;
+        std::unordered_set<DWORD> keys;     // currently held keys (of interest)
+        int v_x, v_z;
         g_running = true;
 
 
@@ -615,32 +563,27 @@ namespace Lab {
         // Initialize synchronization
         InitializeCriticalSection(&cs);
         g_mainThreadId = GetCurrentThreadId();      // get for PostThreadMessage
-        
-        log("\tCritical section initialized, installing keyboard hook...");
+
         // Install keyboard hook
+        log("\tCritical section initialized, installing keyboard hook...");
         g_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, GetModuleHandle(NULL), 0);
         if (g_keyboardHook == NULL) {
             log("Failed to install keyboard hook.");
-            // std::cerr << "Failed to install keyboard hook. Error: " << GetLastError() << std::endl;
             DeleteCriticalSection(&cs);
             return 1;
         }
 
+
         log("\tKeyboard hook installed, starting message queue...");
-        // Run Program
-        // Ensure message queue exists
-        MSG msg;
-        PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+        MSG msg;// Run Program
+        PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);  // Ensure message queue exists
 
         try {
-
             log("Use arrow keys to move motors. Press 'q' to quit.");
             log("Entering main message loop...");
 
             // Main message + event handling loop
             while (g_running) {
-
-
                 if(GetMessage(&msg, NULL, 0, 0)) {
                     if (msg.message == WM_KEY_EVENT) {
                         
@@ -673,14 +616,11 @@ namespace Lab {
                         motorX->Motion.MoveVelStart(50*v_x);
                         motorZ->Motion.MoveVelStart(50*v_z);
 
-
                     } else {
                         TranslateMessage(&msg);     // idk what this does
                         DispatchMessage(&msg);
                     }
-
                 }
-
             }
 
             log("\tExited main loop");
@@ -691,22 +631,15 @@ namespace Lab {
         } catch (std::exception& e) {
             log("\tGeneric error.");
             // std::cout << "Caught error: " << e.what() << std::endl;
-            // printf("Node did not complete homing:  \n\t -Ensure Homing settings have been defined through ClearView. \n\t -Check for alerts/Shutdowns \n\t -Ensure timeout is longer than the longest possible homing move.\n");
-
         }
 
-        //shutdown_servos();
-
         log("\tUnloading keyboard hook and deleting critical section");
-        // Unload the hook
-        UnhookWindowsHookEx(g_keyboardHook);
+        UnhookWindowsHookEx(g_keyboardHook);        // Unload the hook
         DeleteCriticalSection(&cs);
         log("exiting...");
 
         return 0;
     }
-
-
 
 }
 

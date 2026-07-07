@@ -1,12 +1,11 @@
 /*
 wolfram_api.cpp
 
+Wolfram API for the Lab namespace.
 Exposes lab equipment functionality (functions) to be able to be called by Wolfram code.
 
 Author: Joshua Darrow and Samuel Ntadom
 Date: 06.09.2026 1330
-
-
 */
 
 
@@ -18,32 +17,23 @@ Date: 06.09.2026 1330
 
 extern "C" {
 
-    /*****************************************************
-     * Function name: WolframLibrary_getVersion
-     * Input: None
-     * Side effect: None
-     * Output: mint (Returns engine layout version indices)
-     *****************************************************/
+    /* ==========================================================================
+       WOLFRAM LIFECYCLE MANAGEMENT
+       ========================================================================== */
+
+    // Returns LibraryLink compatibility framework version indices.
     DLLEXPORT mint WolframLibrary_getVersion() { return WolframLibraryVersion; }
     
-    /*****************************************************
-     * Function name: WolframLibrary_initialize
-     * Input: lp (WolframLibraryData)
-     * Side effect: Performs low-level runtime integration checks
-     * Output: int (0 on initialization tracking)
-     *****************************************************/
+
+    // Automatically invoked by Wolfram when the DLL is first loaded into memory.
     DLLEXPORT int WolframLibrary_initialize(WolframLibraryData lp) {
         Lab::log("\n\n");
         Lab::initialize_servos();
         return LIBRARY_NO_ERROR; 
     }
 
-    /*****************************************************
-     * Function name: WolframLibrary_uninitialize
-     * Input: lp (WolframLibraryData)
-     * Side effect: None
-     * Output: None
-     *****************************************************/
+    // Automatically invoked by Wolfram when the library is explicitly unloaded.
+    // Cleanly tears down global memory vectors and safely closes active COM port handles.
     DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData lp) {
         Lab::delete_bath();
         Lab::delete_temp_controller();
@@ -53,10 +43,8 @@ extern "C" {
 
 
     /* ==========================================================================
-       WOLFRAM INTERFACE FUNCTIONS
+       LOGGING SUBSYSTEM
        ========================================================================== */
-
-
 
     // Get logging status. 0 = Off; 1 = On
     DLLEXPORT int wget_logging_status(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
@@ -65,12 +53,12 @@ extern "C" {
         std::string file;
         
         return_code = Lab::get_log_settings(verbose, file);
-        MArgument_setInteger(Res, static_cast<int>(verbose));
+        MArgument_setInteger(Res, static_cast<mint>(verbose));
         return return_code;
     }
 
 
-    // Get log file path
+    // Get log file path (UTF8_String)
     DLLEXPORT int wget_log_file(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
         int return_code;
         bool verbose;
@@ -81,21 +69,13 @@ extern "C" {
     }
 
 
-    // Set logging status and log file path.
+    // Set logging status and log file path at runtime.
     DLLEXPORT int wset_log_settings(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-        int return_code;
         bool verbose = MArgument_getInteger(Args[0]);
         std::string file = MArgument_getUTF8String(Args[1]);
 
-        if (!Lab::logfile_valid(file)) {
-            std::string err_msg = "File path " + file = " is not a valid path.";
-            lp->Message(err_msg.c_str());
-            return 1;
-        }
-
-        return_code = Lab::set_log_settings(verbose, file);
-        MArgument_setInteger(Res, static_cast<int>(verbose));
-
+        int return_code = Lab::set_log_settings(verbose, file);
+        MArgument_setInteger(Res, static_cast<mint>(verbose));
         return return_code;
     }
 

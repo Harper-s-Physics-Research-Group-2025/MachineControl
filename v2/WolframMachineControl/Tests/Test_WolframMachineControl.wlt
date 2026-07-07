@@ -202,14 +202,14 @@ VerificationTest[
 
 VerificationTest[
     Round[WolframMachineControl`ServoSetPos[10.0, -20.0, 100]],
-    {10.0, -20.0, 100},
+    {10, -20, 100},
     TestID -> "ServoSetPos[10, -20, 100]"
 ]
 
 VerificationTest[
-    MatchQ[WolframMachineControl`ServoGetPos[], {_Real, _Real}],
-    True,
-    TestID -> "MatchQ[WolframMachineControl`ServoGetPos[], {_Real, _Real}]"
+    Round[WolframMachineControl`ServoGetPos[]],
+    {10, -20},
+    TestID -> "Round[WolframMachineControl`ServoGetPos[]]"
 ]
 
 VerificationTest[
