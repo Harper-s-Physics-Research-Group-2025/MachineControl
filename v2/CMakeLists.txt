@@ -19,9 +19,10 @@ endif()
 # find_package(LabJack REQUIRED)
 # find_package(Teknic REQUIRED)
 
-find_path(WOLFRAM_INCLUDE_DIR 
-    NAMES WolframLibrary.h 
-    HINTS "C:/Program Files/Wolfram Research/Wolfram/14.3/SystemFiles/IncludeFiles/C"
+find_path(WOLFRAM_INCLUDE_DIR
+    NAMES WolframLibrary.h
+    HINTS "C:/Program Files/Wolfram Research/Wolfram/15.0/SystemFiles/IncludeFiles/C"
+          "C:/Program Files/Wolfram Research/Wolfram/14.3/SystemFiles/IncludeFiles/C"
 )
 
 
@@ -54,9 +55,6 @@ add_library(wolfram_machine_controller SHARED
     "${CMAKE_CURRENT_SOURCE_DIR}/src/lab.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/Oven5R6900.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/RTE7.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/src/recorder.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/src/sm_homer.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/src/sm_manual_controller.cpp"
 )
 
 

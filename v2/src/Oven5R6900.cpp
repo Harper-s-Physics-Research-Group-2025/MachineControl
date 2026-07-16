@@ -219,7 +219,9 @@ bool Oven5R6900::dispatch_message(
     if (!send_command(msg) || !read_response(res)) return false;
 
     string response(res.begin(), res.end());
-    value = parse_response(response) / scale_factor;
+    int32_t raw = parse_response(response);
+    if (raw == -999) return false;   // parse_response signals a checksum failure with -999
+    value = raw / scale_factor;
 
     if (log_callback) {
         log_callback(value);
@@ -514,25 +516,34 @@ bool Oven5R6900::set_ramp_soak(int& status) {
 
 // set soak temperature
 bool Oven5R6900::set_soak_temp(const std::string& sequence, float& temp) {
-    return dispatch_message("8" + sequence, temp, 100, true);
+    int seq = stoi(sequence);
+    stringstream ss;
+    ss << hex << nouppercase << (8 + seq);        // must match get_soak_temp's command ID
+    return dispatch_message("8" + ss.str(), temp, 100, true);
 }
 
 
 // ramp duration in counts
 bool Oven5R6900::set_ramp_duration(const std::string& sequence, int& counts){
+    int seq = stoi(sequence);
+    stringstream ss;
+    ss << hex << nouppercase << (8 + seq);        // must match get_ramp_duration's command ID
     float c = static_cast<float>(counts);
-    return dispatch_message("9" + sequence, c, 1, true,
+    return dispatch_message("9" + ss.str(), c, 1, true,
         [&](float result) {
             counts = static_cast<int>(result);      // back to int
         }
     );
-}        
+}
 
 
 // soak duration in counts (count duration determined by set_count_length)
 bool Oven5R6900::set_soak_duration(const std::string& sequence, int& counts) {
+    int seq = stoi(sequence);
+    stringstream ss;
+    ss << hex << nouppercase << (8 + seq);        // must match get_soak_duration's command ID
     float c = static_cast<float>(counts);
-    return dispatch_message("a" + sequence, c, 1, true,
+    return dispatch_message("a" + ss.str(), c, 1, true,
         [&](float result) {
             counts = static_cast<int>(result);      // back to int
         }
@@ -542,19 +553,25 @@ bool Oven5R6900::set_soak_duration(const std::string& sequence, int& counts) {
 
 // number of times to run a ramp/soak sequence
 bool Oven5R6900::set_num_repeats(const std::string& sequence, int& repeats) {
+    int seq = stoi(sequence);
+    stringstream ss;
+    ss << hex << nouppercase << (8 + seq);        // must match get_num_repeats's command ID
     float num_repeats = static_cast<float>(repeats);
-    return dispatch_message("b" + sequence, num_repeats, 1, true,
+    return dispatch_message("b" + ss.str(), num_repeats, 1, true,
         [&](float result) {
             repeats = static_cast<int>(result);      // back to int
         }
     );
-}    
+}
 
 
 // next ramp/soak sequence to run if multiple are stored in memory
 bool Oven5R6900::set_next_sequence_num(const std::string& sequence, int& next_sequence) {
+    int seq = stoi(sequence);
+    stringstream ss;
+    ss << hex << nouppercase << (8 + seq);        // must match get_next_sequence_num's command ID
     float next_seq = static_cast<float>(next_sequence);
-    return dispatch_message("c" + sequence, next_seq, 1, true,
+    return dispatch_message("c" + ss.str(), next_seq, 1, true,
         [&](float result) {
             next_sequence = static_cast<int>(result);      // back to int
         }

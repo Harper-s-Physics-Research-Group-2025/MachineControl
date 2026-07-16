@@ -203,12 +203,12 @@ bool RTE7::read_temp(float& out_temp) {
 
     out_temp = parse_float_response(res);
 
-    return true;
+    return out_temp != -999;   // parse_float_response signals a checksum failure with -999
 }
 
 // Send Read Internal Temperature command (CA 00 01 70 00 8E)
 bool RTE7::read_setpoint(float& out_temp) {
-    
+
     // construct message
     vector<uint8_t> msg = {0xCA, 0x00, 0x01, 0x70, 0x00, 0x8E};
     vector<uint8_t> res(16);
@@ -217,7 +217,7 @@ bool RTE7::read_setpoint(float& out_temp) {
 
     out_temp = parse_float_response(res);
 
-    return true;
+    return out_temp != -999;   // parse_float_response signals a checksum failure with -999
 
 }
 

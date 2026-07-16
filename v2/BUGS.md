@@ -1,95 +1,82 @@
 # Known Bugs
 
-Found via static read-through of the C++ source (not build-verified — this is Windows-only
-code requiring the Wolfram/LabJack/Teknic SDKs, none of which are available on this machine).
+Originally found via static read-through of the C++ source. All bugs below have since been
+fixed and the DLL rebuilds clean (`cmake --build . --config Release`) after each fix, but none
+of these fixes have been exercised against the real hardware yet — only compiled.
 
 ## High severity
 
-### 1. Null-pointer crash if a device function is called before its init function
-`src/lab.cpp:126-131` (bath) and `:158-164` (temp controller) dereference the `bath`/`tc`
-pointers with no null check:
-```cpp
-int bath_on() { return !bath->turn_on(); }
-```
-If `BathOn["COM3"]` is called before `BathInit["COM3"]` (or after `DeleteBath[]`), this is a
-null-pointer dereference that crashes the whole Mathematica kernel — not a catchable Wolfram
-error. `BathInit`/`TempCtrlInit` exist in `WolframMachineControl.wl` but have no `::usage`
-string, so they're easy to forget to call first.
+### 1. ~~Null-pointer crash if a device function is called before its init function~~ — Fixed
+`Lab::bath_*()`/`Lab::temperature_control_*()` (`src/lab.cpp`) now check `bath`/`tc` for null
+before dereferencing and return `1` instead of crashing.
 
-### 2. `ServoReady[]` checks the wrong thing
-`src/wolfram_api.cpp:302-306` — the function bound to `ServoReady[]` (`wmotors_ready`) calls
-`Lab::servos_homed()`, not `Lab::servos_ready()`. It's an exact duplicate of `ServoHomed[]`.
-The actual readiness check (motors enabled, no alerts — `Lab::servos_ready()`) is only wired
-to `wservo_hardware_online`, which is never bound to any Wolfram symbol in the `.wl` file at
-all. There is currently no way to query "are the motors enabled and alert-free" from
-Mathematica.
+### 2. ~~`ServoReady[]` checks the wrong thing~~ — Fixed
+`ServoReady[]` (`WolframMachineControl.wl`) is now bound to `wservo_hardware_online`
+(`Lab::servos_ready()` — enabled + alert-free), not the homing check. The redundant
+`wmotors_ready` wrapper was removed from `src/wolfram_api.cpp`.
 
-### 3. `ServoHomed[]` / `ServoReady[]` throw instead of returning `False`
-`src/wolfram_api.cpp:302-313` — both functions return `!return_code` as the LibraryLink status
-code, where `return_code` is the actual boolean (0 = not homed, 1 = homed):
-```cpp
-int return_code = Lab::servos_homed();
-MArgument_setInteger(Res, static_cast<mint>(return_code));
-return !return_code;   // not homed (0) -> returns 1 = LIBRARY_FUNCTION_ERROR
-```
-Whenever the motors are NOT homed, this returns `LIBRARY_FUNCTION_ERROR`, so Mathematica
-treats the call as a failure (`$Failed`) instead of delivering the boolean `False`. Checking
-homing status before homing looks like a crash, not a clean check.
+### 3. ~~`ServoHomed[]` / `ServoReady[]` throw instead of returning `False`~~ — Fixed
+`wservos_homed` (`src/wolfram_api.cpp`) now always returns `LIBRARY_NO_ERROR`; the actual
+true/false answer only goes through `Res`, never the status code. `wservo_hardware_online`
+already did this correctly.
 
-### 4. Device "init" can silently report success when the COM port never opened
-`src/lab.cpp:104-111` and `:140-144`:
-```cpp
-int init_bath(std::string COMM) {
-    if (bath != nullptr) { delete bath; }
-    bath = new RTE7(COMM);
-    return (bath == nullptr);   // always false — `new` throws on failure, never returns null
-}
-```
-`RTE7`'s constructor only logs to `cerr` if the serial port fails to open; it doesn't throw.
-So `BathInit["COM3"]` reports success (return code 0) even when the port never opened, and
-every subsequent read/write just fails with a generic "Read failed" instead of ever surfacing
-the real cause.
+### 4. ~~Device "init" can silently report success when the COM port never opened~~ — Fixed
+`init_bath()`/`init_temp_controller()` (`src/lab.cpp`) now check `is_connected()` after
+constructing the device object (the constructor only logs to `cerr` on failure, it doesn't
+throw) and return failure — cleaning up the half-open object — instead of reporting success.
 
 ## Lower severity
 
-### 5. Partial re-init leaves inconsistent global state
-`src/lab.cpp:203-243`, `initialize_servos()` — if `FindComHubPorts` finds zero or more than one
-COM hub, the function returns early without resetting `Mgr` (already set to the SysManager
-singleton) or calling `shutdown_servos()`. `Mgr` ends up non-null while `Port`/`motorX`/`motorZ`
-stay null — a partially-initialized state that isn't guarded consistently elsewhere.
+### 5. ~~Partial re-init leaves inconsistent global state~~ — Fixed
+`initialize_servos()` (`src/lab.cpp`) now calls `shutdown_servos()` before returning on the
+"found zero or more than one COM hub" path, matching the cleanup already done in the `catch`
+blocks below it.
 
-### 6. `read_labjack_ain` closes *all* LabJack handles, not just its own
-`src/lab.cpp:172-191` — calls the LabJack UD `Close()` function, which per the UD API closes
-every open LabJack device handle process-wide (it takes no handle argument). Harmless with a
-single device connected, but a landmine if multiple LabJack devices are ever used. The `ePut`
-configuration calls' return codes are also unchecked.
+### 6. `read_labjack_ain` closes *all* LabJack handles, not just its own — partially fixed
+`src/lab.cpp`, `read_labjack_ain` — the LabJack UD API's `Close()` genuinely takes no handle
+argument (confirmed in the vendor's `LabJackUD.h`) and closes every open device process-wide;
+there is no per-handle close in this legacy API, so this half of the bug isn't fixable at the
+call site — just documented in a comment. **Fixed:** the `ePut` configuration calls' return
+codes are now checked and propagated instead of silently ignored.
 
-### 7. Uninitialized read in a log line
-`src/wolfram_api.cpp:268-271`, `wservos_get_position` — `float x_mm, z_mm;` are declared and
-then logged (inside `Lab::servos_get_position`) before being assigned. Reads uninitialized
-stack memory; cosmetic only (garbage values in the log), but technically undefined behavior.
+### 7. ~~Uninitialized read in a log line~~ — Fixed
+`Lab::servos_get_position` (`src/lab.cpp`) logged `x_mm`/`z_mm` as "current parameters" on entry,
+before they were ever assigned — `wservos_get_position` (`src/wolfram_api.cpp`) declares them with
+no initializer, since they're pure out-parameters. Removed the premature log line; the values are
+still logged later, after being measured.
 
-### 8. Ramp/soak getter and setter command IDs disagree
-`src/Oven5R6900.cpp` — `get_soak_temp` (and `get_ramp_duration`, `get_soak_duration`,
-`get_num_repeats`, `get_next_sequence_num`) compute the command byte as `hex(8 + seq)` and then
-prepend another literal `"8"`, giving two-character command IDs like `"88".."8f"`. Their setter
-counterparts (`set_soak_temp`, etc.) just prepend `"8"` directly to the raw `sequence` string
-with no `+8` offset. For the same logical sequence index, the getter and setter would hit
-different command bytes on the device. **Currently unreachable** — the whole ramp/soak surface
-is commented out in `wolfram_api.cpp`, so this isn't exposed to Mathematica today, but it will
-bite whoever wires ramp/soak support back in.
+### 8. ~~Ramp/soak getter and setter command IDs disagree~~ — Fixed
+`src/Oven5R6900.cpp` — the `set_*` counterparts (`set_soak_temp`, `set_ramp_duration`,
+`set_soak_duration`, `set_num_repeats`, `set_next_sequence_num`) now compute their command ID
+the same way their `get_*` counterparts do (`hex(8 + seq)`), so the same logical sequence index
+hits the same command byte on the device for both reads and writes. This surface is still
+commented out in `wolfram_api.cpp` (not exposed to Mathematica), so this was fixed without a way
+to test it against real hardware.
 
-### 9. Dead declarations
-`include/controls/Oven5R6900.h` declares private methods `read_temp`, `read_setpoint`, and
-`read_ack` that are never defined in `Oven5R6900.cpp` (the getters call `dispatch_message`
-directly instead). Not a compile error since they're never referenced, just vestigial cruft
-left over from an earlier design.
+### 9. ~~Dead declarations~~ — Fixed
+`include/controls/Oven5R6900.h` declared private methods `read_temp`, `read_setpoint`, and
+`read_ack` that were never defined in `Oven5R6900.cpp` (the getters call `dispatch_message`
+directly instead). Confirmed unused and removed.
+
+## Found via live testing (not in the original static review)
+
+### 10. ~~Checksum failures were silently reported as success~~ — Fixed
+`RTE7::read_temp`/`read_setpoint` and `Oven5R6900::dispatch_message` all call a response parser
+that returns a `-999` sentinel on a checksum mismatch — but none of them checked for it, so a
+garbled or wrong-protocol reply was reported as a successful call. This directly undermined the
+port-autodetect probe (see `specs/port-autodetect.md`): any port that echoed back *any* bytes at
+all, correct protocol or not, could pass as a "valid, checksummed response." Both files now check
+for the `-999` sentinel and return `false` instead of silently succeeding with garbage data.
+Found by watching `WolframMachineControl/Tests/Test_WolframMachineControl.wlt` fail against real
+hardware: `BathInit[]`/`TempCtrlInit[]` succeeded, but every real command right after
+(`BathOn[]`, `TempCtrlOn[]`, ...) failed — a pattern consistent with the probe having matched the
+wrong port.
 
 ## Not yet checked
-- `sm_homer.h`, `sm_manual_controller.h`, `recorder.h`/`recorder.cpp` — not part of the current
-  build (`recorder.cpp` is present in `src/` but not listed in `CMakeLists.txt`'s `add_library`
-  call, and `sm_homer.cpp`/`sm_manual_controller.cpp` don't exist at all despite being
-  referenced, commented out, in `CMakeLists.txt`). `lab.cpp` reimplements equivalent homing and
-  manual-control logic directly rather than using these classes, so they're effectively dead
-  code in the current build.
-- No actual compile/run was performed (Windows-only toolchain, SDKs not available here).
+- No run against real hardware was performed for the fixes above — only build-verified.
+
+## Removed dead code
+`sm_homer.h`, `sm_manual_controller.h`, and `recorder.h`/`recorder.cpp` were confirmed unused
+(not in `CMakeLists.txt`'s build list, not `#include`d anywhere, and `sm_homer.cpp`/
+`sm_manual_controller.cpp` didn't even exist) and have been deleted. `lab.cpp` already
+reimplements equivalent homing and manual-control logic directly.

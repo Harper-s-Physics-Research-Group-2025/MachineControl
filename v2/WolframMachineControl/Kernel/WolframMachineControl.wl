@@ -92,7 +92,7 @@ WolframMachineControl`ServoHome = LibraryFunctionLoad[$dllPath, "wservos_home", 
 WolframMachineControl`ServoHomed = LibraryFunctionLoad[$dllPath, "wservos_homed", {}, Integer];
 WolframMachineControl`ServoGetPos = LibraryFunctionLoad[$dllPath, "wservos_get_position", {}, {Real, 1}]
 WolframMachineControl`ServoSetPos = LibraryFunctionLoad[$dllPath, "wservos_set_position", {Real, Real, Real}, {Real, 1}]
-WolframMachineControl`ServoReady = LibraryFunctionLoad[$dllPath, "wmotors_ready", {}, Integer];
+WolframMachineControl`ServoReady = LibraryFunctionLoad[$dllPath, "wservo_hardware_online", {}, Integer];
 WolframMachineControl`ServoManualControl = LibraryFunctionLoad[$dllPath, "wmanual_control", {}, Integer];
 
 WolframMachineControl`ReturnSuccess = LibraryFunctionLoad[$dllPath, "wreturn_success", {}, Integer];

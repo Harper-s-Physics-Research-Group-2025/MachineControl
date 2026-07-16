@@ -294,18 +294,11 @@ extern "C" {
         return return_code; 
     }
 
-    // Confirms if tracking limits match initialized status fields.
-    DLLEXPORT int wmotors_ready(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
-        int return_code = Lab::servos_homed();
-        MArgument_setInteger(Res, static_cast<mint>(return_code));
-        return !return_code;
-    }
-
     // Evaluates local flags to assert whether internal home data coordinate scaling is active.
     DLLEXPORT int wservos_homed(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res) {
         int return_code = Lab::servos_homed();
         MArgument_setInteger(Res, static_cast<mint>(return_code));
-        return !return_code;
+        return LIBRARY_NO_ERROR;
     }
 
     // Drops motor safety overrides, exposing individual axis configurations to free physical tuning.

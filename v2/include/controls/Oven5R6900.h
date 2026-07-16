@@ -73,10 +73,6 @@ private:
     std::vector<uint8_t> hexStringToBytes(const std::string& hex) const;
     void print_bytes(const std::vector<uint8_t>& data) const;
 
-    bool read_temp(float& out_temp);
-    bool read_setpoint(float& setpoint);
-    bool read_ack();
-
     int32_t parse_response(std::string& response) const;
     bool dispatch_message(const std::string& command_id,
         float& value, 

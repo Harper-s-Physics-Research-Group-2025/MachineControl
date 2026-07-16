@@ -24,10 +24,7 @@ v2/
 ├── include/controls/            # Headers — one per device + the coordinator
 │   ├── lab.h                    # Full Lab:: API surface
 │   ├── RTE7.h
-│   ├── Oven5R6900.h
-│   ├── recorder.h               # CSV data logging + Teknic/LabJack init
-│   ├── sm_homer.h                # Servo homing
-│   └── sm_manual_controller.h    # Keyboard-driven manual jogging
+│   └── Oven5R6900.h
 ├── WolframMachineControl/       # The Wolfram paclet (Mathematica-facing package)
 │   ├── Kernel/WolframMachineControl.wl   # Public Wolfram functions, binds to DLL exports
 │   └── PacletInfo.wl
@@ -168,20 +165,10 @@ The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`
 
 ## Auto-Detected COM Ports
 
-`BathInit[]` and `TempCtrlInit[]` no longer take a COM port string — both devices connect through
-identical Prolific USB-to-Serial adapters (`VID_067B&PID_2303`), so the COM number these get
-assigned by Windows can (and does) drift across replugs/reboots.
-
-Instead, `find_prolific_ports()` (in `src/lab.cpp`) enumerates every COM port backed by that
-Prolific hardware ID. Since the hardware ID alone can't tell the bath and the temp controller
-apart, `find_bath_port()` and `find_temp_controller_port()` disambiguate by protocol probing: each
-candidate port is opened and sent a harmless, read-only "get setpoint" query in the target
-device's own serial protocol (RTE7 for the bath, Oven5R6900 for the temp controller). Whichever
-port replies with a valid, checksummed response is that device — this keeps working even if the
-two adapters get swapped into different physical USB ports.
-
-The Teknic servo hub and the LabJack ADC already auto-detect through their respective SDKs and
-never required a COM port argument.
+`BathInit[]` and `TempCtrlInit[]` take no COM port argument — both devices auto-detect their
+own port, the same way the servo hub and LabJack ADC always have. See
+[COMMUNICATION.md](COMMUNICATION.md) for how every device talks to this app, or
+[specs/port-autodetect.md](specs/port-autodetect.md) for exactly how the auto-detection works.
 
 ## Testing
 
@@ -193,6 +180,21 @@ never required a COM port argument.
 - All DLL functions return integer error codes unless otherwise noted (see `LIBRARY_NO_ERROR` / `LIBRARY_FUNCTION_ERROR` in `wolfram_api.cpp`)
 - Bath and temp controller COM ports are auto-detected — see [Auto-Detected COM Ports](#auto-detected-com-ports)
 - Positions are in millimeters, temperatures in Celsius
+- This project is Windows-only today — see [COMMUNICATION.md](COMMUNICATION.md#does-any-of-this-work-on-mac-or-linux)
+  for exactly what a Mac/Linux port would require
+
+## Documentation
+
+Beyond this README:
+
+| Doc | What it covers |
+|---|---|
+| [COMMUNICATION.md](COMMUNICATION.md) | How each device (bath, temp controller, servos, LabJack) actually talks to this app, and Mac/Linux support |
+| [BUGS.md](BUGS.md) | Known bugs found by code review, with file/line references |
+| [specs/librarylink.md](specs/librarylink.md) | How Mathematica calls into the C++ DLL, and what to touch when adding a new function |
+| [specs/port-autodetect.md](specs/port-autodetect.md) | How `BathInit[]`/`TempCtrlInit[]` find their own COM port |
+| [SETUPAPI.md](SETUPAPI.md) | Line-by-line walkthrough of the Windows API calls behind port auto-detection |
+
 
 ## Authors
 

@@ -154,10 +154,14 @@ namespace Lab {
     // checksummed reply, so this works even after the two adapters get
     // swapped into different physical USB ports.
     std::string find_bath_port() {
-        for (const std::string& port : find_prolific_ports()) {
+        std::vector<std::string> candidates = find_prolific_ports();
+        log("find_bath_port: found " + std::to_string(candidates.size()) + " candidate Prolific port(s).");
+        for (const std::string& port : candidates) {
             RTE7 candidate(port);
             float temp;
-            if (candidate.get_setpoint(temp)) return port;
+            bool ok = candidate.get_setpoint(temp);
+            log("find_bath_port: probed " + port + " -> " + (ok ? "matched (this is the bath)" : "no valid reply"));
+            if (ok) return port;
         }
         log("find_bath_port: no candidate Prolific port answered the RTE7 protocol probe.");
         return "";
@@ -167,10 +171,14 @@ namespace Lab {
     // Same idea as find_bath_port(), but probing with the Oven5R6900's own
     // read-only "get setpoint" query.
     std::string find_temp_controller_port() {
-        for (const std::string& port : find_prolific_ports()) {
+        std::vector<std::string> candidates = find_prolific_ports();
+        log("find_temp_controller_port: found " + std::to_string(candidates.size()) + " candidate Prolific port(s).");
+        for (const std::string& port : candidates) {
             Oven5R6900 candidate(port);
             float temp;
-            if (candidate.get_setpoint(temp)) return port;
+            bool ok = candidate.get_setpoint(temp);
+            log("find_temp_controller_port: probed " + port + " -> " + (ok ? "matched (this is the temp controller)" : "no valid reply"));
+            if (ok) return port;
         }
         log("find_temp_controller_port: no candidate Prolific port answered the Oven5R6900 protocol probe.");
         return "";
@@ -185,7 +193,12 @@ namespace Lab {
         if (bath != nullptr) { delete bath;}   // 1. Clean up an existing connection if called a second time
 
         bath = new RTE7(COMM);          // 2. Instantiate a fresh connection on the heap
-        return (bath == nullptr);       // 3. Return a success token (e.g., check if the pointer is valid)
+        if (!bath->is_connected()) {    // 3. Constructor logs a failure but doesn't throw -- check explicitly
+            delete bath;
+            bath = nullptr;
+            return 1;
+        }
+        return 0;
 
     }
 
@@ -202,12 +215,12 @@ namespace Lab {
     }
 
 
-    int bath_on()                       { return !bath->turn_on(); }
-    int bath_off()                      { return !bath->turn_off(); }
-    int bath_manual()                   { return !bath->manual(); }
-    int bath_get_temp(float& temp)      { return !bath->get_temp(temp); }
-    int bath_get_setpoint(float& temp)  { return !bath->get_setpoint(temp); }
-    int bath_set_setpoint(float& temp)  { return !bath->set_setpoint(temp); }
+    int bath_on()                       { if (!bath) return 1; return !bath->turn_on(); }
+    int bath_off()                      { if (!bath) return 1; return !bath->turn_off(); }
+    int bath_manual()                   { if (!bath) return 1; return !bath->manual(); }
+    int bath_get_temp(float& temp)      { if (!bath) return 1; return !bath->get_temp(temp); }
+    int bath_get_setpoint(float& temp)  { if (!bath) return 1; return !bath->get_setpoint(temp); }
+    int bath_set_setpoint(float& temp)  { if (!bath) return 1; return !bath->set_setpoint(temp); }
 
 
 
@@ -222,7 +235,12 @@ namespace Lab {
 
         if (tc != nullptr) { delete tc;}    // 1. Clean up an existing connection if called a second time
         tc = new Oven5R6900(COMM);     // 2. Instantiate a fresh connection on the heap
-        return (tc == nullptr);        // 3. Return a success token (e.g., check if the pointer is valid)
+        if (!tc->is_connected()) {     // 3. Constructor logs a failure but doesn't throw -- check explicitly
+            delete tc;
+            tc = nullptr;
+            return 1;
+        }
+        return 0;
     }
 
 
@@ -237,13 +255,13 @@ namespace Lab {
     }
 
 
-    int temperature_control_on()                        { bool s = 1;; return !tc->enable(s); }      // Enable H-bridge output
-    int temperature_control_off()                       { bool s = 0; return !tc->enable(s); }      // Disable H-bridge output
-    int temperature_control_get_mode(int& mode)         { return !tc->get_mode(mode); }
-    int temperature_control_set_mode(int& mode)         { return !tc->set_mode(mode); }
-    int temperature_control_get_temp(float& temp)       { return !tc->get_temp(temp); }
-    int temperature_control_get_setpoint(float& temp)   { return !tc->get_setpoint(temp); }
-    int temperature_control_set_setpoint(float& temp)   { return !tc->set_setpoint(temp); }
+    int temperature_control_on()                        { if (!tc) return 1; bool s = 1; return !tc->enable(s); }      // Enable H-bridge output
+    int temperature_control_off()                       { if (!tc) return 1; bool s = 0; return !tc->enable(s); }      // Disable H-bridge output
+    int temperature_control_get_mode(int& mode)         { if (!tc) return 1; return !tc->get_mode(mode); }
+    int temperature_control_set_mode(int& mode)         { if (!tc) return 1; return !tc->set_mode(mode); }
+    int temperature_control_get_temp(float& temp)       { if (!tc) return 1; return !tc->get_temp(temp); }
+    int temperature_control_get_setpoint(float& temp)   { if (!tc) return 1; return !tc->get_setpoint(temp); }
+    int temperature_control_set_setpoint(float& temp)   { if (!tc) return 1; return !tc->set_setpoint(temp); }
 
 
 
@@ -260,13 +278,15 @@ namespace Lab {
         if (errorcode != 0) return errorcode;
 
         // 2. Initialize settings on the LabJack
-        ePut(h, LJ_ioPUT_ANALOG_ENABLE_BIT, channel, 1, 0);  // Set channel 0 to analog input
-        ePut(h, LJ_ioPUT_CONFIG, LJ_chAIN_RESOLUTION, 1, 0);            // Resolution index
+        errorcode = ePut(h, LJ_ioPUT_ANALOG_ENABLE_BIT, channel, 1, 0);  // Set channel 0 to analog input
+        if (errorcode == 0) errorcode = ePut(h, LJ_ioPUT_CONFIG, LJ_chAIN_RESOLUTION, 1, 0);  // Resolution index
 
         // 3. Read analog input AIN0 (single-ended)
-        errorcode = eGet(h, LJ_ioGET_AIN, channel, &voltage, 0);
+        if (errorcode == 0) errorcode = eGet(h, LJ_ioGET_AIN, channel, &voltage, 0);
 
-        // 4. Close the device
+        // 4. Close the device. NOTE: the UD API's Close() takes no handle -- it closes every open
+        // LabJack device process-wide (there is no per-handle close in this legacy API). Harmless
+        // with a single device connected; a landmine if a second LabJack is ever added.
         Close();
 
         return errorcode;
@@ -291,9 +311,10 @@ namespace Lab {
             sFnd::SysManager::FindComHubPorts(comHubPorts);
 
             if (comHubPorts.size() == 1) {
-                Mgr->ComHubPort(0, comHubPorts[0].c_str()); 
+                Mgr->ComHubPort(0, comHubPorts[0].c_str());
             } else {
                 std::cerr << "Found number " << comHubPorts.size() << " of ports that is not 1" << std::endl;
+                shutdown_servos();   // Mgr was already assigned above -- reset it rather than leaving a partial state
                 return 1;
             }
 
@@ -479,10 +500,9 @@ namespace Lab {
 
 
     // Get current apparatus position (mm)
-    int servos_get_position(float& x_mm, float& z_mm) { 
+    int servos_get_position(float& x_mm, float& z_mm) {
 
         log("\nIn servos_get_position()");
-        log("\tCurrent parameters (x_mm, z_mm): " + std::to_string(x_mm) + ", " + std::to_string(z_mm));
         log("\tchecking servos_ready()");
 
         if (!servos_ready()) return 1;      // servos uninitialized
