@@ -11,19 +11,21 @@ WolframMachineControl`GetLogFile::usage = "GetLogFile[] returns the filename pat
 WolframMachineControl`SetLogSettings::usage = "SetLogSettings[int status, string logfile] sets logging status and logfile path."
 
 (* Fluid Bath Suite *)
-WolframMachineControl`BathOn::usage = "BathOn[port] activates the fluid bath equipment at the specified COM port string."
-WolframMachineControl`BathOff::usage = "BathOff[port] gracefully powers down the fluid bath equipment."
-WolframMachineControl`BathManual::usage = "BathManual[port] Puts bath into manual mode which means it responds to button presses rather than the computer."
-WolframMachineControl`BathGetTemp::usage = "BathGetTemp[port] gets current bath temperature."
-WolframMachineControl`BathSetTemp::usage = "BathSetTemp[port, float temp] Sets bath temperature."
+WolframMachineControl`BathInit::usage = "BathInit[] auto-detects the bath's COM port (by probing candidate Prolific adapters with the RTE7 protocol) and connects to it."
+WolframMachineControl`BathOn::usage = "BathOn[] activates the fluid bath equipment."
+WolframMachineControl`BathOff::usage = "BathOff[] gracefully powers down the fluid bath equipment."
+WolframMachineControl`BathManual::usage = "BathManual[] Puts bath into manual mode which means it responds to button presses rather than the computer."
+WolframMachineControl`BathGetTemp::usage = "BathGetTemp[] gets current bath temperature."
+WolframMachineControl`BathSetTemp::usage = "BathSetTemp[float temp] Sets bath temperature."
 
-WolframMachineControl`TempCtrlOn::usage = "TempCtrlOn[string port] turns on the H-bridge transistor ouput of the temp controller"
-WolframMachineControl`TempCtrlOff::usage = "TempCtrlOff[string port] turns on the H-bridge transistor ouput of the temp controller"
-WolframMachineControl`TempCtrlGetMode::usage = "TempCtrlGetMode[string port] displays the mode of the controller (0-4) 0 = normal mode, 2 = ramp/soak"
-WolframMachineControl`TempCtrlSetMode::usage = "TempCtrlSetMode[string port, int mode] sets the mode (0-4) of the controller, see prev."
-WolframMachineControl`TempCtrlGetTemp::usage = "TempCtrlGetTemp[string port] returns the temperature of the controller's thermistor probe sensor"
-WolframMachineControl`TempCtrlGetSetpoint::usage = "TempCtrlOn[string port] gets the current controller setpoint"
-WolframMachineControl`TempCtrlSetSetpoint::usage = "TempCtrlOn[string port, float temp] changes the controller setpoint"
+WolframMachineControl`TempCtrlInit::usage = "TempCtrlInit[] auto-detects the temp controller's COM port (by probing candidate Prolific adapters with the Oven5R6900 protocol) and connects to it."
+WolframMachineControl`TempCtrlOn::usage = "TempCtrlOn[] turns on the H-bridge transistor ouput of the temp controller"
+WolframMachineControl`TempCtrlOff::usage = "TempCtrlOff[] turns on the H-bridge transistor ouput of the temp controller"
+WolframMachineControl`TempCtrlGetMode::usage = "TempCtrlGetMode[] displays the mode of the controller (0-4) 0 = normal mode, 2 = ramp/soak"
+WolframMachineControl`TempCtrlSetMode::usage = "TempCtrlSetMode[int mode] sets the mode (0-4) of the controller, see prev."
+WolframMachineControl`TempCtrlGetTemp::usage = "TempCtrlGetTemp[] returns the temperature of the controller's thermistor probe sensor"
+WolframMachineControl`TempCtrlGetSetpoint::usage = "TempCtrlGetSetpoint[] gets the current controller setpoint"
+WolframMachineControl`TempCtrlSetSetpoint::usage = "TempCtrlSetSetpoint[float temp] changes the controller setpoint"
 
 WolframMachineControl`ReadLabjack::usage = "ReadLabjack[int channel] reads voltage on specified channel"
 
@@ -62,7 +64,7 @@ WolframMachineControl`GetLogStatus = LibraryFunctionLoad[$dllPath, "wget_logging
 WolframMachineControl`GetLogFile = LibraryFunctionLoad[$dllPath, "wget_log_file", {}, UTF8String];
 WolframMachineControl`SetLogSettings = LibraryFunctionLoad[$dllPath, "wset_log_settings", {Integer, UTF8String}, Integer];
 
-WolframMachineControl`BathInit = LibraryFunctionLoad[$dllPath, "winitialize_bath", {UTF8String}, Integer];
+WolframMachineControl`BathInit = LibraryFunctionLoad[$dllPath, "winitialize_bath", {}, Integer];
 WolframMachineControl`DeleteBath = LibraryFunctionLoad[$dllPath, "wdelete_bath", {}, Integer]
 WolframMachineControl`BathOn = LibraryFunctionLoad[$dllPath, "wbath_on", {}, Integer];
 WolframMachineControl`BathOff = LibraryFunctionLoad[$dllPath, "wbath_off", {}, Integer];
@@ -71,7 +73,7 @@ WolframMachineControl`BathGetTemp = LibraryFunctionLoad[$dllPath, "wbath_get_tem
 WolframMachineControl`BathGetSetpoint = LibraryFunctionLoad[$dllPath, "wbath_get_setpoint", {}, Real];
 WolframMachineControl`BathSetSetpoint = LibraryFunctionLoad[$dllPath, "wbath_set_setpoint", {Real}, Real];
 
-WolframMachineControl`TempCtrlInit = LibraryFunctionLoad[$dllPath, "winitialize_temperature_control", {UTF8String}, Integer];
+WolframMachineControl`TempCtrlInit = LibraryFunctionLoad[$dllPath, "winitialize_temperature_control", {}, Integer];
 WolframMachineControl`DeleteTempCtrl = LibraryFunctionLoad[$dllPath, "wdelete_temperature_control", {}, Integer];
 WolframMachineControl`TempCtrlOn = LibraryFunctionLoad[$dllPath, "wtemperature_control_on", {}, Integer];
 WolframMachineControl`TempCtrlOff = LibraryFunctionLoad[$dllPath, "wtemperature_control_off", {}, Integer];

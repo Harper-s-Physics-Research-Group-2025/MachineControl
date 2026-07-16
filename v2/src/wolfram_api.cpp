@@ -78,12 +78,9 @@ extern "C" {
        FLUID BATH WRAPPERS (RTE7)
        ========================================================================== */
 
-    // Instantiates the RTE7 Bath object on the heap and claims the OS COM port handle.
+    // Auto-detects the bath's COM port and instantiates the RTE7 object on the heap.
     DLLEXPORT int winitialize_bath(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-
-        return Lab::init_bath(comm_str); 
+        return Lab::init_bath();
     }
 
     // Destroys the heap bath structure, forcing an internal destructor port release sequence.
@@ -138,11 +135,10 @@ extern "C" {
        TEMPERATURE CONTROLLER WRAPPERS (H-BRIDGE/THERMISTOR)
        ========================================================================== */
 
-    // Allocates controller memory structures and locks the target serial loop communications.
+    // Auto-detects the temp controller's COM port, allocates controller memory structures,
+    // and locks the target serial loop communications.
     DLLEXPORT int winitialize_temperature_control(WolframLibraryData lp, mint Argc, MArgument *Args, MArgument Res){
-        char* comm_c_str = MArgument_getUTF8String(Args[0]); 
-        std::string comm_str(comm_c_str);
-        return Lab::init_temp_controller(comm_str); 
+        return Lab::init_temp_controller();
     }
 
     // Releases controller tracking contexts and updates internal structures back to nullptr.

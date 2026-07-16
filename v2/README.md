@@ -101,14 +101,16 @@ Once the test notebook works, you can call the same functions from your own note
 
 ```mathematica
 (* Fluid bath *)
-BathOn["COM3"];
-BathSetTemp["COM3", 37.0];
-temp = BathGetTemp["COM3"];
-BathOff["COM3"];
+BathInit[];                       (* auto-detects and connects to the bath's COM port *)
+BathOn[];
+BathSetTemp[37.0];
+temp = BathGetTemp[];
+BathOff[];
 
 (* Temperature controller *)
-TempCtrlOn["COM4"];
-TempCtrlSetSetpoint["COM4", 25.0];
+TempCtrlInit[];                   (* auto-detects and connects to the temp controller's COM port *)
+TempCtrlOn[];
+TempCtrlSetSetpoint[25.0];
 
 (* Servo motors *)
 ServoEnable[];
@@ -144,13 +146,15 @@ The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`
 - `GetLogStatus[]`, `GetLogFile[]`, `SetLogSettings[status, logfile]`
 
 ### Fluid Bath
-- `BathOn[port]`, `BathOff[port]`, `BathManual[port]`
-- `BathGetTemp[port]`, `BathGetSetpoint[port]`, `BathSetTemp[port, temp]`
+- `BathInit[]` — auto-detects and connects to the bath's COM port (see [Auto-Detected COM Ports](#auto-detected-com-ports))
+- `BathOn[]`, `BathOff[]`, `BathManual[]`
+- `BathGetTemp[]`, `BathGetSetpoint[]`, `BathSetTemp[temp]`
 
 ### Temperature Controller
-- `TempCtrlOn[port]`, `TempCtrlOff[port]`
-- `TempCtrlGetMode[port]`, `TempCtrlSetMode[port, mode]` (0 = normal, 2 = ramp/soak)
-- `TempCtrlGetTemp[port]`, `TempCtrlGetSetpoint[port]`, `TempCtrlSetSetpoint[port, temp]`
+- `TempCtrlInit[]` — auto-detects and connects to the temp controller's COM port (see [Auto-Detected COM Ports](#auto-detected-com-ports))
+- `TempCtrlOn[]`, `TempCtrlOff[]`
+- `TempCtrlGetMode[]`, `TempCtrlSetMode[mode]` (0 = normal, 2 = ramp/soak)
+- `TempCtrlGetTemp[]`, `TempCtrlGetSetpoint[]`, `TempCtrlSetSetpoint[temp]`
 
 ### Data Acquisition
 - `ReadLabjack[channel]`
@@ -162,6 +166,23 @@ The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`
 - `ServoSetPos[x_mm, z_mm, rpm]` — returns updated `{x_mm, z_mm}`
 - `ServoManualControl[]` — keyboard-driven manual jogging
 
+## Auto-Detected COM Ports
+
+`BathInit[]` and `TempCtrlInit[]` no longer take a COM port string — both devices connect through
+identical Prolific USB-to-Serial adapters (`VID_067B&PID_2303`), so the COM number these get
+assigned by Windows can (and does) drift across replugs/reboots.
+
+Instead, `find_prolific_ports()` (in `src/lab.cpp`) enumerates every COM port backed by that
+Prolific hardware ID. Since the hardware ID alone can't tell the bath and the temp controller
+apart, `find_bath_port()` and `find_temp_controller_port()` disambiguate by protocol probing: each
+candidate port is opened and sent a harmless, read-only "get setpoint" query in the target
+device's own serial protocol (RTE7 for the bath, Oven5R6900 for the temp controller). Whichever
+port replies with a valid, checksummed response is that device — this keeps working even if the
+two adapters get swapped into different physical USB ports.
+
+The Teknic servo hub and the LabJack ADC already auto-detect through their respective SDKs and
+never required a COM port argument.
+
 ## Testing
 
 - `WolframMachineControl/Tests/Test_WolframMachineControl.wlt` — Wolfram-side unit tests
@@ -170,7 +191,7 @@ The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`
 ## Development Notes
 
 - All DLL functions return integer error codes unless otherwise noted (see `LIBRARY_NO_ERROR` / `LIBRARY_FUNCTION_ERROR` in `wolfram_api.cpp`)
-- COM ports are specified as strings (e.g., `"COM3"`)
+- Bath and temp controller COM ports are auto-detected — see [Auto-Detected COM Ports](#auto-detected-com-ports)
 - Positions are in millimeters, temperatures in Celsius
 
 ## Authors

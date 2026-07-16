@@ -12,8 +12,6 @@ VerificationTest[
 (* ==========================================================================
 	0. Global Variables
    ========================================================================*)
-BathPort = "COM7"
-TempPort = "COM5"
 LogFile = "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\v2\\log.txt"
 
 
@@ -47,9 +45,9 @@ VerificationTest[
    ========================================================================== *)
 
 VerificationTest[
-    WolframMachineControl`BathInit[BathPort],
+    WolframMachineControl`BathInit[],
     0,
-    TestID -> "BathInit[" <> BathPort <> "]"
+    TestID -> "BathInit[]"
 ]
 
 VerificationTest[
@@ -78,10 +76,10 @@ VerificationTest[
 
 (* Hard to test this without the next test failing.
 VerificationTest[
-    WolframMachineControl`BathManual[BathPort],
+    WolframMachineControl`BathManual[],
     0,
-    TestID -> "BathManual[" <> BathPort <> "]"
-] *) 
+    TestID -> "BathManual[]"
+] *)
 
 Pause[3]   (* Pause 2 seconds before turning off *)
 
@@ -104,9 +102,9 @@ VerificationTest[
    ========================================================================== *)
 
 VerificationTest[
-    WolframMachineControl`TempCtrlInit[TempPort],
+    WolframMachineControl`TempCtrlInit[],
     0,
-    TestID -> "TempCtrlInit[" <> TempPort <> "]"
+    TestID -> "TempCtrlInit[]"
 ]
 
 VerificationTest[

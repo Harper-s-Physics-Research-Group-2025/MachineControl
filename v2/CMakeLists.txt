@@ -73,9 +73,10 @@ target_include_directories(wolfram_machine_controller
 
 # 8. Link all external dependencies to the DLL target
 target_link_libraries(wolfram_machine_controller
-    PRIVATE 
+    PRIVATE
     ${LABJACK_LIB}
     ${TEKNIC_LIB}
+    Setupapi.lib
 )
 
 

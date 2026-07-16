@@ -7,6 +7,8 @@ Date: 06.09.2026 1400
 */
 
 #include "controls/lab.h"
+#include <setupapi.h>
+#include <devguid.h>
 
 #define WM_KEY_EVENT (WM_USER + 1)      // custom message channel
 
@@ -101,10 +103,87 @@ namespace Lab {
     // RTE7 Fluid Bath
     // -------------------------------------------------------------------------
 
-    int init_bath(std::string COMM) {
-        
+    // Enumerates the Windows "Ports (COM & LPT)" device class and returns every
+    // COM port whose USB hardware ID matches VID_067B&PID_2303 (Prolific
+    // USB-to-Serial). The bath and the temp controller both use this exact
+    // adapter, so the hardware ID alone can only narrow candidates down --
+    // it can't tell the two apart. Disambiguating which candidate is which
+    // device happens by protocol probing below.
+    std::vector<std::string> find_prolific_ports() {
+        std::vector<std::string> found_ports;
+
+        HDEVINFO device_info = SetupDiGetClassDevsA(&GUID_DEVCLASS_PORTS, nullptr, nullptr, DIGCF_PRESENT);
+        if (device_info == INVALID_HANDLE_VALUE) return found_ports;
+
+        SP_DEVINFO_DATA device_data = { 0 };
+        device_data.cbSize = sizeof(SP_DEVINFO_DATA);
+
+        for (DWORD i = 0; SetupDiEnumDeviceInfo(device_info, i, &device_data); ++i) {
+            char hardware_id[256] = { 0 };
+            if (!SetupDiGetDeviceRegistryPropertyA(device_info, &device_data, SPDRP_HARDWAREID,
+                    nullptr, reinterpret_cast<PBYTE>(hardware_id), sizeof(hardware_id), nullptr)) {
+                continue;
+            }
+
+            std::string id(hardware_id);
+            if (id.find("VID_067B&PID_2303") == std::string::npos) continue;   // not a Prolific adapter
+
+            char friendly_name[256] = { 0 };
+            if (!SetupDiGetDeviceRegistryPropertyA(device_info, &device_data, SPDRP_FRIENDLYNAME,
+                    nullptr, reinterpret_cast<PBYTE>(friendly_name), sizeof(friendly_name), nullptr)) {
+                continue;
+            }
+
+            // Friendly names look like "Prolific USB-to-Serial Comm Port (COM5)" -- pull the COMx token out.
+            std::string name(friendly_name);
+            size_t open_paren = name.rfind("(COM");
+            size_t close_paren = name.rfind(")");
+            if (open_paren == std::string::npos || close_paren == std::string::npos) continue;
+
+            found_ports.push_back(name.substr(open_paren + 1, close_paren - open_paren - 1));  // e.g. "COM5"
+        }
+
+        SetupDiDestroyDeviceInfoList(device_info);
+        return found_ports;
+    }
+
+
+    // Finds the bath among the candidate Prolific ports by opening each one and
+    // sending a harmless, read-only "get setpoint" query. Only the port
+    // actually wired to the RTE7 will complete that handshake with a valid,
+    // checksummed reply, so this works even after the two adapters get
+    // swapped into different physical USB ports.
+    std::string find_bath_port() {
+        for (const std::string& port : find_prolific_ports()) {
+            RTE7 candidate(port);
+            float temp;
+            if (candidate.get_setpoint(temp)) return port;
+        }
+        log("find_bath_port: no candidate Prolific port answered the RTE7 protocol probe.");
+        return "";
+    }
+
+
+    // Same idea as find_bath_port(), but probing with the Oven5R6900's own
+    // read-only "get setpoint" query.
+    std::string find_temp_controller_port() {
+        for (const std::string& port : find_prolific_ports()) {
+            Oven5R6900 candidate(port);
+            float temp;
+            if (candidate.get_setpoint(temp)) return port;
+        }
+        log("find_temp_controller_port: no candidate Prolific port answered the Oven5R6900 protocol probe.");
+        return "";
+    }
+
+
+    int init_bath() {
+
+        std::string COMM = find_bath_port();
+        if (COMM.empty()) return 1;            // no unambiguous match found
+
         if (bath != nullptr) { delete bath;}   // 1. Clean up an existing connection if called a second time
-            
+
         bath = new RTE7(COMM);          // 2. Instantiate a fresh connection on the heap
         return (bath == nullptr);       // 3. Return a success token (e.g., check if the pointer is valid)
 
@@ -137,7 +216,10 @@ namespace Lab {
     // Oven Industries 5R6-900 Temperature Controller
     // -------------------------------------------------------------------------
 
-    int init_temp_controller(std::string COMM) {
+    int init_temp_controller() {
+        std::string COMM = find_temp_controller_port();
+        if (COMM.empty()) return 1;         // no unambiguous match found
+
         if (tc != nullptr) { delete tc;}    // 1. Clean up an existing connection if called a second time
         tc = new Oven5R6900(COMM);     // 2. Instantiate a fresh connection on the heap
         return (tc == nullptr);        // 3. Return a success token (e.g., check if the pointer is valid)

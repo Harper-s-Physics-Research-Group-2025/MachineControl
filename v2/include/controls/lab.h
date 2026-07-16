@@ -61,7 +61,10 @@ namespace Lab {
     bool logfile_valid(std::string& filepath);
 
     // RTE7 bath suite
-    int init_bath(std::string COMM);
+    std::vector<std::string> find_prolific_ports();
+    std::string find_bath_port();
+    std::string find_temp_controller_port();
+    int init_bath();
     int delete_bath();
     int bath_on();
     int bath_off();
@@ -71,7 +74,7 @@ namespace Lab {
     int bath_set_setpoint(float& temp); 
 
     // Oven industries 5R6-900 temperature control suite
-    int init_temp_controller(std::string COMM);
+    int init_temp_controller();
     int delete_temp_controller();
     int temperature_control_on();
     int temperature_control_off();
