@@ -23,6 +23,7 @@ Date: 06.09.2026
 #include <future>
 #include <memory>
 #include <chrono>
+#include <thread>
 
 
 // Equipment class header files

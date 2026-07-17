@@ -157,11 +157,19 @@ namespace Lab {
     //
     // Both constructing the Device (which opens the port via CreateFileA -- itself
     // capable of blocking if the OS/driver hasn't fully released a just-closed handle
-    // on that same COM port yet) and the get_setpoint() call happen inside the async
-    // task, so the timeout covers the whole probe, not just the read/write.
+    // on that same COM port yet) and the get_setpoint() call happen on the background
+    // thread, so the timeout covers the whole probe, not just the read/write.
+    //
+    // Deliberately uses a detached std::thread + std::promise here, NOT std::async:
+    // a std::future returned by std::async blocks in ITS OWN DESTRUCTOR until the task
+    // finishes, even if you never call .get() on it -- so "give up after `timeout` and
+    // return false" would silently re-block the caller anyway the moment the abandoned
+    // std::async future went out of scope, defeating the entire point of the timeout.
+    // A future obtained from a std::promise has no such blocking-destructor behavior,
+    // so it's safe to just walk away from once wait_for() reports a timeout.
     //
     // If the probe doesn't finish within `timeout`, this returns false and moves on --
-    // but the Device object (owned entirely by the background task's lambda) is kept
+    // but the Device object (owned entirely by the detached thread's lambda) is kept
     // alive for as long as that thread keeps running, rather than being destroyed while
     // it might still be blocked inside a synchronous Win32 call on its handle.
     // Destroying it out from under a pending synchronous ReadFile/WriteFile/CreateFileA
@@ -171,11 +179,16 @@ namespace Lab {
     // kernel with no recovery but killing the process.
     template <typename Device>
     bool probe_with_timeout(const std::string& port, std::chrono::milliseconds timeout) {
-        auto fut = std::async(std::launch::async, [port]() {
+        auto result = std::make_shared<std::promise<bool>>();
+        std::future<bool> fut = result->get_future();
+
+        std::thread([port, result]() {
             Device candidate(port);
             float temp;
-            return candidate.get_setpoint(temp);
-        });
+            bool ok = candidate.get_setpoint(temp);
+            try { result->set_value(ok); } catch (...) {}   // no one may be listening anymore -- fine
+        }).detach();
+
         if (fut.wait_for(timeout) == std::future_status::ready) {
             return fut.get();
         }
@@ -223,6 +236,11 @@ namespace Lab {
 
         if (bath != nullptr) { delete bath;}   // 1. Clean up an existing connection if called a second time
 
+        // find_bath_port()'s temporary probe object just closed this exact port; give the
+        // OS/FTDI driver a moment to fully release the handle before reopening it, or the
+        // reopen below can fail immediately even though the probe just succeeded on it.
+        Sleep(150);
+
         bath = new RTE7(COMM);          // 2. Instantiate a fresh connection on the heap
         if (!bath->is_connected()) {    // 3. Constructor logs a failure but doesn't throw -- check explicitly
             delete bath;
@@ -265,6 +283,11 @@ namespace Lab {
         if (COMM.empty()) return 1;         // no unambiguous match found
 
         if (tc != nullptr) { delete tc;}    // 1. Clean up an existing connection if called a second time
+
+        // Same reasoning as init_bath(): let the OS/FTDI driver fully release the probe's
+        // just-closed handle on this port before reopening it.
+        Sleep(150);
+
         tc = new Oven5R6900(COMM);     // 2. Instantiate a fresh connection on the heap
         if (!tc->is_connected()) {     // 3. Constructor logs a failure but doesn't throw -- check explicitly
             delete tc;
@@ -333,8 +356,9 @@ namespace Lab {
 
     // Create managers to control the servo motors
     // set the namespace pointers to the locations of these objects.
-    // Renamed from initialize_servos() -- see that function below, which runs this
-    // with a hard timeout instead of calling it directly.
+    // Split out from initialize_servos() below -- see that function's comment for why
+    // it's a thin, direct, un-timed wrapper around this rather than running it on a
+    // background thread.
     int initialize_servos_impl() {
 
         std::vector<std::string> comHubPorts;
@@ -379,24 +403,21 @@ namespace Lab {
     }
 
 
-    // Runs initialize_servos_impl() with a hard 5-second wall-clock timeout, so a stuck
-    // Teknic SDK call (FindComHubPorts/PortsOpen -- the exact call flagged in BUGS.md #11)
-    // can't hang the whole kernel. Unlike find_bath_port()/find_temp_controller_port()'s
-    // fully self-contained RTE7/Oven5R6900 objects, initialize_servos_impl() writes
-    // directly to the shared Mgr/Port/motorX/motorZ globals, and Mgr itself wraps a
-    // process-wide Teknic singleton (sFnd::SysManager::Instance()) that can't be cleanly
-    // sandboxed per attempt. So on a timeout here, the abandoned background task may
-    // still eventually finish and write to those globals at an unpredictable later time,
-    // possibly racing a subsequent init attempt. Accepted for the same reason as
-    // probe_with_timeout(): a rare edge case, versus hanging the entire kernel with no
-    // recovery but killing the process.
+    // Calls initialize_servos_impl() directly, on the calling thread, with no timeout.
+    //
+    // A background-thread timeout wrapper was tried here (matching probe_with_timeout()'s
+    // pattern) to guard against BUGS.md #11's hang. It was reverted: running the Teknic
+    // SDK calls (SysManager::Instance(), FindComHubPorts, PortsOpen) from a thread other
+    // than the one that originally calls into this DLL caused the whole process to crash
+    // (segfault) during hub setup, not just hang -- consistent with hardware SDKs like
+    // this frequently having thread-affinity requirements that a generic std::thread
+    // wrapper silently violates. A crash is worse than a hang (no recovery is possible by
+    // killing a *different*, still-hung process), so until there's a safer way to bound
+    // this call, the hang risk from #11 is the accepted tradeoff -- call ServoEnable[]
+    // knowing it can block if the Teknic hub doesn't respond, and if it does hang, recover
+    // by killing the kernel process, same as before the timeout was ever attempted.
     int initialize_servos() {
-        auto fut = std::async(std::launch::async, initialize_servos_impl);
-        if (fut.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready) {
-            return fut.get();
-        }
-        log("initialize_servos: Teknic SDK call did not respond within timeout.");
-        return -1;
+        return initialize_servos_impl();
     }
 
 

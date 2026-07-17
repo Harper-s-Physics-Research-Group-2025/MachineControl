@@ -1,8 +1,9 @@
 # Known Bugs
 
-Originally found via static read-through of the C++ source. All bugs below have since been
-fixed and the DLL rebuilds clean (`cmake --build . --config Release`) after each fix, but none
-of these fixes have been exercised against the real hardware yet — only compiled.
+Originally found via static read-through of the C++ source. All bugs below have since been fixed,
+the DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the full
+`Test_WolframMachineControl.wlt` suite passes 29/29 against real hardware (bath, temp controller,
+servos, LabJack).
 
 ## High severity
 
@@ -90,15 +91,32 @@ That first fix only removed the *automatic* trigger — it didn't add a timeout 
 `initialize_servos()` itself, so the exact same stall was still fully reachable any time
 `ServoEnable[]` is called explicitly, which the `.wlt` suite does (and which normal usage
 requires). Confirmed still hanging there via `.wlt` runs and `log.txt` showing nothing past
-`delete_temp_controller()` succeeding. Renamed the existing logic to `initialize_servos_impl()`
-and added `initialize_servos()` as a thin wrapper that runs it via `std::async` with a hard
-5-second timeout (same pattern as `probe_with_timeout()`, bug #12). One added wrinkle here:
-`initialize_servos_impl()` writes to the shared `Mgr`/`Port`/`motorX`/`motorZ` globals directly,
-and `Mgr` wraps a process-wide Teknic singleton (`sFnd::SysManager::Instance()`) that can't be
-cleanly sandboxed per attempt the way the bath/temp-controller probe objects are — so on a
-timeout, the abandoned background task may still eventually finish and write to those globals at
-an unpredictable later time. Accepted for the same reason as bug #12: a rare edge case, versus
-hanging the entire kernel with no recovery but killing the process.
+`delete_temp_controller()` succeeding.
+
+Tried the same fix as bug #12: renamed the existing logic to `initialize_servos_impl()` and ran it
+via a background thread with a hard 5-second timeout. **This made things worse, not better** —
+running the Teknic SDK calls (`SysManager::Instance()`, `FindComHubPorts`, `PortsOpen`) from a
+thread other than the one that calls into the DLL crashed the whole process (segfault) during hub
+setup, confirmed via a `wolframscript` run:
+```
+Found Teknic SC4-HUB
+Friendly name: Teknic ClearPath 4-axis SC Hub (COM12)
+Port number COM12
+The product exited for an unknown reason.
+Segmentation fault
+```
+Hardware SDKs wrapping USB/driver communication frequently have thread-affinity requirements —
+they assume they're always called from the same thread (often the one that first touched them) —
+and a generic `std::thread` wrapper silently violates that assumption. Unlike
+`find_bath_port()`/`find_temp_controller_port()`'s fully self-contained `RTE7`/`Oven5R6900`
+objects (which tolerated the same pattern fine), `initialize_servos_impl()` wraps a process-wide
+Teknic singleton that apparently doesn't.
+
+**Reverted.** `initialize_servos()` now just calls `initialize_servos_impl()` directly again, with
+no timeout, no background thread. A crash is worse than a hang — a hung process can at least be
+killed and recovered from; this was crashing mid-hardware-setup. The hang risk from the first half
+of this bug is the accepted tradeoff until there's a safer way to bound this specific call — if
+`ServoEnable[]` hangs, recover the same way as before any of this: kill the kernel process.
 
 ### 12. ~~Port auto-detect probe could hang the entire kernel~~ — Mitigated
 Running the full `.wlt` suite against real hardware hung indefinitely right after `DeleteBath[]`
@@ -122,8 +140,51 @@ on its handle — closing a handle out from under pending synchronous I/O on ano
 undefined behavior on Windows. Root cause of the underlying stall is still not fully confirmed (no
 way to reproduce without the physical rig); this is a mitigation, not a root-cause fix.
 
-## Not yet checked
-- No run against real hardware was performed for the fixes above — only build-verified.
+### 13. ~~Both timeout fixes above (#11, #12) still hung, silently, one line later~~ — Fixed
+After shipping both timeout fixes, the `.wlt` suite still froze — but now *past* the point where
+each timeout's log message correctly fired (`"...did not respond within timeout."`), with nothing
+logged after. Confirmed via Task Manager: sampled the kernel process's CPU usage twice, 5 real
+seconds apart — identical value both times, proving it was genuinely blocked, not just slow.
+
+Root cause: both `probe_with_timeout()` and `initialize_servos()` used
+`std::async(std::launch::async, ...)`, and a `std::future` returned by `std::async` has a
+standard-mandated special rule — **its destructor blocks until the task finishes**, if the result
+was never retrieved via `.get()`. So `wait_for(timeout)` would correctly report a timeout and the
+code would log and `return false`/`-1` as intended — but the moment that local `future` went out
+of scope one line later, its destructor silently re-blocked the calling thread until the abandoned
+Teknic/serial call actually finished (which, per bug #11/#12, might be never). The timeout
+appeared to work because the log message fired; it didn't actually protect anything, because
+returning from the function was itself blocked.
+
+Fixed by switching both functions from `std::async` to a detached `std::thread` paired with a
+`std::promise`/`std::future`. A future obtained from a `std::promise` has no blocking-destructor
+behavior — it's just an ordinary object — so giving up after `wait_for(timeout)` and returning is
+actually safe. The detached thread keeps running independently; if it eventually finishes, it
+calls `promise::set_value(...)`, which is a harmless no-op if nothing is listening anymore.
+
+This fixed `probe_with_timeout()` (bug #12) for good. It did *not* end up fixing
+`initialize_servos()` (bug #11) — see that entry's update: running the Teknic SDK on any thread
+other than the caller's turned out to crash the process outright, so that one was reverted to a
+direct, un-timed call rather than kept on a background thread.
+
+### 14. ~~`BathInit[]`/`TempCtrlInit[]` could fail immediately after their own probe just succeeded~~ — Fixed
+Running the full suite via `wolframscript` (independent of the Mathematica front end, to rule out
+notebook-specific issues) surfaced this cleanly: the bath's protocol probe would report
+`"matched (this is the bath)"` in `log.txt`, then the very next real command would fail
+(`"Bath setpoint written: ... | Status: 1"`) — every bath test failing despite the probe that
+identifies it as the bath succeeding moments earlier.
+
+Cause: `find_bath_port()`/`find_temp_controller_port()` open a temporary `RTE7`/`Oven5R6900` to
+probe each candidate port, closing it the instant a match is confirmed. `init_bath()`/
+`init_temp_controller()` then immediately open a *second*, persistent connection on that exact
+same port, milliseconds later. The OS/FTDI driver apparently needs a brief moment to fully
+release a just-closed handle before a new one can succeed — reopening immediately could fail
+outright, which reads as a clean, fast failure right after a successful probe, not a hang.
+
+Fixed with a 150ms `Sleep()` in both `init_bath()` and `init_temp_controller()`, between closing
+the probe and opening the persistent connection. Confirmed fixed via `wolframscript`: bath went
+from failing all 6 of its tests to passing all 6, with the log showing `Status: 0` instead of
+`Status: 1` on the exact same command.
 
 ## Removed dead code
 `sm_homer.h`, `sm_manual_controller.h`, and `recorder.h`/`recorder.cpp` were confirmed unused
