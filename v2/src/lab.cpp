@@ -33,7 +33,7 @@ namespace Lab {
 
     // logging defaults
     bool LOG = false;
-    std::string LOG_FILE = "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\v2\\log.txt";
+    std::string LOG_FILE = "C:\\Users\\Student\\Desktop\\machine_controller\\MachineControl\\v2\\log.txt";
 
 
     
@@ -104,12 +104,13 @@ namespace Lab {
     // -------------------------------------------------------------------------
 
     // Enumerates the Windows "Ports (COM & LPT)" device class and returns every
-    // COM port whose USB hardware ID matches VID_067B&PID_2303 (Prolific
-    // USB-to-Serial). The bath and the temp controller both use this exact
-    // adapter, so the hardware ID alone can only narrow candidates down --
+    // COM port whose USB hardware ID matches VID_0403&PID_6001 (FTDI FT232
+    // USB-to-Serial -- the chip used by the bath's and temp controller's
+    // current cables). The bath and the temp controller both use identical
+    // adapters, so the hardware ID alone can only narrow candidates down --
     // it can't tell the two apart. Disambiguating which candidate is which
     // device happens by protocol probing below.
-    std::vector<std::string> find_prolific_ports() {
+    std::vector<std::string> find_serial_adapter_ports() {
         std::vector<std::string> found_ports;
 
         HDEVINFO device_info = SetupDiGetClassDevsA(&GUID_DEVCLASS_PORTS, nullptr, nullptr, DIGCF_PRESENT);
@@ -126,7 +127,7 @@ namespace Lab {
             }
 
             std::string id(hardware_id);
-            if (id.find("VID_067B&PID_2303") == std::string::npos) continue;   // not a Prolific adapter
+            if (id.find("VID_0403&PID_6001") == std::string::npos) continue;   // not an FTDI adapter
 
             char friendly_name[256] = { 0 };
             if (!SetupDiGetDeviceRegistryPropertyA(device_info, &device_data, SPDRP_FRIENDLYNAME,
@@ -134,13 +135,13 @@ namespace Lab {
                 continue;
             }
 
-            // Friendly names look like "Prolific USB-to-Serial Comm Port (COM5)" -- pull the COMx token out.
+            // Friendly names look like "USB Serial Port (COM10)" -- pull the COMx token out.
             std::string name(friendly_name);
             size_t open_paren = name.rfind("(COM");
             size_t close_paren = name.rfind(")");
             if (open_paren == std::string::npos || close_paren == std::string::npos) continue;
 
-            found_ports.push_back(name.substr(open_paren + 1, close_paren - open_paren - 1));  // e.g. "COM5"
+            found_ports.push_back(name.substr(open_paren + 1, close_paren - open_paren - 1));  // e.g. "COM10"
         }
 
         SetupDiDestroyDeviceInfoList(device_info);
@@ -148,22 +149,54 @@ namespace Lab {
     }
 
 
-    // Finds the bath among the candidate Prolific ports by opening each one and
-    // sending a harmless, read-only "get setpoint" query. Only the port
+    // Probes a candidate port as the given Device type (RTE7 or Oven5R6900), with a hard
+    // wall-clock timeout so a stuck serial exchange can't hang the whole kernel. The
+    // real hardware's read/write timeouts (COMMTIMEOUTS, set in each device's initSerial)
+    // are supposed to bound this on their own, but can't always be trusted -- a device or
+    // driver quirk can stall a synchronous ReadFile/WriteFile longer than configured.
+    //
+    // Both constructing the Device (which opens the port via CreateFileA -- itself
+    // capable of blocking if the OS/driver hasn't fully released a just-closed handle
+    // on that same COM port yet) and the get_setpoint() call happen inside the async
+    // task, so the timeout covers the whole probe, not just the read/write.
+    //
+    // If the probe doesn't finish within `timeout`, this returns false and moves on --
+    // but the Device object (owned entirely by the background task's lambda) is kept
+    // alive for as long as that thread keeps running, rather than being destroyed while
+    // it might still be blocked inside a synchronous Win32 call on its handle.
+    // Destroying it out from under a pending synchronous ReadFile/WriteFile/CreateFileA
+    // on another thread is undefined behavior on Windows (can crash), so a timed-out
+    // probe deliberately leaks its handle/thread rather than risk that -- accepted here
+    // since it's a rare edge case, and the alternative is hanging the entire Mathematica
+    // kernel with no recovery but killing the process.
+    template <typename Device>
+    bool probe_with_timeout(const std::string& port, std::chrono::milliseconds timeout) {
+        auto fut = std::async(std::launch::async, [port]() {
+            Device candidate(port);
+            float temp;
+            return candidate.get_setpoint(temp);
+        });
+        if (fut.wait_for(timeout) == std::future_status::ready) {
+            return fut.get();
+        }
+        return false;
+    }
+
+
+    // Finds the bath among the candidate serial-adapter ports by opening each one
+    // and sending a harmless, read-only "get setpoint" query. Only the port
     // actually wired to the RTE7 will complete that handshake with a valid,
     // checksummed reply, so this works even after the two adapters get
     // swapped into different physical USB ports.
     std::string find_bath_port() {
-        std::vector<std::string> candidates = find_prolific_ports();
-        log("find_bath_port: found " + std::to_string(candidates.size()) + " candidate Prolific port(s).");
+        std::vector<std::string> candidates = find_serial_adapter_ports();
+        log("find_bath_port: found " + std::to_string(candidates.size()) + " candidate serial adapter port(s).");
         for (const std::string& port : candidates) {
-            RTE7 candidate(port);
-            float temp;
-            bool ok = candidate.get_setpoint(temp);
-            log("find_bath_port: probed " + port + " -> " + (ok ? "matched (this is the bath)" : "no valid reply"));
+            bool ok = probe_with_timeout<RTE7>(port, std::chrono::milliseconds(1500));
+            log("find_bath_port: probed " + port + " -> " + (ok ? "matched (this is the bath)" : "no valid reply (or timed out)"));
             if (ok) return port;
         }
-        log("find_bath_port: no candidate Prolific port answered the RTE7 protocol probe.");
+        log("find_bath_port: no candidate serial adapter port answered the RTE7 protocol probe.");
         return "";
     }
 
@@ -171,16 +204,14 @@ namespace Lab {
     // Same idea as find_bath_port(), but probing with the Oven5R6900's own
     // read-only "get setpoint" query.
     std::string find_temp_controller_port() {
-        std::vector<std::string> candidates = find_prolific_ports();
-        log("find_temp_controller_port: found " + std::to_string(candidates.size()) + " candidate Prolific port(s).");
+        std::vector<std::string> candidates = find_serial_adapter_ports();
+        log("find_temp_controller_port: found " + std::to_string(candidates.size()) + " candidate serial adapter port(s).");
         for (const std::string& port : candidates) {
-            Oven5R6900 candidate(port);
-            float temp;
-            bool ok = candidate.get_setpoint(temp);
-            log("find_temp_controller_port: probed " + port + " -> " + (ok ? "matched (this is the temp controller)" : "no valid reply"));
+            bool ok = probe_with_timeout<Oven5R6900>(port, std::chrono::milliseconds(1500));
+            log("find_temp_controller_port: probed " + port + " -> " + (ok ? "matched (this is the temp controller)" : "no valid reply (or timed out)"));
             if (ok) return port;
         }
-        log("find_temp_controller_port: no candidate Prolific port answered the Oven5R6900 protocol probe.");
+        log("find_temp_controller_port: no candidate serial adapter port answered the Oven5R6900 protocol probe.");
         return "";
     }
 
@@ -302,7 +333,9 @@ namespace Lab {
 
     // Create managers to control the servo motors
     // set the namespace pointers to the locations of these objects.
-    int initialize_servos() {
+    // Renamed from initialize_servos() -- see that function below, which runs this
+    // with a hard timeout instead of calling it directly.
+    int initialize_servos_impl() {
 
         std::vector<std::string> comHubPorts;
 
@@ -325,24 +358,45 @@ namespace Lab {
             motorZ = &Port->Nodes(1);
 
             // Clear alerts and faults. Enable motors.
-            motorX->Status.AlertsClear();                   
+            motorX->Status.AlertsClear();
             motorZ->Status.AlertsClear();
-            motorX->Motion.NodeStopClear();                  
+            motorX->Motion.NodeStopClear();
             motorZ->Motion.NodeStopClear();
             motorX->EnableReq(true);
             motorZ->EnableReq(true);
             Sleep(200);     // wait for enable to complete
 
             return 0;
-        
+
         } catch (sFnd::mnErr& theErr) {    // If an SDK error occurs (e.g., motor has a hard fault), shut down
-            shutdown_servos(); 
+            shutdown_servos();
             return -1;
         } catch (...) {
             shutdown_servos();
             return -1;
         }
 
+    }
+
+
+    // Runs initialize_servos_impl() with a hard 5-second wall-clock timeout, so a stuck
+    // Teknic SDK call (FindComHubPorts/PortsOpen -- the exact call flagged in BUGS.md #11)
+    // can't hang the whole kernel. Unlike find_bath_port()/find_temp_controller_port()'s
+    // fully self-contained RTE7/Oven5R6900 objects, initialize_servos_impl() writes
+    // directly to the shared Mgr/Port/motorX/motorZ globals, and Mgr itself wraps a
+    // process-wide Teknic singleton (sFnd::SysManager::Instance()) that can't be cleanly
+    // sandboxed per attempt. So on a timeout here, the abandoned background task may
+    // still eventually finish and write to those globals at an unpredictable later time,
+    // possibly racing a subsequent init attempt. Accepted for the same reason as
+    // probe_with_timeout(): a rare edge case, versus hanging the entire kernel with no
+    // recovery but killing the process.
+    int initialize_servos() {
+        auto fut = std::async(std::launch::async, initialize_servos_impl);
+        if (fut.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready) {
+            return fut.get();
+        }
+        log("initialize_servos: Teknic SDK call did not respond within timeout.");
+        return -1;
     }
 
 

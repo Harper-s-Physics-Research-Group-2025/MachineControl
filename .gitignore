@@ -23,6 +23,10 @@ CMakeCache.txt
 *.obj
 *.o
 *.a
+LibraryResources/
+
+# Scratch notes
+TODO
 
 # IDE files
 .vs/
@@ -50,6 +54,7 @@ __pycache__/
 # Test outputs
 *.out
 *.log
+log.txt
 
 # Temporary files
 *.tmp

@@ -20,8 +20,8 @@ manufacturer-provided SDK.
 
 ## Fluid bath & temp controller: why they need special handling
 
-Both devices plug in through the exact same USB-to-serial adapter chip (Prolific
-`VID_067B&PID_2303`). That causes two problems, in order of how badly they used to bite:
+Both devices plug in through the exact same model of USB-to-serial adapter chip. That causes two
+problems, in order of how badly they used to bite:
 
 1. **The COM number isn't stable.** Windows reassigns COM numbers on replug/reboot, so a
    hardcoded `"COM5"` breaks the next time someone unplugs a cable.
@@ -32,8 +32,14 @@ Both devices plug in through the exact same USB-to-serial adapter chip (Prolific
 The fix (see [specs/port-autodetect.md](specs/port-autodetect.md) for the full spec) is: find
 every port that *could* be one of these adapters, then send each one a real command in the
 device's own protocol and see which one answers correctly. Whichever port replies is that device
-— implemented in `src/lab.cpp` (`find_prolific_ports`, `find_bath_port`,
+— implemented in `src/lab.cpp` (`find_serial_adapter_ports`, `find_bath_port`,
 `find_temp_controller_port`).
+
+The adapters' current chipset is FTDI FT232 (`VID_0403&PID_6001`) — matched in
+`find_serial_adapter_ports()`. The rig previously used Prolific `PL2303` adapters
+(`VID_067B&PID_2303`); those were swapped out due to a Windows driver compatibility problem (see
+"One hardware caveat worth knowing" below). If the hardware ever changes chipset again, that
+hardcoded VID/PID string is the one line to update.
 
 ### Fluid bath (RTE7) — binary protocol
 `include/controls/RTE7.h`, `src/RTE7.cpp`
@@ -107,9 +113,11 @@ that platform — it's a real port, not a recompile.
 
 ## One hardware caveat worth knowing
 
-The Prolific `PL2303`-family chip both devices use has spotty driver support on modern Windows —
-Prolific's official stance for older `TA`-series chips is "buy a newer adapter" rather than
-releasing an updated driver. If a port stops responding after a Windows update, check whether it's
-a driver problem before assuming it's a wiring or code issue. The long-term fix is swapping in an
-adapter with a better-supported chipset (FTDI FT232, CH340, or a newer Prolific PL2303GC/HXD/TB
-revision).
+The rig previously used Prolific `PL2303`-family adapters, which have spotty driver support on
+modern Windows — Prolific's official stance for older `TA`-series chips is "buy a newer adapter"
+rather than releasing an updated driver. That's exactly what happened: one adapter started
+showing up in Device Manager as `PL2303TA DO NOT SUPPORT WINDOWS 11 OR LATER, PLEASE CONTACT YOUR
+SUPPLIER` instead of getting a COM port at all. The bath and temp controller now use FTDI FT232
+adapters instead (`VID_0403&PID_6001`, matched in `find_serial_adapter_ports()`), which don't have
+this problem. If a port ever stops responding after a Windows update again, check whether it's a
+driver problem before assuming it's a wiring or code issue.

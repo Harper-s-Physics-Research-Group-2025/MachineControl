@@ -21,10 +21,10 @@ Notebook[{
 
 Cell[CellGroupData[{
 Cell[BoxData[
- RowBox[{"PacletDirectoryLoad", 
-  "[", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
-JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\>\"", "]"}]], "Input",
- CellChangeTimes->{{3.9907942977300053`*^9, 3.990794314178753*^9}, 
+ RowBox[{"PacletDirectoryLoad", "[",
+   RowBox[{"ParentDirectory", "[",
+     RowBox[{"NotebookDirectory", "[", "]"}], "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.9907942977300053`*^9, 3.990794314178753*^9},
    3.9907947355308075`*^9},
  CellLabel->"In[1]:=",ExpressionUUID->"b678aaf2-116b-7146-978e-852bfbcff58c"],
 
@@ -138,12 +138,16 @@ Cell[BoxData["0.07948877778835595`"], "Output",
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{"report", "=", 
-  RowBox[{
-  "TestReport", 
-   "[", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
-JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\\\\WolframMachineControl\
-\\\\Tests\\\\Test_WolframMachineControl.wlt\>\"", "]"}]}]], "Input",
+ RowBox[{"report", "=",
+   RowBox[{"TestReport", "[",
+     RowBox[{"FileNameJoin", "[",
+       RowBox[{"{",
+         RowBox[{
+           RowBox[{"ParentDirectory", "[",
+             RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ",",
+           "\"\<paclet\>\"", ",", "\"\<Tests\>\"", ",",
+           "\"\<Test_WolframMachineControl.wlt\>\""}], "}"}], "]"}], "]"}]}]],
+ "Input",
  CellChangeTimes->{{3.991406654344887*^9, 3.9914066749150715`*^9}},
  CellLabel->"In[6]:=",ExpressionUUID->"19a75eee-e7a8-6c40-b28e-2a80f3488c41"],
 

@@ -20,6 +20,9 @@ Date: 06.09.2026
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
+#include <future>
+#include <memory>
+#include <chrono>
 
 
 // Equipment class header files
@@ -61,7 +64,7 @@ namespace Lab {
     bool logfile_valid(std::string& filepath);
 
     // RTE7 bath suite
-    std::vector<std::string> find_prolific_ports();
+    std::vector<std::string> find_serial_adapter_ports();
     std::string find_bath_port();
     std::string find_temp_controller_port();
     int init_bath();

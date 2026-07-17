@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 VerificationTest[
-	PacletDirectoryLoad["C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\v2"];
+	PacletDirectoryLoad["C:\\Users\\Student\\Desktop\\machine_controller\\MachineControl\\v2"];
     Needs["WolframMachineControl`"];
     NameQ["WolframMachineControl`*"],
     True,
@@ -12,7 +12,7 @@ VerificationTest[
 (* ==========================================================================
 	0. Global Variables
    ========================================================================*)
-LogFile = "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\v2\\log.txt"
+LogFile = "C:\\Users\\Student\\Desktop\\machine_controller\\MachineControl\\v2\\log.txt"
 
 
 
@@ -35,7 +35,7 @@ VerificationTest[
 
 VerificationTest[
     WolframMachineControl`GetLogFile[],
-    "C:\\Users\\Student\\Documents\\JuxtapositionOfSampleHolders\\MachineControl\\v2\\log.txt",
+    LogFile,
     TestID -> "WolframMachineControl`GetLogFile[]"
 ]
 

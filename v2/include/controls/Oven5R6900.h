@@ -63,17 +63,18 @@ public:
     bool set_max_deviation(float& temp);        // maximum temperature deviation for the ramp soak procedure to continue
     bool set_count_length(int& periods);        // set base timer period as a multiple of .2 seconds
 
+    // Pure protocol logic (no hardware I/O) -- public so it's unit-testable in isolation.
+    std::string checksum(const std::string& message) const;
+    std::vector<uint8_t> hexStringToBytes(const std::string& hex) const;
+    int32_t parse_response(std::string& response) const;
 
 
 private:
     HANDLE hSerial;
 
     bool initSerial(const std::string& port_name);
-    std::string checksum(const std::string& message) const;
-    std::vector<uint8_t> hexStringToBytes(const std::string& hex) const;
     void print_bytes(const std::vector<uint8_t>& data) const;
 
-    int32_t parse_response(std::string& response) const;
     bool dispatch_message(const std::string& command_id,
         float& value, 
         float scale_factor, 

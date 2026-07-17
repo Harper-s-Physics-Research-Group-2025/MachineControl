@@ -29,19 +29,20 @@ public:
     // setters
     bool set_setpoint(const float& temp);
 
+    // Pure protocol logic (no hardware I/O) -- public so it's unit-testable in isolation.
+    uint8_t chillerChecksum(const std::vector<uint8_t>& data) const;
+    std::vector<uint8_t> hexStringToBytes(const std::string& hex) const;
+    float parse_float_response(std::vector<uint8_t>& response) const;
+
 
 private:
     HANDLE hSerial;
 
     bool initSerial(const std::string& port_name);
-    uint8_t chillerChecksum(const std::vector<uint8_t>& data) const;
-    std::vector<uint8_t> hexStringToBytes(const std::string& hex) const;
     void printBytes(const std::vector<uint8_t>& data, const std::string& label) const;
 
     bool read_temp(float& out_temp);
     bool read_setpoint(float& setpoint);
     bool read_acknowledge();
-
-    float parse_float_response(std::vector<uint8_t>& response) const;
 
 };

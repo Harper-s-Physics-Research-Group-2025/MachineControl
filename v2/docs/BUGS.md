@@ -67,10 +67,60 @@ garbled or wrong-protocol reply was reported as a successful call. This directly
 port-autodetect probe (see `specs/port-autodetect.md`): any port that echoed back *any* bytes at
 all, correct protocol or not, could pass as a "valid, checksummed response." Both files now check
 for the `-999` sentinel and return `false` instead of silently succeeding with garbage data.
-Found by watching `WolframMachineControl/Tests/Test_WolframMachineControl.wlt` fail against real
+Found by watching `paclet/Tests/Test_WolframMachineControl.wlt` fail against real
 hardware: `BathInit[]`/`TempCtrlInit[]` succeeded, but every real command right after
 (`BathOn[]`, `TempCtrlOn[]`, ...) failed — a pattern consistent with the probe having matched the
 wrong port.
+
+### 11. ~~`Needs[...]` could hang the entire kernel with no timeout~~ — Fixed, then extended
+`WolframLibrary_initialize` (`src/wolfram_api.cpp`) used to call `Lab::initialize_servos()`
+automatically, synchronously, the moment the DLL first loads — which happens as a side effect of
+`Needs["WolframMachineControl`"]`, not anything servo-specific. `initialize_servos()` makes
+blocking Teknic SDK calls (`FindComHubPorts`, `PortsOpen`) with no timeout anywhere in the code
+path, so if that handshake ever stalls, the entire kernel hangs on what looks like an unrelated
+`Needs[...]` call, with the Teknic hub already connected and powered — Task Manager showed the
+kernel process pinned at 0% CPU (blocked, not busy) with no way to recover except killing the
+process. First fix: removed the automatic call entirely — it was also redundant, since the
+documented workflow (`README.md` Step 5, and the `.wlt` test suite) already calls `ServoEnable[]`
+explicitly before using the servos. Side benefit: the servo motors also no longer get energized
+(`EnableReq(true)`) automatically on package load, only when a user explicitly calls
+`ServoEnable[]`.
+
+That first fix only removed the *automatic* trigger — it didn't add a timeout to
+`initialize_servos()` itself, so the exact same stall was still fully reachable any time
+`ServoEnable[]` is called explicitly, which the `.wlt` suite does (and which normal usage
+requires). Confirmed still hanging there via `.wlt` runs and `log.txt` showing nothing past
+`delete_temp_controller()` succeeding. Renamed the existing logic to `initialize_servos_impl()`
+and added `initialize_servos()` as a thin wrapper that runs it via `std::async` with a hard
+5-second timeout (same pattern as `probe_with_timeout()`, bug #12). One added wrinkle here:
+`initialize_servos_impl()` writes to the shared `Mgr`/`Port`/`motorX`/`motorZ` globals directly,
+and `Mgr` wraps a process-wide Teknic singleton (`sFnd::SysManager::Instance()`) that can't be
+cleanly sandboxed per attempt the way the bath/temp-controller probe objects are — so on a
+timeout, the abandoned background task may still eventually finish and write to those globals at
+an unpredictable later time. Accepted for the same reason as bug #12: a rare edge case, versus
+hanging the entire kernel with no recovery but killing the process.
+
+### 12. ~~Port auto-detect probe could hang the entire kernel~~ — Mitigated
+Running the full `.wlt` suite against real hardware hung indefinitely right after `DeleteBath[]`
+succeeds, at the very next test (`TempCtrlInit[]`) — `find_temp_controller_port()`'s serial probe
+never returned. The configured `COMMTIMEOUTS` in `RTE7`/`Oven5R6900`'s `initSerial` are supposed to
+bound every read/write, but evidently can't always be trusted — a device or driver-level stall can
+block a synchronous `ReadFile`/`WriteFile` past its configured timeout.
+
+`find_bath_port()`/`find_temp_controller_port()` now wrap each candidate probe in a hard
+1.5-second wall-clock timeout (`Lab::probe_with_timeout`, `src/lab.cpp`), so a stuck exchange fails
+that candidate and moves on instead of freezing the kernel. First attempt at this only wrapped the
+`get_setpoint()` call itself in the timeout, leaving the `RTE7`/`Oven5R6900` *construction*
+(`CreateFileA`, opening the port) running unprotected on the calling thread — and the hang turned
+out to still reproduce after that fix, meaning construction itself is a plausible place for the
+real stall (e.g. the OS/FTDI driver not having fully released a just-closed handle on that same
+COM port yet). Both construction and the probe now happen entirely inside the timed async task,
+so the timeout actually covers the whole probe. A timed-out probe's `RTE7`/`Oven5R6900` object
+lives only inside that background task's lambda, so it stays alive for as long as that thread
+keeps running rather than being destroyed while a synchronous Win32 call might still be blocked
+on its handle — closing a handle out from under pending synchronous I/O on another thread is
+undefined behavior on Windows. Root cause of the underlying stall is still not fully confirmed (no
+way to reproduce without the physical rig); this is a mitigation, not a root-cause fix.
 
 ## Not yet checked
 - No run against real hardware was performed for the fixes above — only build-verified.

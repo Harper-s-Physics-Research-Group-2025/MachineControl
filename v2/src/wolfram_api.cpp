@@ -25,8 +25,7 @@ extern "C" {
     // Automatically invoked by Wolfram when the DLL is first loaded into memory.
     DLLEXPORT int WolframLibrary_initialize(WolframLibraryData lp) {
         Lab::log("\n\n--- Initializing Wolfram API Layer ---");
-        Lab::initialize_servos();
-        return LIBRARY_NO_ERROR; 
+        return LIBRARY_NO_ERROR;
     }
 
     // Automatically invoked by Wolfram when the library is explicitly unloaded.

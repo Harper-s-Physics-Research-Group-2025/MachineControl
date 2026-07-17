@@ -45,14 +45,14 @@ DLLEXPORT int wbath_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgum
   `MArgument_setReal(Res, ...)`, etc. — never a normal C++ `return` for the actual data.
 - The function's actual `return` value is a **status code**, not the answer — `0`
   (`LIBRARY_NO_ERROR`) means success; anything else tells Mathematica the call failed (and which
-  way). This is easy to get wrong: see `BUGS.md` #3 for a case where a plain success/fail boolean
+  way). This is easy to get wrong: see `docs/BUGS.md` #3 for a case where a plain success/fail boolean
   got returned directly as this status code and silently meant something else to Mathematica.
 - Two special lifecycle hooks Wolfram calls automatically, not from user code:
   `WolframLibrary_initialize` (runs once when the DLL is first loaded — starts up the servos here)
   and `WolframLibrary_uninitialize` (runs on unload — tears down the bath/temp
   controller/servos).
 
-## 2. The Wolfram side: `WolframMachineControl/Kernel/WolframMachineControl.wl`
+## 2. The Wolfram side: `paclet/Kernel/WolframMachineControl.wl`
 
 Two things happen in this file for every function:
 
@@ -75,7 +75,7 @@ of arguments the C++ side reads out of `Args[]` — a mismatch is exactly what p
 `$dllPath` is found automatically via `FindLibrary["wolfram_machine_controller"]` — nobody needs to
 hardcode a path to the compiled DLL.
 
-## 3. Telling Mathematica this is a LibraryLink paclet: `WolframMachineControl/PacletInfo.wl`
+## 3. Telling Mathematica this is a LibraryLink paclet: `paclet/PacletInfo.wl`
 
 ```wolfram
 "Extensions" -> {
@@ -107,5 +107,5 @@ Nobody needs to move the built `.dll` by hand — `cmake --build .` leaves it ex
 Adding one new callable function to Mathematica means touching all three of these, in order:
 1. `src/lab.cpp` — the actual logic (usually calling into a device class).
 2. `src/wolfram_api.cpp` — a new `DLLEXPORT` wrapper that unpacks `Args`/`Res` and calls step 1.
-3. `WolframMachineControl/Kernel/WolframMachineControl.wl` — a `::usage` string plus a
+3. `paclet/Kernel/WolframMachineControl.wl` — a `::usage` string plus a
    `LibraryFunctionLoad` binding whose argument/return types match step 2 exactly.

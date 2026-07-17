@@ -21,9 +21,9 @@ Notebook[{
 
 Cell[CellGroupData[{
 Cell[BoxData[
- RowBox[{"PacletDirectoryLoad", 
-  "[", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
-JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\>\"", "]"}]], "Input",
+ RowBox[{"PacletDirectoryLoad", "[",
+   RowBox[{"ParentDirectory", "[",
+     RowBox[{"NotebookDirectory", "[", "]"}], "]"}], "]"}]], "Input",
  CellLabel->"In[44]:=",ExpressionUUID->"b28d0934-f2b1-814a-aecc-b1540fcde993"],
 
 Cell[BoxData[
@@ -44,11 +44,17 @@ Cell[BoxData[
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{"SetLogSettings", "[", 
+ RowBox[{"SetLogSettings", "[",
   RowBox[{
-  "1", ",", 
-   " ", "\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
-JuxtapositionOfSampleHolders\\\\MachineControl\\\\v2\\\\log.txt\>\""}], 
+  "1", ",", " ",
+   RowBox[{"FileNameJoin", "[",
+     RowBox[{"{",
+       RowBox[{
+         RowBox[{"ParentDirectory", "[",
+           RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ",",
+         "\"\<log.txt\>\""}],
+     "}"}],
+   "]"}]}],
   "]"}]], "Input",
  CellChangeTimes->{{3.9917363756904316`*^9, 3.9917364130391064`*^9}, {
   3.991736712227104*^9, 3.9917367197460938`*^9}, {3.99174987117663*^9, 
@@ -734,9 +740,17 @@ Cell[BoxData[
    "5.", " ", "Export", " ", "or", " ", "view", " ", "your", " ", "data"}], 
    "*)"}], "\n", 
   RowBox[{
-   RowBox[{"Export", "[", 
-    RowBox[{"\"\<C:\\\\Users\\\\Student\\\\Documents\\\\\
-JuxtapositionOfSampleHolders\\\\data\\\\data.csv\>\"", ",", "dataLog"}], 
+   RowBox[{"Export", "[",
+    RowBox[{
+      RowBox[{"FileNameJoin", "[",
+        RowBox[{"{",
+          RowBox[{
+            RowBox[{"ParentDirectory", "[",
+              RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ",",
+            "\"\<data\>\"", ",",
+            "\"\<data.csv\>\""}],
+        "}"}],
+      "]"}], ",", "dataLog"}],
     "]"}], ";"}]}]], "Input",
  CellChangeTimes->{3.991753710469324*^9},
  CellLabel->"In[36]:=",ExpressionUUID->"f8b5fefd-5ba4-8a49-aeed-af24778a23e3"],

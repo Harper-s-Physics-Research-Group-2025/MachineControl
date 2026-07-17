@@ -100,7 +100,7 @@ else()
 endif()
 
 # Define the absolute target directory inside your tracked paclet structure
-set(PACLET_DEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/WolframMachineControl/LibraryResources/${WOLFRAM_OS_DIR}")
+set(PACLET_DEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/paclet/LibraryResources/${WOLFRAM_OS_DIR}")
 
 
 ## Copy library into the Wolfram paclet folder
@@ -110,3 +110,24 @@ add_custom_command(TARGET wolfram_machine_controller POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy "${TEKNIC_RUNTIME_DLL}" "${PACLET_DEST_DIR}/"
     COMMENT "Copying compiled binary and sFoundation20.dll to Wolfram Paclet directory..."
 )
+
+
+# 10. Unit tests (doctest) for the pure protocol-parsing logic in RTE7/Oven5R6900.
+# Deliberately does NOT depend on the Wolfram/LabJack/Teknic SDKs above -- RTE7.cpp and
+# Oven5R6900.cpp only need <windows.h> and the standard library, so this target builds
+# even on a machine that only has the SDKs partially installed.
+enable_testing()
+
+add_executable(protocol_tests
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_protocol_parsing.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/RTE7.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Oven5R6900.cpp"
+)
+
+target_include_directories(protocol_tests
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests
+)
+
+add_test(NAME protocol_tests COMMAND protocol_tests)

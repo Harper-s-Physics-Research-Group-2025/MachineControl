@@ -25,10 +25,10 @@ v2/
 │   ├── lab.h                    # Full Lab:: API surface
 │   ├── RTE7.h
 │   └── Oven5R6900.h
-├── WolframMachineControl/       # The Wolfram paclet (Mathematica-facing package)
+├── paclet/                      # The Wolfram paclet (Mathematica-facing package)
 │   ├── Kernel/WolframMachineControl.wl   # Public Wolfram functions, binds to DLL exports
 │   └── PacletInfo.wl
-└── WolframNotebooks/            # Interactive notebooks for manual testing
+└── notebooks/            # Interactive notebooks for manual testing
     ├── TestMachineControl.nb
     └── Record.nb
 ```
@@ -67,7 +67,7 @@ What this does:
   LabJack, and Teknic install locations.
 - `cmake --build .` compiles the four `.cpp` files in `src/` into one DLL.
 - If everything is found correctly, CMake **automatically copies** the finished DLL and
-  `sFoundation20.dll` into `WolframMachineControl/LibraryResources/<platform>/` for you — you do
+  `sFoundation20.dll` into `paclet/LibraryResources/<platform>/` for you — you do
   not need to move any files by hand.
 
 If CMake can't find Wolfram, LabJack, or Teknic on its own (for example, if you installed one of
@@ -79,7 +79,7 @@ list for the relevant `find_path`/`find_library` call.
 Open a new Mathematica notebook and run:
 
 ```mathematica
-PacletDirectoryLoad["<full path to>/v2/WolframMachineControl"]
+PacletDirectoryLoad["<full path to>/v2/paclet"]
 Needs["WolframMachineControl`"]
 ```
 
@@ -88,7 +88,7 @@ package finds the DLL you just built automatically — there is nothing else to 
 
 ### Step 4: Try the test notebook first
 
-Before writing your own code, open `WolframNotebooks/TestMachineControl.nb` and run through it.
+Before writing your own code, open `notebooks/TestMachineControl.nb` and run through it.
 It exercises every function against the real hardware, so it's the fastest way to confirm your
 COM ports and device connections are correct before you build anything on top.
 
@@ -137,7 +137,7 @@ Every function above is documented in more detail in the [API Functions](#api-fu
 ## API Functions
 
 The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`); the paclet
-(`WolframMachineControl/Kernel/WolframMachineControl.wl`) wraps each one in a public Wolfram symbol:
+(`paclet/Kernel/WolframMachineControl.wl`) wraps each one in a public Wolfram symbol:
 
 ### Logging
 - `GetLogStatus[]`, `GetLogFile[]`, `SetLogSettings[status, logfile]`
@@ -167,20 +167,29 @@ The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`
 
 `BathInit[]` and `TempCtrlInit[]` take no COM port argument — both devices auto-detect their
 own port, the same way the servo hub and LabJack ADC always have. See
-[COMMUNICATION.md](COMMUNICATION.md) for how every device talks to this app, or
+[docs/HARDWARE_COMMS.md](docs/HARDWARE_COMMS.md) for how every device talks to this app, or
 [specs/port-autodetect.md](specs/port-autodetect.md) for exactly how the auto-detection works.
 
 ## Testing
 
-- `WolframMachineControl/Tests/Test_WolframMachineControl.wlt` — Wolfram-side unit tests
-- `WolframNotebooks/TestMachineControl.nb`, `WolframNotebooks/Record.nb` — interactive/manual testing notebooks
+- `paclet/Tests/Test_WolframMachineControl.wlt` — Wolfram-side tests. Exercises the
+  real DLL end-to-end and needs actual hardware connected.
+- `notebooks/TestMachineControl.nb`, `notebooks/Record.nb` — interactive/manual testing notebooks
+- `tests/test_protocol_parsing.cpp` — C++ unit tests (using [doctest](https://github.com/doctest/doctest))
+  for the pure checksum/parsing logic in `RTE7`/`Oven5R6900`. No hardware needed — build and run with:
+  ```bash
+  cmake --build build --config Release --target protocol_tests
+  build/Release/protocol_tests.exe
+  ```
+  This only covers logic that doesn't touch the serial port (checksums, byte/response parsing) —
+  the actual serial I/O still needs either real hardware or the `.wlt` suite above.
 
 ## Development Notes
 
 - All DLL functions return integer error codes unless otherwise noted (see `LIBRARY_NO_ERROR` / `LIBRARY_FUNCTION_ERROR` in `wolfram_api.cpp`)
 - Bath and temp controller COM ports are auto-detected — see [Auto-Detected COM Ports](#auto-detected-com-ports)
 - Positions are in millimeters, temperatures in Celsius
-- This project is Windows-only today — see [COMMUNICATION.md](COMMUNICATION.md#does-any-of-this-work-on-mac-or-linux)
+- This project is Windows-only today — see [docs/HARDWARE_COMMS.md](docs/HARDWARE_COMMS.md#does-any-of-this-work-on-mac-or-linux)
   for exactly what a Mac/Linux port would require
 
 ## Documentation
@@ -189,11 +198,11 @@ Beyond this README:
 
 | Doc | What it covers |
 |---|---|
-| [COMMUNICATION.md](COMMUNICATION.md) | How each device (bath, temp controller, servos, LabJack) actually talks to this app, and Mac/Linux support |
-| [BUGS.md](BUGS.md) | Known bugs found by code review, with file/line references |
+| [docs/HARDWARE_COMMS.md](docs/HARDWARE_COMMS.md) | How each device (bath, temp controller, servos, LabJack) actually talks to this app, and Mac/Linux support |
+| [docs/BUGS.md](docs/BUGS.md) | Known bugs found by code review, with file/line references |
 | [specs/librarylink.md](specs/librarylink.md) | How Mathematica calls into the C++ DLL, and what to touch when adding a new function |
-| [specs/port-autodetect.md](specs/port-autodetect.md) | How `BathInit[]`/`TempCtrlInit[]` find their own COM port |
-| [SETUPAPI.md](SETUPAPI.md) | Line-by-line walkthrough of the Windows API calls behind port auto-detection |
+| [specs/port-autodetect.md](specs/port-autodetect.md) | How `BathInit[]`/`TempCtrlInit[]` find their own COM port (includes a line-by-line walkthrough of the Windows API calls involved) |
+| [specs/portable-paths.md](specs/portable-paths.md) | How the notebooks find their own file paths automatically instead of hardcoding them |
 
 
 ## Authors
