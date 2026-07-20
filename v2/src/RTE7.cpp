@@ -140,24 +140,31 @@ float RTE7::parse_float_response(vector<uint8_t>& response) const {
     // validate checksum
     uint8_t res_check = response.back(); // last byte of response
     response.pop_back();                 // remove checksum to recompute for data
-    uint8_t expected_check = chillerChecksum(response); 
+    uint8_t expected_check = chillerChecksum(response);
     if (res_check != expected_check) return -999;    // checksum failed
 
     // extract parameters
     response.erase(response.begin()); // erase first byte "CA"
     uint8_t command = response[2];
     uint8_t data_len = response[3];
+
+    // the bath rejects a malformed/unsupported command with a "Bad Command"/"Bad Checksum"
+    // frame (command byte 0x0F) instead of the echoed command byte -- that frame's data bytes
+    // are an error code, not a temperature, so don't decode them as one.
+    if (command == 0x0F) return -999;
+
     uint8_t qualifier = response[4];
 
     float precision = pow(10, ((qualifier & 0xF0) >> 4));
 
-    // extract data
+    // extract data -- a signed 16-bit integer (MSB first), per the protocol spec
     vector<uint8_t> data(response.begin()+5, response.end());
-    uint16_t temp_raw = 0;
+    uint16_t raw_bits = 0;
     for (int i = 0; i < data.size(); i++) {   // convert
-        temp_raw = (temp_raw << 8) | data[i];     // shift two bytes and OR with next two bytes of byte list
+        raw_bits = (raw_bits << 8) | data[i];     // shift two bytes and OR with next two bytes of byte list
     }
-    
+    int16_t temp_raw = static_cast<int16_t>(raw_bits);
+
     out_temp = temp_raw / precision;
     return out_temp;
 }
@@ -264,7 +271,7 @@ bool RTE7::get_setpoint(float& temp) {
 }
 
 
-bool RTE7::set_setpoint(const float& temp) {
+bool RTE7::set_setpoint(float& temp) {
     vector<uint8_t> msg = {0xCA, 0x00, 0x01, 0xF0, 0x02};
     vector<uint8_t> res(16);
 
@@ -274,5 +281,14 @@ bool RTE7::set_setpoint(const float& temp) {
     msg.push_back(chillerChecksum(msg));
     if (!send_command(msg)) return false;    // send
     if (!read_response(res)) return false;   // receive
+
+    // The bath's ack to a Set Setpoint echoes back the value it actually stored, which is
+    // not necessarily what was requested -- an out-of-range write is silently clamped to the
+    // bath's own configured Hi/Lo Temperature Limit rather than rejected. Report that
+    // confirmed value instead of blindly assuming the request took effect.
+    float confirmed = parse_float_response(res);
+    if (confirmed == -999) return false;
+
+    temp = confirmed;
     return true;
 }

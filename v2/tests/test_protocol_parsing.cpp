@@ -52,6 +52,24 @@ TEST_SUITE("RTE7 protocol parsing") {
         float temp = bath.parse_float_response(response);
         CHECK(temp == -999);
     }
+
+    TEST_CASE("parse_float_response decodes a negative temperature (signed, not unsigned)") {
+        RTE7 bath("COM999");
+        // Manual's own worked example: -10.5C, qualifier 0x11 (precision 10, C units),
+        // raw bytes 0xFF 0x97 = -105 as signed 16-bit -> -105/10 = -10.5.
+        std::vector<uint8_t> response = {0xCA, 0x00, 0x01, 0x20, 0x03, 0x11, 0xFF, 0x97, 0x34};
+        float temp = bath.parse_float_response(response);
+        CHECK(temp == doctest::Approx(-10.5));
+    }
+
+    TEST_CASE("parse_float_response returns -999 on a Bad Command error frame") {
+        RTE7 bath("COM999");
+        // Bath's "Bad Command" response: CA 00 01 0F 02 01 <echoed cmd> cs -- must not be
+        // decoded as if the error-code/echoed-command bytes were a real reading.
+        std::vector<uint8_t> response = {0xCA, 0x00, 0x01, 0x0F, 0x02, 0x01, 0x20, 0xCC};
+        float temp = bath.parse_float_response(response);
+        CHECK(temp == -999);
+    }
 }
 
 TEST_SUITE("Oven5R6900 protocol parsing") {

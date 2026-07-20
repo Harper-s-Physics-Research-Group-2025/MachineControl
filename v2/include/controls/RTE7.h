@@ -27,7 +27,10 @@ public:
     bool get_setpoint(float& temp);
 
     // setters
-    bool set_setpoint(const float& temp);
+    // temp is in/out: pass in the requested setpoint, get back the bath's confirmed value
+    // (the bath silently clamps out-of-range writes to its own configured Hi/Lo limit, so
+    // the confirmed value can legitimately differ from what was requested).
+    bool set_setpoint(float& temp);
 
     // Pure protocol logic (no hardware I/O) -- public so it's unit-testable in isolation.
     uint8_t chillerChecksum(const std::vector<uint8_t>& data) const;

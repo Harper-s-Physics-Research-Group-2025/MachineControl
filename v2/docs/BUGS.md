@@ -3,8 +3,10 @@
 Originally found via static read-through of the C++ source. Bugs #1-14 have all been fixed, the
 DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the full
 `Test_WolframMachineControl.wlt` suite passes 29/29 against real hardware (bath, temp controller,
-servos, LabJack). Bugs #15-24 were found by a code review (and, for #23-24, direct usage plus a return-value audit)
-afterward and are **not yet fixed** — see that section below.
+servos, LabJack). Bugs #15-24 were found by a code review (and, for #23-24, direct usage plus a
+return-value audit) afterward and are **not yet fixed** — see that section below. Bugs #25-26 were
+found while investigating a live "bath setpoint stuck at 25" report and have been fixed and covered
+by new unit tests in `tests/test_protocol_parsing.cpp`.
 
 ## High severity
 
@@ -318,6 +320,37 @@ local to a sentinel (or simply not writing to `Res` at all on the failure path) 
 
 Documented in `README.md`'s "Known Confusing Error Messages" section. Not yet fixed — the real
 fix is mapping these functions' failure paths to `LIBRARY_FUNCTION_ERROR` instead of a raw `1`.
+
+### 25. ~~`RTE7::parse_float_response` decoded negative readings as huge positive garbage~~ — Fixed
+`src/RTE7.cpp` built the 16-bit temperature/setpoint value into a `uint16_t`, but the NC serial
+protocol (confirmed against Thermo NESLAB's own manual, Appendix A) sends this value as a
+**signed** 16-bit integer — e.g. -10.5°C is sent as `FF 97`. Decoding that as unsigned gave
+6543.1 instead of -10.5. Fixed by assembling the raw bytes into a `uint16_t` bit pattern and then
+`static_cast`-ing to `int16_t` before dividing by precision, so the two's-complement value is
+interpreted correctly. Only affected negative temperatures/setpoints; positive values happened to
+decode correctly before.
+
+### 26. ~~`RTE7::set_setpoint` always reported success, even when the bath silently clamped or rejected the write~~ — Fixed
+Found while investigating a live report of `BathSetSetpoint[...]` writes never actually changing
+`BathGetSetpoint[]`'s reading. Two compounding issues in `src/RTE7.cpp`:
+- `parse_float_response` extracted the response's `command` byte but never checked it. The bath
+  replies to a malformed/rejected command with a "Bad Command"/"Bad Checksum" error frame
+  (command byte `0x0F`, per Appendix A Table 1) whose data bytes are an error code, not a
+  reading — that frame was being blindly decoded as if it were a real temperature. Fixed:
+  `parse_float_response` now returns the existing `-999` failure sentinel when `command == 0x0F`.
+- `set_setpoint(const float& temp)` never parsed its own ack response at all — it just checked
+  that *some* bytes came back, then the caller (`wolfram_api.cpp`'s `wbath_set_setpoint`) echoed
+  back the *requested* value regardless of what the bath actually did. Per the protocol, the
+  bath's ack to a Set command echoes the value it actually stored — and the manual explicitly
+  notes Set commands are "limited to the range of the bath," i.e. an out-of-range setpoint is
+  **silently clamped**, not rejected. Fixed: `set_setpoint` is now `set_setpoint(float& temp)`
+  (in/out) and writes the bath's confirmed value back into `temp` via `parse_float_response`, so
+  `BathSetSetpoint[...]` now reports what the bath actually stored, surfacing a clamp instead of
+  hiding it.
+
+If the earlier live report turns out to be a real Hi/Lo Temperature Limit clamp (check `Hit`/`Lot`
+in the bath's own physical Setup Loop), this fix will make `BathSetSetpoint[...]`'s return value
+show the clamped number directly instead of silently echoing back whatever was requested.
 
 ## Removed dead code
 `sm_homer.h`, `sm_manual_controller.h`, and `recorder.h`/`recorder.cpp` were confirmed unused
