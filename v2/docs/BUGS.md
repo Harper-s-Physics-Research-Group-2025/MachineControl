@@ -3,8 +3,8 @@
 Originally found via static read-through of the C++ source. Bugs #1-14 have all been fixed, the
 DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the full
 `Test_WolframMachineControl.wlt` suite passes 29/29 against real hardware (bath, temp controller,
-servos, LabJack). Bugs #15-22 were found by a code review afterward and are **not yet fixed** —
-see that section below.
+servos, LabJack). Bugs #15-23 were found by a code review (and, for #23, direct usage) afterward and are **not yet
+fixed** — see that section below.
 
 ## High severity
 
@@ -251,6 +251,34 @@ cross-referencing comments to confirm that.
 independent hardcoded path literal to the same `LogFile` variable used to configure logging in
 the first place, so the assertion can no longer catch a real path-configuration bug (both sides
 of the comparison now derive from the same variable and would drift together).
+
+### 23. Most DLL wrappers return their `Lab::` function's `1`/failure code as the raw LibraryLink status, colliding with `LIBRARY_TYPE_ERROR`
+`src/wolfram_api.cpp` — the majority of wrappers (`wbath_on`, `wbath_off`, `wbath_manual`,
+`wbath_get_temp`, `wbath_get_setpoint`, `wbath_set_setpoint`, `winitialize_bath`,
+`wtemperature_control_on`/`off`/`get_mode`/`set_mode`/`get_temp`/`get_setpoint`/`set_setpoint`,
+`winitialize_temperature_control`, `wset_log_settings`, `wget_servo_alerts`, `wservos_home`,
+`wservos_get_position`, `wservos_set_position`) do `return Lab::some_function();` directly,
+passing the `Lab::` layer's own `0`-success/`1`-failure convention straight through as the
+LibraryLink status code. `1` happens to be the numeric value of `LIBRARY_TYPE_ERROR` (see
+`WolframLibrary.h`), so any ordinary failure (not initialized, hardware didn't respond, bad
+input) gets misreported to Mathematica as `LibraryFunctionError[LIBRARY_TYPE_ERROR, 1]` /
+"inconsistent types was encountered" instead of anything describing what actually went wrong.
+`winitialize_servos` can additionally return `-1` on a Teknic SDK exception — a negative value
+matching no named `LIBRARY_*_ERROR` constant at all, so its presentation is unpredictable.
+
+First surfaced (and misdiagnosed as a real type error) the very first time `BathOn[]` was called
+before `BathInit[]`, early in this session — noted at the time as a systemic issue but never
+tracked or fixed. Resurfaced identically after bug #1's null-pointer-crash fix: that fix made
+these functions return `1` *safely* instead of crashing, but never changed what `1` means to
+LibraryLink, so the same confusing message persists.
+
+Not affected — already return a proper status separately from the real answer, via `Res`:
+`ServoReady[]` (`wservo_hardware_online`), `ServoHomed[]` (`wservos_homed`, fixed as bug #3),
+`DeleteBath[]`, `DeleteTempCtrl[]`, `ServoDisable[]`, `GetLogStatus[]`, `GetLogFile[]` (all of
+these either always succeed or already use `LIBRARY_NO_ERROR` correctly).
+
+Documented in `README.md`'s "Known Confusing Error Messages" section. Not yet fixed — the real
+fix is mapping these functions' failure paths to `LIBRARY_FUNCTION_ERROR` instead of a raw `1`.
 
 ## Removed dead code
 `sm_homer.h`, `sm_manual_controller.h`, and `recorder.h`/`recorder.cpp` were confirmed unused

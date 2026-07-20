@@ -76,15 +76,27 @@ list for the relevant `find_path`/`find_library` call.
 
 ### Step 3: Load the library in Mathematica
 
-Open a new Mathematica notebook and run:
+If your notebook is saved somewhere under `v2/` (e.g. in `notebooks/`, like the provided test
+notebook), it can find the paclet on its own — no hardcoded path needed:
 
 ```mathematica
-PacletDirectoryLoad["<full path to>/v2/paclet"]
+PacletDirectoryLoad[ParentDirectory[NotebookDirectory[]]]
 Needs["WolframMachineControl`"]
 ```
 
-This tells Mathematica where the paclet lives and loads its functions into your session. The
-package finds the DLL you just built automatically — there is nothing else to configure.
+This resolves relative to wherever the notebook file itself lives, so it keeps working even if
+this whole `v2/` folder gets moved or copied elsewhere (see `specs/portable-paths.md` for why that
+matters). If you're working from a brand-new, not-yet-saved notebook, `NotebookDirectory[]` has
+nothing to resolve yet — use an explicit path instead:
+
+```mathematica
+PacletDirectoryLoad["<full path to>/v2"]
+Needs["WolframMachineControl`"]
+```
+
+Either way, this tells Mathematica where the paclet lives and loads its functions into your
+session. The package finds the DLL you just built automatically — there is nothing else to
+configure.
 
 ### Step 4: Try the test notebook first
 
@@ -162,6 +174,56 @@ The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`
 - `ServoGetPos[]` — returns `{x_mm, z_mm}`
 - `ServoSetPos[x_mm, z_mm, rpm]` — returns updated `{x_mm, z_mm}`
 - `ServoManualControl[]` — keyboard-driven manual jogging
+
+## Known Confusing Error Messages
+
+Two error patterns look scary but usually mean something mundane. Both are `LibraryFunctionError`
+formatting quirks, not real crashes — check these first before assuming something is broken.
+
+### `LibraryFunctionError[LIBRARY_TYPE_ERROR, 1]` / "inconsistent types was encountered"
+
+This almost always means **a function failed for an ordinary reason** (not initialized, hardware
+didn't respond, bad input) — it does *not* mean a real type mismatch. Most low-level DLL wrappers
+in `src/wolfram_api.cpp` return their `Lab::` function's result directly as the LibraryLink status
+code:
+
+```cpp
+DLLEXPORT int wbath_on(...) { return Lab::bath_on(); }
+```
+
+`Lab::bath_on()` (and most of its siblings) return `1` for "didn't work" — but `1` is also the
+numeric value of Wolfram's own `LIBRARY_TYPE_ERROR` (see `WolframLibrary.h`). Mathematica has no
+way to tell those apart, so it prints "inconsistent types" for what is actually just a plain
+failure. The most common cause by far: **calling a device function before its `*Init[]`/
+`ServoEnable[]` call**, e.g. `BathOn[]` before `BathInit[]` — the underlying pointer is still
+null, the function correctly detects that and returns failure, and that failure gets mislabeled.
+
+**Affected** (share this exact pattern — check that you called the right `Init`/`Enable` first):
+all `Bath*`/`TempCtrl*` functions, `SetLogSettings`, `ServoGetAlerts[]`, `ServoHome[]`,
+`ServoGetPos[]`, `ServoSetPos[]`.
+
+**Not affected** (already return a proper `True`/`False` without this collision):
+`ServoReady[]`, `ServoHomed[]`, `DeleteBath[]`, `DeleteTempCtrl[]`, `ServoDisable[]`,
+`GetLogStatus[]`, `GetLogFile[]`.
+
+**One extra oddity:** `ServoEnable[]` (`initialize_servos()`) can also return `-1` on an SDK
+exception — a negative number that doesn't correspond to *any* named `LIBRARY_*_ERROR` constant,
+so its on-screen presentation is unpredictable. Same underlying issue, worth knowing about
+separately if `ServoEnable[]` fails in a way that looks different from the usual "inconsistent
+types" message.
+
+This is tracked as `docs/BUGS.md` #23 (not yet fixed) — the real fix is mapping these functions'
+failures to `LIBRARY_FUNCTION_ERROR` instead of a raw `1`, so the message actually says "function
+failed" instead of "inconsistent types."
+
+### `LibraryFunction::cfct` / "the number of arguments N does not match the length M of the argument template"
+
+A completely different, unrelated cause: you called a function with the wrong number of
+arguments for what it's currently bound to in `paclet/Kernel/WolframMachineControl.wl`. This is
+Wolfram checking your call *before* it ever reaches our C++ code, not something our error-handling
+can affect. Check the function's actual signature in the [API Functions](#api-functions) section
+above — e.g. `BathInit[]`/`TempCtrlInit[]` take **zero** arguments (they auto-detect their own
+port now), so `BathInit["COM5"]` throws exactly this error.
 
 ## Auto-Detected COM Ports
 

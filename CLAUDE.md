@@ -104,10 +104,19 @@ below were actually confirmed fixed.
 ## Open items for next session
 
 A high-effort code review was run against the full session's diff right after hitting 29/29.
-Eight findings survived verification and are now recorded as `docs/BUGS.md` #15-22 — **not yet
+Eight findings survived verification and are recorded as `docs/BUGS.md` #15-22 — **not yet
 fixed**, that's the natural next step. Three are real crash risks worth fixing before doing much
 more in this area: #15 (`servos_homed()` null-deref crashes instead of returning `False`), #16
 (an uncaught exception in a background probe thread can crash the whole process on a garbled
 reply), #17 (a timed-out probe can permanently block a working port from being reopened). The
-rest (#18-22) are lower-priority robustness/efficiency/doc-cleanup items. Full detail for each is
-in `docs/BUGS.md`.
+rest (#18-22) are lower-priority robustness/efficiency/doc-cleanup items.
+
+A ninth issue (#23) turned up through direct usage the next day: most DLL wrappers in
+`src/wolfram_api.cpp` return their `Lab::` function's raw `1`-for-failure straight through as the
+LibraryLink status code, which collides with `LIBRARY_TYPE_ERROR` — so ordinary failures (e.g.
+calling `BathOn[]` before `BathInit[]`) print a misleading "inconsistent types" error instead of
+a real message. Documented in both `docs/BUGS.md` #23 and `README.md`'s new "Known Confusing
+Error Messages" section, listing exactly which functions are affected and which already return
+proper status. Not fixed yet either.
+
+Full detail for all nine in `docs/BUGS.md`.
