@@ -54,6 +54,48 @@ columns below look the way they do.
 |---|---|---|
 | `ReadLabjack[channel]` | `Real` — voltage reading | Throws with a raw LabJack UD error code **and Garbage** — the voltage value is meaningless |
 
+### What `channel` actually is
+
+`channel` is a physical pin number on the LabJack U3, not an arbitrary index. The U3 exposes its
+first 8 "Flexible I/O" lines (FIO0-FIO7) on built-in screw terminals — this is what you're
+actually wiring a sensor into:
+
+```
+LabJack U3 screw terminals (front panel)
+
+  GND    VS    FIO0   FIO1   FIO2   FIO3   FIO4   FIO5   FIO6   FIO7
+  |-|    |-|   |-|    |-|    |-|    |-|    |-|    |-|    |-|    |-|
+                ch 0   ch 1   ch 2   ch 3   ch 4   ch 5   ch 6   ch 7
+                └──────────────────┘ └──────────────────────────────┘
+                 fixed analog-only    switchable digital/analog
+                 (U3-HV only)         (this is what ANALOG_ENABLE_BIT is for)
+```
+
+- **`channel` 0-7** = `FIO0`-`FIO7`, the screw terminals above.
+- **`channel` 8-15** = `EIO0`-`EIO7`, 8 more analog-capable lines on the DB15 connector (not on
+  the screw terminals — a ribbon/breakout cable is needed to reach these).
+- **`channel` 16-19** = `CIO0`-`CIO3`, also on the DB15 connector, but **digital-only** — not
+  usable with `ReadLabjack[]` at all.
+
+On the **U3-HV** variant, `FIO0`-`FIO3` (channels 0-3) are permanently hardwired as analog input
+only, with a ±10V range — any digital/analog configuration on those 4 is ignored by the device.
+Every other analog-capable channel (4-15) starts out configured as *digital* I/O by default and
+has to be explicitly switched into analog mode before it'll give a meaningful voltage reading —
+this is exactly what the `LJ_ioPUT_ANALOG_ENABLE_BIT` call in `Lab::read_labjack_ain`
+(`src/lab.cpp`) does, immediately before every read:
+
+```cpp
+ePut(h, LJ_ioPUT_ANALOG_ENABLE_BIT, channel, 1, 0);  // switch this channel into analog mode
+errorcode = eGet(h, LJ_ioGET_AIN, channel, &voltage, 0);  // then read its voltage
+```
+
+So `ReadLabjack[4]`, for example, reads whatever's wired into the `FIO4` screw terminal, after
+first flipping that pin from its default digital mode into analog mode.
+
+Source: LabJack's own U3 datasheet —
+[2.6.1 Channel Numbers](https://support.labjack.com/docs/2-6-1-channel-numbers-u3-datasheet),
+[2.5 Flexible I/O](https://support.labjack.com/docs/2-5-flexible-i-o-fio-eio-u3-datasheet).
+
 ## Servo Motors
 
 | Function | Returns (success) | On failure |
