@@ -29,6 +29,15 @@ WolframMachineControl`TempCtrlSetSetpoint::usage = "TempCtrlSetSetpoint[float te
 
 WolframMachineControl`ReadLabjack::usage = "ReadLabjack[int channel] reads voltage on specified channel"
 
+(* LabJack Data-Collection Suite -- pure Wolfram Language, built on top of ReadLabjack/BathGetTemp *)
+WolframMachineControl`LabJackRecordData::usage = "LabJackRecordData[filename, finalTemp, interval] turns on both the bath and the temp controller and sets both setpoints to finalTemp, then repeatedly waits `interval` seconds and reads LabJack channels 0-7 plus both devices' actual temperatures (BathGetTemp[], TempCtrlGetTemp[]), stopping once BOTH have reached finalTemp (works whether finalTemp is above or below the starting temperature). Saves the results to <filename>.csv in v2/data and returns the full path."
+WolframMachineControl`LabJackListCSVs::usage = "LabJackListCSVs[] lists every CSV file in v2/data as a formatted grid of file name and creation date, most recent first."
+WolframMachineControl`LabJackPlotData::usage = "LabJackPlotData[filename] plots every LabJack channel column from <filename>.csv (as saved by LabJackRecordData) against the bath temperature column."
+WolframMachineControl`LabJackPlotData::nofile = "No CSV file found at `1`."
+WolframMachineControl`LabJackRecordData::bathfail = "Couldn't read the bath's temperature -- is BathInit[] connected?"
+WolframMachineControl`LabJackRecordData::tempctrlfail = "Couldn't read the temp controller's temperature -- is TempCtrlInit[] connected?"
+WolframMachineControl`LabJackRecordData::clamped = "Requested setpoint `1` was clamped by the bath to `2` -- recording will wait for `2`, not `1`."
+
 WolframMachineControl`ServoEnable::usage = "ServoOn[] Initializes the global servo communication structures and clears alerts."
 WolframMachineControl`ServoDisable::usage = "ServoOff[] Uninitializes the global servo communication structures."
 WolframMachineControl`ServoGetAlerts::usage = "ServoGetAlerts[] Returns the servo alert register contents."
@@ -97,6 +106,116 @@ WolframMachineControl`ServoManualControl = LibraryFunctionLoad[$dllPath, "wmanua
 
 WolframMachineControl`ReturnSuccess = LibraryFunctionLoad[$dllPath, "wreturn_success", {}, Integer];
 WolframMachineControl`ReturnError = LibraryFunctionLoad[$dllPath, "wreturn_error", {}, Integer];
+
+
+
+(* ==========================================================================
+   4. LABJACK DATA-COLLECTION SUITE (pure Wolfram Language -- no LibraryLink,
+      just orchestrates ReadLabjack/BathGetTemp and file I/O)
+   ========================================================================== *)
+
+(* v2/data, resolved from $dllPath so this works regardless of where the paclet is installed *)
+$labJackDataDir = FileNameJoin[{DirectoryName[$dllPath, 4], "data"}];
+If[!DirectoryQ[$labJackDataDir], CreateDirectory[$labJackDataDir]];
+
+normalizeCSVName[name_String] := If[StringEndsQ[name, ".csv", IgnoreCase -> True], name, name <> ".csv"];
+
+WolframMachineControl`LabJackRecordData[filename_String, finalTemp_?NumericQ, interval_?NumericQ] := Module[
+    {startTime, currentBathTemp, currentTempCtrlTemp, bathDirection, tempCtrlDirection, bathTarget,
+     tempCtrlTarget, bathReached, tempCtrlReached, header, csvPath, data, confirmedSetpoint},
+
+    currentBathTemp = BathGetTemp[];
+    If[!NumericQ[currentBathTemp],
+        Message[WolframMachineControl`LabJackRecordData::bathfail];
+        Return[$Failed]
+    ];
+    currentTempCtrlTemp = TempCtrlGetTemp[];
+    If[!NumericQ[currentTempCtrlTemp],
+        Message[WolframMachineControl`LabJackRecordData::tempctrlfail];
+        Return[$Failed]
+    ];
+
+    BathOn[];
+    confirmedSetpoint = BathSetSetpoint[finalTemp];
+    (* Use the bath's *confirmed* setpoint as its actual target -- if the bath silently clamped
+       the request to its own Hi/Lo Temperature Limit, waiting for the unclamped finalTemp would
+       loop forever, since the bath will never actually reach it. *)
+    bathTarget = If[NumericQ[confirmedSetpoint], confirmedSetpoint, finalTemp];
+    If[NumericQ[confirmedSetpoint] && confirmedSetpoint != finalTemp,
+        Message[WolframMachineControl`LabJackRecordData::clamped, finalTemp, confirmedSetpoint]
+    ];
+
+    TempCtrlOn[];
+    TempCtrlSetSetpoint[finalTemp];
+    (* Unlike BathSetSetpoint, TempCtrlSetSetpoint just echoes the request back -- there's no
+       confirmed value to fall back on, so no clamp detection is possible on this side. *)
+    tempCtrlTarget = finalTemp;
+
+    bathDirection = Sign[bathTarget - currentBathTemp]; (* +1 = wait for it to rise, -1 = fall, 0 = already there *)
+    tempCtrlDirection = Sign[tempCtrlTarget - currentTempCtrlTemp];
+    startTime = AbsoluteTime[];
+    header = Join[{"Time (s)", "BathTemp (C)", "TempCtrlTemp (C)"}, Table["Channel" <> ToString[ch] <> " (V)", {ch, 0, 7}]];
+
+    data = Reap[
+        While[True,
+            Pause[interval];
+            currentBathTemp = BathGetTemp[];
+            currentTempCtrlTemp = TempCtrlGetTemp[];
+            Sow[Join[{AbsoluteTime[] - startTime, currentBathTemp, currentTempCtrlTemp}, Table[ReadLabjack[ch], {ch, 0, 7}]]];
+            bathReached = (bathDirection >= 0 && currentBathTemp >= bathTarget) || (bathDirection < 0 && currentBathTemp <= bathTarget);
+            tempCtrlReached = (tempCtrlDirection >= 0 && currentTempCtrlTemp >= tempCtrlTarget) || (tempCtrlDirection < 0 && currentTempCtrlTemp <= tempCtrlTarget);
+            If[bathReached && tempCtrlReached, Break[]];
+        ]
+    ][[2, 1]];
+
+    csvPath = FileNameJoin[{$labJackDataDir, normalizeCSVName[filename]}];
+    Export[csvPath, Prepend[data, header], "CSV"];
+    Print["Recorded ", Length[data], " readings over ", Round[Last[data][[1]]], " s -- saved to ", csvPath];
+    csvPath
+];
+
+WolframMachineControl`LabJackListCSVs[] := Module[{files, info},
+    files = FileNames["*.csv", $labJackDataDir];
+    If[files === {},
+        Print["No CSV files found in ", $labJackDataDir];
+        Return[{}]
+    ];
+    info = SortBy[{FileNameTake[#], FileDate[#, "Creation"]} & /@ files, -AbsoluteTime[Last[#]] &];
+    Grid[
+        Prepend[
+            {First[#], DateString[Last[#], {"Year", "-", "Month", "-", "Day", "  ", "Hour24", ":", "Minute", ":", "Second"}]} & /@ info,
+            Style[#, Bold] & /@ {"File Name", "Date Created"}
+        ],
+        Frame -> All, Dividers -> All, Alignment -> Left, Spacings -> {2, 1},
+        Background -> {None, {LightGray, White}}
+    ]
+];
+
+WolframMachineControl`LabJackPlotData[filename_String] := Module[
+    {csvPath, raw, header, data, tempCol, channelNames, series},
+
+    csvPath = FileNameJoin[{$labJackDataDir, normalizeCSVName[filename]}];
+    If[!FileExistsQ[csvPath],
+        Message[WolframMachineControl`LabJackPlotData::nofile, csvPath];
+        Return[$Failed]
+    ];
+
+    raw = Import[csvPath, "CSV"];
+    header = First[raw];
+    data = Rest[raw];
+    tempCol = data[[All, 2]]; (* BathTemp -- kept as the plot's x-axis *)
+    channelNames = header[[4 ;;]];
+    series = Table[Transpose[{tempCol, data[[All, i]]}], {i, 4, Length[header]}];
+
+    ListLinePlot[series,
+        PlotLegends -> channelNames,
+        AxesLabel -> {"Bath Temperature (\[Degree]C)", "Voltage (V)"},
+        PlotLabel -> normalizeCSVName[filename],
+        PlotMarkers -> Automatic,
+        GridLines -> Automatic,
+        ImageSize -> Large
+    ]
+];
 
 End[]
 EndPackage[]

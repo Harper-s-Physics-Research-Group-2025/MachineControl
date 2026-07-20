@@ -28,9 +28,10 @@ v2/
 ├── paclet/                      # The Wolfram paclet (Mathematica-facing package)
 │   ├── Kernel/WolframMachineControl.wl   # Public Wolfram functions, binds to DLL exports
 │   └── PacletInfo.wl
-└── notebooks/            # Interactive notebooks for manual testing
-    ├── TestMachineControl.nb
-    └── Record.nb
+├── notebooks/            # Interactive notebooks for manual testing
+│   ├── TestMachineControl.nb
+│   └── Record.nb
+└── data/                 # CSVs written by LabJackRecordData[] / read by LabJackPlotData[]
 ```
 
 ## Getting Started (New User)
@@ -129,6 +130,12 @@ pos = ServoGetPos[];              (* returns {x_mm, z_mm} *)
 
 (* LabJack *)
 voltage = ReadLabjack[0];         (* read channel 0 *)
+
+(* LabJack data-collection suite -- records channels 0-7 + bath temp every 5s until
+   the bath actually reaches 50C, then saves/lists/plots the CSV *)
+LabJackRecordData["run1", 50.0, 5];
+LabJackListCSVs[]
+LabJackPlotData["run1"]
 ```
 
 Every function above is documented in more detail in the [API Functions](#api-functions) section below.
@@ -170,6 +177,19 @@ what each function returns on success and on failure (including a few sharp edge
 
 ### Data Acquisition
 - `ReadLabjack[channel]`
+- `LabJackRecordData[filename, finalTemp, interval]` — pure Wolfram Language, built on top of
+  `BathOn`/`BathSetSetpoint`/`TempCtrlOn`/`TempCtrlSetSetpoint`/`ReadLabjack`/`BathGetTemp`/
+  `TempCtrlGetTemp` (no DLL/LibraryLink involved). Turns on **both** the bath and the temp
+  controller and sets both setpoints to `finalTemp`, then waits `interval` seconds and reads
+  LabJack channels 0-7 plus both devices' actual temperatures, repeating until **both** have
+  reached `finalTemp` (works whether you're heating or cooling, and can't loop forever if the bath
+  silently clamps an out-of-range request — the temp controller doesn't have that same
+  clamp-detection, see `docs/API_REFERENCE.md`). Saves to `v2/data/<filename>.csv` and returns the
+  full path.
+- `LabJackListCSVs[]` — lists every CSV in `v2/data` as a formatted grid (name + creation date,
+  newest first).
+- `LabJackPlotData[filename]` — plots every channel column from `<filename>.csv` (name with or
+  without `.csv`) against the bath-temperature column.
 
 ### Servo Motors
 - `ServoEnable[]`, `ServoDisable[]`, `ServoGetAlerts[]`

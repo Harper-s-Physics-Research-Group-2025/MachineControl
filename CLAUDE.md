@@ -25,6 +25,7 @@ notebook paths).
   `portable-paths.md`). This is where new "why we built it this way" writeups belong.
 - `v2/tests/` — `test_protocol_parsing.cpp` (doctest-based C++ unit tests, no hardware needed —
   covers checksum/parsing logic only, not actual serial I/O).
+- `v2/data/` — CSVs written by `LabJackRecordData[]` / read by `LabJackPlotData[]` (see below).
 
 ## Build & test
 
@@ -100,6 +101,20 @@ below were actually confirmed fixed.
   29/29 against real hardware, confirmed via `wolframscript` runs independent of the GUI.
   Reorganized the project layout (`paclet/`, `notebooks/`, `docs/`, `specs/`, `tests/`) and added
   a small C++ unit test suite (doctest) for the checksum/parsing logic.
+- **2026-07-20** — Live report of `BathGetSetpoint[]` reading stuck at 25 regardless of what
+  `BathSetSetpoint[...]` was called with. Traced `RTE7.cpp` byte-for-byte against Thermo NESLAB's
+  own NC serial protocol manual (checksum/packing turned out correct) and found two real,
+  independent bugs instead: `parse_float_response` decoded negative readings as unsigned garbage,
+  and never checked for the bath's "Bad Command"/"Bad Checksum" error frame (command byte `0x0F`),
+  so a rejected command's error bytes got silently decoded as if they were a real reading;
+  separately, `set_setpoint()` never parsed its own ack, so `BathSetSetpoint[]` blindly echoed the
+  *requested* value instead of the bath's *confirmed* one — masking any silent clamp to the bath's
+  own Hi/Lo Temperature Limit. Fixed both (`docs/BUGS.md` #25-26), covered by new doctest cases,
+  and verified live via `wolframscript` that arbitrary setpoints (e.g. 40.0) now round-trip
+  correctly. Also added a `LabJackRecordData[]`/`LabJackListCSVs[]`/`LabJackPlotData[]` suite —
+  pure Wolfram Language in `WolframMachineControl.wl`, no DLL changes — for recording LabJack
+  channels 0-7 plus bath temperature over time until a target temperature is reached, then
+  listing/plotting the resulting CSVs (saved to the new `v2/data/`).
 
 ## Open items for next session
 

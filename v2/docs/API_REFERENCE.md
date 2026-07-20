@@ -96,6 +96,39 @@ Source: LabJack's own U3 datasheet —
 [2.6.1 Channel Numbers](https://support.labjack.com/docs/2-6-1-channel-numbers-u3-datasheet),
 [2.5 Flexible I/O](https://support.labjack.com/docs/2-5-flexible-i-o-fio-eio-u3-datasheet).
 
+### LabJack Data-Collection Suite
+
+Pure Wolfram Language, defined directly in `paclet/Kernel/WolframMachineControl.wl` — no
+LibraryLink/DLL involved. Built on top of `ReadLabjack[]`/`BathGetTemp[]`, so their failure modes
+above still apply underneath these.
+
+| Function | Returns (success) | On failure |
+|---|---|---|
+| `LabJackRecordData[filename, finalTemp, interval]` | `String` — full path to the saved `v2/data/<filename>.csv` | `$Failed` **and** `LabJackRecordData::bathfail`/`::tempctrlfail` if `BathGetTemp[]`/`TempCtrlGetTemp[]` doesn't return a real number before the loop even starts (e.g. `BathInit[]`/`TempCtrlInit[]` was never called) |
+| `LabJackListCSVs[]` | `Grid` — file name + creation date for every CSV in `v2/data`, newest first | `{}` (and a `Print[]`) if `v2/data` has no CSVs — never throws |
+| `LabJackPlotData[filename]` | `Legended[Graphics, ...]` — one line per channel, plotted against the bath-temperature column | `$Failed` **and** `LabJackPlotData::nofile` if `<filename>.csv` doesn't exist in `v2/data` |
+
+**Assumptions baked into `LabJackRecordData`, worth knowing if your setup differs:**
+- Calls `BathOn[]`/`BathSetSetpoint[finalTemp]` **and** `TempCtrlOn[]`/`TempCtrlSetSetpoint[finalTemp]`
+  itself before recording — it actively drives both devices toward `finalTemp`, it doesn't just
+  passively wait for something else to get them there. Both devices must actually be initialized
+  (`BathInit[]`/`TempCtrlInit[]`) first, or it fails fast with `LabJackRecordData::bathfail`/
+  `::tempctrlfail` before turning anything on.
+- The loop only stops once **both** devices have reached their target — whichever gets there first
+  just keeps being read every interval while waiting on the other.
+- The bath's side of the stop condition uses its *confirmed* setpoint (`BathSetSetpoint[]`'s return
+  value per bug #26's fix), not the raw `finalTemp` argument — if the bath silently clamps an
+  out-of-range request to its own Hi/Lo Temperature Limit, `LabJackRecordData::clamped` fires and
+  the loop waits for the clamped value instead of looping forever for a temperature the bath will
+  never actually reach. **The temp controller has no equivalent protection** — `TempCtrlSetSetpoint[]`
+  only echoes back whatever was requested (bug #24), so there's no way to detect a silent clamp on
+  that side; an out-of-range `finalTemp` for the temp controller could still loop forever.
+- Reads exactly channels 0-7 (`FIO0`-`FIO7`) every interval, not a caller-specified list.
+- The stop direction (wait for temperature to rise vs. fall) is inferred once per device, from its
+  temperature at the moment the function is called vs. its target — it isn't re-evaluated mid-run.
+- Blocks the kernel for the entire run (a plain `While` loop with `Pause[interval]`) — there's no
+  background/async mode.
+
 ## Servo Motors
 
 | Function | Returns (success) | On failure |
