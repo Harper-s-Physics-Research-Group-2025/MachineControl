@@ -34,7 +34,7 @@ columns below look the way they do.
 | `BathOn[]` / `BathOff[]` / `BathManual[]` | `Integer` `0` | `1`-as-error (not initialized, or the hardware didn't acknowledge) |
 | `BathGetTemp[]` | `Real` — temperature in °C | `1`-as-error **and Garbage** — the returned number is meaningless, not just the error |
 | `BathGetSetpoint[]` | `Real` — setpoint in °C | Same as `BathGetTemp[]` |
-| `BathSetTemp[temp]` | `Real` — echoes back `temp` | `1`-as-error (the echoed value here is safe — it's your own input, not an uninitialized local) |
+| `BathSetSetpoint[temp]` | `Real` — echoes back `temp` | `1`-as-error (the echoed value here is safe — it's your own input, not an uninitialized local) |
 
 ## Temperature Controller
 
@@ -43,7 +43,7 @@ columns below look the way they do.
 | `TempCtrlInit[]` | `Integer` `0` | `1`-as-error |
 | `TempCtrlOn[]` / `TempCtrlOff[]` | `Integer` `0` | `1`-as-error |
 | `TempCtrlGetMode[]` | `Integer` — `0` = normal, `2` = ramp/soak | `1`-as-error **and Garbage** |
-| `TempCtrlSetMode[mode]` | `Integer` — echoes back `mode` | `1`-as-error (safe echo, same reasoning as `BathSetTemp`) |
+| `TempCtrlSetMode[mode]` | `Integer` — echoes back `mode` | `1`-as-error (safe echo, same reasoning as `BathSetSetpoint`) |
 | `TempCtrlGetTemp[]` | `Real` — thermistor temperature in °C | `1`-as-error **and Garbage** |
 | `TempCtrlGetSetpoint[]` | `Real` — setpoint in °C | `1`-as-error **and Garbage** |
 | `TempCtrlSetSetpoint[temp]` | `Real` — echoes back `temp` | `1`-as-error (safe echo) |
