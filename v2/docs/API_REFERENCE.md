@@ -1,0 +1,91 @@
+# API Function Reference: What Each Function Returns
+
+A function-by-function reference for exactly what value each public Wolfram symbol returns, and
+what that value means on both success and failure. Cross-references
+[README.md's Known Confusing Error Messages](../README.md#known-confusing-error-messages) section
+and `BUGS.md` #23-24, which cover the two systemic issues that make some of the "on failure"
+columns below look the way they do.
+
+**How to read the "On failure" column:**
+- **Throws, no value** — the call raises a `LibraryFunctionError`; there's no return value to use.
+- **`1`-as-error** — returns the integer `1`, which Mathematica may print as
+  `LibraryFunctionError[LIBRARY_TYPE_ERROR, 1]` ("inconsistent types") rather than a clean `1` you
+  can check (bug #23). Still check for this — don't assume a thrown message means it isn't `1`.
+  it means the call failed, whatever the message says.
+- **Garbage** — the returned *value* itself is meaningless uninitialized memory, in addition to
+  whatever status/error accompanies it (bug #24). Don't use the value without checking success
+  first.
+- **Echoes input** — on failure, returns the *requested* input back unchanged, not the actual
+  resulting state (a milder version of the "garbage" problem, only affects `ServoSetPos[]`).
+
+## Logging
+
+| Function | Returns (success) | On failure |
+|---|---|---|
+| `GetLogStatus[]` | `Integer` — `1` if logging is enabled, `0` if disabled | Always succeeds |
+| `GetLogFile[]` | `String` — the current log file path | Always succeeds |
+| `SetLogSettings[status, logfile]` | `Integer` — echoes back `status` | `1`-as-error if `logfile`'s parent directory doesn't exist |
+
+## Fluid Bath
+
+| Function | Returns (success) | On failure |
+|---|---|---|
+| `BathInit[]` | `Integer` `0` | `1`-as-error (no matching port found, or found but didn't connect) |
+| `BathOn[]` / `BathOff[]` / `BathManual[]` | `Integer` `0` | `1`-as-error (not initialized, or the hardware didn't acknowledge) |
+| `BathGetTemp[]` | `Real` — temperature in °C | `1`-as-error **and Garbage** — the returned number is meaningless, not just the error |
+| `BathGetSetpoint[]` | `Real` — setpoint in °C | Same as `BathGetTemp[]` |
+| `BathSetTemp[temp]` | `Real` — echoes back `temp` | `1`-as-error (the echoed value here is safe — it's your own input, not an uninitialized local) |
+
+## Temperature Controller
+
+| Function | Returns (success) | On failure |
+|---|---|---|
+| `TempCtrlInit[]` | `Integer` `0` | `1`-as-error |
+| `TempCtrlOn[]` / `TempCtrlOff[]` | `Integer` `0` | `1`-as-error |
+| `TempCtrlGetMode[]` | `Integer` — `0` = normal, `2` = ramp/soak | `1`-as-error **and Garbage** |
+| `TempCtrlSetMode[mode]` | `Integer` — echoes back `mode` | `1`-as-error (safe echo, same reasoning as `BathSetTemp`) |
+| `TempCtrlGetTemp[]` | `Real` — thermistor temperature in °C | `1`-as-error **and Garbage** |
+| `TempCtrlGetSetpoint[]` | `Real` — setpoint in °C | `1`-as-error **and Garbage** |
+| `TempCtrlSetSetpoint[temp]` | `Real` — echoes back `temp` | `1`-as-error (safe echo) |
+
+## Data Acquisition
+
+| Function | Returns (success) | On failure |
+|---|---|---|
+| `ReadLabjack[channel]` | `Real` — voltage reading | Throws with a raw LabJack UD error code **and Garbage** — the voltage value is meaningless |
+
+## Servo Motors
+
+| Function | Returns (success) | On failure |
+|---|---|---|
+| `ServoEnable[]` | `Integer` `0` | `1`-as-error, **or `-1`** on a Teknic SDK exception (an unusual value matching no named LibraryLink error — its on-screen presentation is unpredictable) |
+| `ServoDisable[]` | `Integer` `0` | Always succeeds |
+| `ServoGetAlerts[]` | `String` — `"X: <alert text> \| Z: <alert text>"` | `1`-as-error, but the string comes back as `"X:  \| Z: "` (empty, not garbage — the buffers are pre-zeroed) |
+| `ServoHome[milliseconds]` | **Undefined, always** — see below | Same: undefined, always |
+| `ServoHomed[]` | `Integer` — `1` = `True` (homed), `0` = `False` | N/A — always returns a clean answer, never throws (bug #3's fix) |
+| `ServoReady[]` | `Integer` — `1` = `True` (enabled + no alerts), `0` = `False` | N/A — same, always clean |
+| `ServoGetPos[]` | `{Real, Real}` — `{x_mm, z_mm}` | `1`-as-error **and Garbage** — both coordinates are meaningless |
+| `ServoSetPos[x_mm, z_mm, rpm]` | `{Real, Real, Real}` — the *actual* resulting `{x_mm, z_mm, rpm}` after the move | `1`-as-error, and **Echoes input** — you get back the position you asked for, not confirmation it was reached |
+| `ServoManualControl[]` | `Integer` `0` | Not currently reachable — always returns `0` in practice |
+
+`ServoHome[milliseconds]`'s wrapper (`wservos_home` in `src/wolfram_api.cpp`) never calls any
+`MArgument_set*(Res, ...)` on any code path — success or failure. Its `.wl` binding still declares
+an `Integer` return type, so **the returned value carries no information at all, ever.** The only
+thing worth checking after calling it is whether it throws a `LibraryFunctionError` — the actual
+returned integer (thrown or not) should not be used for anything.
+
+## The two systemic caveats behind most of the "On failure" column
+
+1. **Status-code collision** (`BUGS.md` #23): most of these functions' underlying `Lab::`
+   functions return a plain `1` for "didn't work," which is also the numeric value of
+   `LIBRARY_TYPE_ERROR`. Mathematica has no way to distinguish "a real type mismatch" from
+   "the function just failed," so it prints "inconsistent types" either way. Don't take that
+   message literally — check whether you called the right `*Init[]`/`ServoEnable[]` first.
+2. **Uninitialized-on-failure locals** (`BUGS.md` #24): several wrappers declare their output
+   variable, pass it to the underlying `Lab::` call, and hand it to Mathematica regardless of
+   whether that call actually filled it in. On failure, these functions return a real-looking but
+   meaningless number *in addition to* an error/status — always check for success before trusting
+   a numeric result from the functions marked **Garbage** above.
+
+Neither of these is fixed yet as of this writing — see `docs/BUGS.md` #23 and #24 for the
+tracked fix plan.

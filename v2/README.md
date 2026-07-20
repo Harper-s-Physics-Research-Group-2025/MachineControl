@@ -149,7 +149,10 @@ Every function above is documented in more detail in the [API Functions](#api-fu
 ## API Functions
 
 The C++ DLL exports low-level `w*`-prefixed functions (see `src/wolfram_api.cpp`); the paclet
-(`paclet/Kernel/WolframMachineControl.wl`) wraps each one in a public Wolfram symbol:
+(`paclet/Kernel/WolframMachineControl.wl`) wraps each one in a public Wolfram symbol. For exactly
+what each function returns on success and on failure (including a few sharp edges — see
+[Known Confusing Error Messages](#known-confusing-error-messages) below), see
+[docs/API_REFERENCE.md](docs/API_REFERENCE.md).
 
 ### Logging
 - `GetLogStatus[]`, `GetLogFile[]`, `SetLogSettings[status, logfile]`
@@ -261,6 +264,7 @@ Beyond this README:
 | Doc | What it covers |
 |---|---|
 | [docs/HARDWARE_COMMS.md](docs/HARDWARE_COMMS.md) | How each device (bath, temp controller, servos, LabJack) actually talks to this app, and Mac/Linux support |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | What every public function returns, on both success and failure |
 | [docs/BUGS.md](docs/BUGS.md) | Known bugs found by code review, with file/line references |
 | [specs/librarylink.md](specs/librarylink.md) | How Mathematica calls into the C++ DLL, and what to touch when adding a new function |
 | [specs/port-autodetect.md](specs/port-autodetect.md) | How `BathInit[]`/`TempCtrlInit[]` find their own COM port (includes a line-by-line walkthrough of the Windows API calls involved) |

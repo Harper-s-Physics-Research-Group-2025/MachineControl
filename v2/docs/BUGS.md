@@ -3,8 +3,8 @@
 Originally found via static read-through of the C++ source. Bugs #1-14 have all been fixed, the
 DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the full
 `Test_WolframMachineControl.wlt` suite passes 29/29 against real hardware (bath, temp controller,
-servos, LabJack). Bugs #15-23 were found by a code review (and, for #23, direct usage) afterward and are **not yet
-fixed** — see that section below.
+servos, LabJack). Bugs #15-24 were found by a code review (and, for #23-24, direct usage plus a return-value audit)
+afterward and are **not yet fixed** — see that section below.
 
 ## High severity
 
@@ -276,6 +276,45 @@ Not affected — already return a proper status separately from the real answer,
 `ServoReady[]` (`wservo_hardware_online`), `ServoHomed[]` (`wservos_homed`, fixed as bug #3),
 `DeleteBath[]`, `DeleteTempCtrl[]`, `ServoDisable[]`, `GetLogStatus[]`, `GetLogFile[]` (all of
 these either always succeed or already use `LIBRARY_NO_ERROR` correctly).
+
+### 24. Several "get" functions can hand back a garbage number, not just a confusing error, when the read fails
+`src/wolfram_api.cpp` — a worse variant of bug #23: several wrappers declare an uninitialized
+local, unconditionally hand it to `MArgument_set*(Res, ...)`, and only *then* check whether the
+`Lab::` call that was supposed to fill it in actually succeeded:
+```cpp
+DLLEXPORT int wbath_get_temp(...){
+    float temp;                                       // uninitialized
+    int return_code = Lab::bath_get_temp(temp);        // may return early without touching temp
+    MArgument_setReal(Res, static_cast<double>(temp)); // sent to Mathematica regardless
+    return return_code;
+}
+```
+If `Lab::bath_get_temp` fails early (e.g. `bath` is null), `temp` is never assigned, so whatever
+garbage was already on the stack gets returned as if it were a real temperature reading — the
+caller sees a `LibraryFunctionError` *and* a plausible-looking but meaningless number in the same
+call, easy to accidentally use if the error isn't checked first.
+
+**Affected the same way:** `BathGetTemp[]`, `BathGetSetpoint[]`, `TempCtrlGetMode[]`,
+`TempCtrlGetTemp[]`, `TempCtrlGetSetpoint[]`, `ReadLabjack[]`, `ServoGetPos[]`.
+
+**Worse case:** `wservos_home` (`ServoHome[milliseconds]`) never calls any `MArgument_set*(Res,
+...)` at all, on *any* path — success or failure. Its `.wl` binding still declares an `Integer`
+return type, so `ServoHome[...]`'s returned value is undefined memory unconditionally; only the
+status code (whether it throws `LibraryFunctionError` or not) carries any real signal.
+
+**Different, milder case:** `wservos_set_position` (`ServoSetPos[...]`) initializes its output
+from the function's own *input* arguments, not an uninitialized local — so on failure it echoes
+back the *requested* `{x_mm, z_mm, rpm}` rather than the actual resulting position, which is
+misleading but not undefined memory.
+
+Not affected: `SetLogSettings[...]`/`GetLogStatus[]`/`GetLogFile[]` (`Lab::get_log_settings`/
+`set_log_settings` always assign their out-parameters, every path); `wget_servo_alerts` (its
+buffers are explicitly zero-initialized, so a failure just yields empty-looking alert strings,
+not garbage); `ServoHomed[]`/`ServoReady[]` (bug #3's fix already routes them correctly).
+
+Documented in `docs/API_REFERENCE.md`. Not yet fixed — the real fix is initializing every such
+local to a sentinel (or simply not writing to `Res` at all on the failure path) before the
+`Lab::` call, mirroring the fix already applied to `Lab::`-layer functions themselves.
 
 Documented in `README.md`'s "Known Confusing Error Messages" section. Not yet fixed — the real
 fix is mapping these functions' failure paths to `LIBRARY_FUNCTION_ERROR` instead of a raw `1`.
