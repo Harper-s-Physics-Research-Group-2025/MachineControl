@@ -103,27 +103,11 @@ below were actually confirmed fixed.
 
 ## Open items for next session
 
-A high-effort code review was run against the full session's diff right after hitting 29/29. Eight
-findings survived verification, three of them real crash risks worth fixing before doing much more
-in this area:
-
-1. **`servos_homed()` (`src/lab.cpp`) null-derefs `motorX`/`motorZ` with no guard**, and its
-   `catch (...)` won't catch the resulting access violation (no `/EHa` set). Calling `ServoHomed[]`
-   before `ServoEnable[]` crashes the kernel instead of returning `False` — realistic now that
-   servo init isn't automatic anymore.
-2. **`probe_with_timeout()`'s background-thread lambda doesn't catch exceptions from
-   `get_setpoint()` itself** — `Oven5R6900::parse_response()` can throw `std::out_of_range` on a
-   too-short garbled reply (realistic when probing the wrong device with the wrong protocol),
-   which escapes uncaught on a detached thread and calls `std::terminate()`.
-3. **A timed-out probe's serial handle is opened exclusively (`dwShareMode=0`) and never released**
-   while its abandoned thread might still be running, so a later attempt to open that same port
-   can fail even though the device is fine.
-4. Lower-priority: the `Sleep(150)` fix is a magic-number guess rather than a bounded retry loop
-   (duplicated at two call sites); `find_bath_port()`/`find_temp_controller_port()` probe
-   candidates sequentially instead of concurrently despite already having per-candidate threading;
-   a stale doc comment in `specs/librarylink.md` still describes the removed auto-init behavior;
-   `initialize_servos()` is now a pointless one-line pass-through left over from the reverted
-   timeout wrapper; the `GetLogFile[]` test in the `.wlt` suite became tautological after a recent
-   edit.
-
-None of these have been fixed yet — that's the natural next step.
+A high-effort code review was run against the full session's diff right after hitting 29/29.
+Eight findings survived verification and are now recorded as `docs/BUGS.md` #15-22 — **not yet
+fixed**, that's the natural next step. Three are real crash risks worth fixing before doing much
+more in this area: #15 (`servos_homed()` null-deref crashes instead of returning `False`), #16
+(an uncaught exception in a background probe thread can crash the whole process on a garbled
+reply), #17 (a timed-out probe can permanently block a working port from being reopened). The
+rest (#18-22) are lower-priority robustness/efficiency/doc-cleanup items. Full detail for each is
+in `docs/BUGS.md`.

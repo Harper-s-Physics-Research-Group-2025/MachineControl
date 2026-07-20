@@ -1,9 +1,10 @@
 # Known Bugs
 
-Originally found via static read-through of the C++ source. All bugs below have since been fixed,
-the DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the full
+Originally found via static read-through of the C++ source. Bugs #1-14 have all been fixed, the
+DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the full
 `Test_WolframMachineControl.wlt` suite passes 29/29 against real hardware (bath, temp controller,
-servos, LabJack).
+servos, LabJack). Bugs #15-22 were found by a code review afterward and are **not yet fixed** —
+see that section below.
 
 ## High severity
 
@@ -185,6 +186,71 @@ Fixed with a 150ms `Sleep()` in both `init_bath()` and `init_temp_controller()`,
 the probe and opening the persistent connection. Confirmed fixed via `wolframscript`: bath went
 from failing all 6 of its tests to passing all 6, with the log showing `Status: 0` instead of
 `Status: 1` on the exact same command.
+
+## Found via code review after hitting 29/29 (not yet fixed)
+
+A high-effort code review was run against this whole session's diff right after the suite first
+passed 29/29. These survived verification but haven't been fixed yet.
+
+### 15. `servos_homed()` crashes instead of returning `False` if servos were never initialized
+`src/lab.cpp` — dereferences `motorX`/`motorZ` with no null check, and its `catch (...)` cannot
+catch the resulting access violation, since nothing in `CMakeLists.txt` sets `/EHa` (MSVC's
+default `/EHsc` only catches C++ exceptions, not structured/SEH ones like a null-pointer fault).
+Now that `WolframLibrary_initialize` no longer auto-calls `initialize_servos()` on package load
+(bug #11), a user calling `ServoHomed[]` before ever calling `ServoEnable[]` is a realistic, easy
+mistake — and it crashes the kernel instead of returning `False`.
+
+### 16. A garbled reply while probing the wrong device can crash the process
+`Lab::probe_with_timeout()` (`src/lab.cpp`) only wraps `promise::set_value(...)` in `try`/`catch`
+on its background thread — not the `candidate.get_setpoint(temp)` call itself. `Oven5R6900::
+parse_response()` (`src/Oven5R6900.cpp`) does `response.substr(response.size()-3, 2)` with no
+length check; a reply under 3 bytes (plausible when probing the *wrong* device with the *wrong*
+protocol — e.g. the bath receiving an Oven5R6900-formatted query) underflows `size()-3` and
+`substr` throws `std::out_of_range`. That exception is never caught anywhere in the chain, so it
+escapes the thread entry point — `std::terminate()`, crashing the whole kernel process, not just
+failing that one probe.
+
+### 17. A timed-out probe can permanently block a working port from being reopened
+`RTE7`'s (and `Oven5R6900`'s) `CreateFileA` call (`src/RTE7.cpp`) opens the serial port with
+`dwShareMode = 0` (exclusive). If a `probe_with_timeout()` candidate genuinely times out while
+still in-flight rather than failing fast, the abandoned background thread's `RTE7`/`Oven5R6900`
+object stays alive holding that exclusive handle for as long as the thread keeps running. Any
+later attempt to open that same port — a retry, or the same candidate being probed again in a
+later `BathInit[]`/`TempCtrlInit[]` call in the same session — fails, misreporting a genuinely
+working port as unreachable.
+
+### 18. The `Sleep(150)` fix for bug #14 is a magic-number guess, not a bounded retry
+`src/lab.cpp` (`init_bath()` and `init_temp_controller()`, ~line 242 and ~289) — 150ms was tuned
+against one test run's OS/FTDI driver behavior; there's no guarantee it's enough on a different
+machine, USB hub, or driver version, and no adaptive fallback if it isn't — a regression would
+look exactly like bug #14 did. The same fix (with a near-identical comment) is also duplicated at
+both call sites instead of living in one shared helper. `probe_with_timeout()`, two functions
+earlier in the same file, already establishes an early-return-on-success pattern for this exact
+class of problem ("a Win32 serial call might stall longer than expected") that this fix doesn't
+reuse.
+
+### 19. Candidate port probes run sequentially, not concurrently, despite already being threaded
+`find_bath_port()`/`find_temp_controller_port()` (`src/lab.cpp`) loop over candidates, calling
+`probe_with_timeout()` for one and waiting up to its full 1.5s timeout before starting the next —
+even though each probe already runs on its own independent background thread. With both expected
+FTDI adapters present and one stalled, worst-case latency is `candidateCount * 1.5s` instead of
+~1.5s if all candidates were probed concurrently and awaited together.
+
+### 20. Stale doc: `specs/librarylink.md` still says servos auto-start on package load
+Left over from before bug #11's fix removed that automatic call — could mislead a future
+maintainer into reintroducing it (and bug #11's hang) while "fixing" something unrelated.
+
+### 21. `initialize_servos()` is a pointless one-line wrapper left over from a reverted fix
+`src/lab.cpp` — the split into `initialize_servos()` / `initialize_servos_impl()` only ever
+existed to support the background-thread timeout wrapper that was tried for bug #11 and then
+fully reverted. The wrapper now does nothing; a reader has to open both functions and the
+cross-referencing comments to confirm that.
+
+### 22. `GetLogFile[]` test became tautological
+`paclet/Tests/Test_WolframMachineControl.wlt` — its expected value was changed from an
+independent hardcoded path literal to the same `LogFile` variable used to configure logging in
+the first place, so the assertion can no longer catch a real path-configuration bug (both sides
+of the comparison now derive from the same variable and would drift together).
 
 ## Removed dead code
 `sm_homer.h`, `sm_manual_controller.h`, and `recorder.h`/`recorder.cpp` were confirmed unused
