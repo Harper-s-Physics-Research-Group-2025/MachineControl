@@ -112,7 +112,7 @@ Once the test notebook works, you can call the same functions from your own note
 (* Fluid bath *)
 BathInit[];                       (* auto-detects and connects to the bath's COM port *)
 BathOn[];
-BathSetTemp[37.0];
+BathSetSetpoint[37.0];
 temp = BathGetTemp[];
 BathOff[];
 
@@ -160,7 +160,7 @@ what each function returns on success and on failure (including a few sharp edge
 ### Fluid Bath
 - `BathInit[]` — auto-detects and connects to the bath's COM port (see [Auto-Detected COM Ports](#auto-detected-com-ports))
 - `BathOn[]`, `BathOff[]`, `BathManual[]`
-- `BathGetTemp[]`, `BathGetSetpoint[]`, `BathSetTemp[temp]`
+- `BathGetTemp[]`, `BathGetSetpoint[]`, `BathSetSetpoint[temp]`
 
 ### Temperature Controller
 - `TempCtrlInit[]` — auto-detects and connects to the temp controller's COM port (see [Auto-Detected COM Ports](#auto-detected-com-ports))
