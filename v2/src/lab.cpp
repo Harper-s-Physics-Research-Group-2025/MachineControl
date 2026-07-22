@@ -231,10 +231,14 @@ namespace Lab {
 
     int init_bath() {
 
+        // Release any existing connection *before* probing for the port, not after -- probing
+        // opens each candidate port itself (RTE7's constructor uses exclusive access), so if the
+        // bath is already connected, its own held-open port would fail that probe and make
+        // find_bath_port() report no match at all, even though the bath is fine.
+        if (bath != nullptr) { delete bath; bath = nullptr; Sleep(150); }
+
         std::string COMM = find_bath_port();
         if (COMM.empty()) return 1;            // no unambiguous match found
-
-        if (bath != nullptr) { delete bath;}   // 1. Clean up an existing connection if called a second time
 
         // find_bath_port()'s temporary probe object just closed this exact port; give the
         // OS/FTDI driver a moment to fully release the handle before reopening it, or the
@@ -279,10 +283,12 @@ namespace Lab {
     // -------------------------------------------------------------------------
 
     int init_temp_controller() {
+        // Same reasoning as init_bath(): release any existing connection *before* probing, or
+        // its own held-open port makes find_temp_controller_port() report no match at all.
+        if (tc != nullptr) { delete tc; tc = nullptr; Sleep(150); }
+
         std::string COMM = find_temp_controller_port();
         if (COMM.empty()) return 1;         // no unambiguous match found
-
-        if (tc != nullptr) { delete tc;}    // 1. Clean up an existing connection if called a second time
 
         // Same reasoning as init_bath(): let the OS/FTDI driver fully release the probe's
         // just-closed handle on this port before reopening it.
@@ -333,7 +339,9 @@ namespace Lab {
 
         // 2. Initialize settings on the LabJack
         errorcode = ePut(h, LJ_ioPUT_ANALOG_ENABLE_BIT, channel, 1, 0);  // Set channel 0 to analog input
-        if (errorcode == 0) errorcode = ePut(h, LJ_ioPUT_CONFIG, LJ_chAIN_RESOLUTION, 1, 0);  // Resolution index
+        // Resolution index 0 = QuickSample disabled -- was 1 (QuickSample enabled), which trades
+        // accuracy for speed on every read; disabled to rule out added ADC noise masking a real signal.
+        if (errorcode == 0) errorcode = ePut(h, LJ_ioPUT_CONFIG, LJ_chAIN_RESOLUTION, 0, 0);
 
         // 3. Read analog input AIN0 (single-ended)
         if (errorcode == 0) errorcode = eGet(h, LJ_ioGET_AIN, channel, &voltage, 0);

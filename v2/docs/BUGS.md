@@ -6,7 +6,9 @@ DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the 
 servos, LabJack). Bugs #15-24 were found by a code review (and, for #23-24, direct usage plus a
 return-value audit) afterward and are **not yet fixed** — see that section below. Bugs #25-26 were
 found while investigating a live "bath setpoint stuck at 25" report and have been fixed and covered
-by new unit tests in `tests/test_protocol_parsing.cpp`.
+by new unit tests in `tests/test_protocol_parsing.cpp`. Bug #27 was found while investigating a
+live report of `BathInit[]`/`TempCtrlInit[]` erroring when called on an already-connected device,
+and has been fixed and verified against real hardware.
 
 ## High severity
 
@@ -351,6 +353,20 @@ Found while investigating a live report of `BathSetSetpoint[...]` writes never a
 If the earlier live report turns out to be a real Hi/Lo Temperature Limit clamp (check `Hit`/`Lot`
 in the bath's own physical Setup Loop), this fix will make `BathSetSetpoint[...]`'s return value
 show the clamped number directly instead of silently echoing back whatever was requested.
+
+### 27. ~~`BathInit[]`/`TempCtrlInit[]` failed with a generic error when called while already connected~~ — Fixed
+`init_bath()`/`init_temp_controller()` (`src/lab.cpp`) probed for the device's COM port *before*
+releasing any existing connection. `find_bath_port()`/`find_temp_controller_port()` find the
+device by opening each candidate port themselves and testing it with a real protocol query
+(`probe_with_timeout<...>`) — but `CreateFileA` opens serial ports exclusively (`dwShareMode=0`,
+see `RTE7::initSerial`/`Oven5R6900::initSerial`), so if the device was already connected, its own
+held-open port would fail that very probe. With no other candidate able to match, `find_*_port()`
+correctly reported "no match," and `Init[]` returned the generic `1`-as-error — even though the
+device was already connected and working fine. Fixed by moving the `delete bath`/`delete tc`
+cleanup (plus the existing `Sleep(150)` settle delay, same reasoning as bug #14) to *before* the
+probe instead of after, so a re-`Init[]` call actually reconnects and returns `0` like a fresh one.
+Verified live: `BathInit[]`/`TempCtrlInit[]` called three times in a row all return `0`, and
+`BathGetTemp[]`/`TempCtrlGetTemp[]` keep working correctly afterward.
 
 ## Removed dead code
 `sm_homer.h`, `sm_manual_controller.h`, and `recorder.h`/`recorder.cpp` were confirmed unused

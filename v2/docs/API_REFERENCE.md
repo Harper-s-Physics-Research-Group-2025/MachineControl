@@ -20,41 +20,64 @@ columns below look the way they do.
 
 ## Logging
 
-| Function | Returns (success) | On failure |
-|---|---|---|
-| `GetLogStatus[]` | `Integer` — `1` if logging is enabled, `0` if disabled | Always succeeds |
-| `GetLogFile[]` | `String` — the current log file path | Always succeeds |
-| `SetLogSettings[status, logfile]` | `Integer` — echoes back `status` | `1`-as-error if `logfile`'s parent directory doesn't exist |
+| Function | Arguments | Returns (success) | On failure |
+|---|---|---|---|
+| `GetLogStatus[]` | none | `Integer` — `1` if logging is enabled, `0` if disabled | Always succeeds |
+| `GetLogFile[]` | none | `String` — the current log file path | Always succeeds |
+| `SetLogSettings[status, logfile]` | `status` (Integer `0`/`1`) — enable/disable logging. `logfile` (String) — path to the log file | `Integer` — echoes back `status` | `1`-as-error if `logfile`'s parent directory doesn't exist |
 
 ## Fluid Bath
 
-| Function | Returns (success) | On failure |
-|---|---|---|
-| `BathInit[]` | `Integer` `0` | `1`-as-error (no matching port found, or found but didn't connect) |
-| `BathOn[]` / `BathOff[]` / `BathManual[]` | `Integer` `0` | `1`-as-error (not initialized, or the hardware didn't acknowledge) |
-| `BathGetTemp[]` | `Real` — temperature in °C | `1`-as-error **and Garbage** — the returned number is meaningless, not just the error |
-| `BathGetSetpoint[]` | `Real` — setpoint in °C | Same as `BathGetTemp[]` |
-| `BathSetSetpoint[temp]` | `Real` — the bath's *confirmed* setpoint after the write (bug #26's fix: no longer a blind echo of `temp`) | `1`-as-error. A returned value that differs from `temp` means the bath silently clamped the request to its own configured Hi/Lo Temperature Limit — check the bath's physical Setup Loop (`Hit`/`Lot`) |
+| Function | Arguments | Returns (success) | On failure |
+|---|---|---|---|
+| `BathInit[]` | none | `Integer` `0` | `1`-as-error (no matching port found, or found but didn't connect) |
+| `BathOn[]` / `BathOff[]` / `BathManual[]` | none | `Integer` `0` | `1`-as-error (not initialized, or the hardware didn't acknowledge) |
+| `BathGetTemp[]` | none | `Real` — temperature in °C | `1`-as-error **and Garbage** — the returned number is meaningless, not just the error |
+| `BathGetSetpoint[]` | none | `Real` — setpoint in °C | Same as `BathGetTemp[]` |
+| `BathSetSetpoint[temp]` | `temp` (Real) — target setpoint in °C | `Real` — the bath's *confirmed* setpoint after the write (bug #26's fix: no longer a blind echo of `temp`) | `1`-as-error. A returned value that differs from `temp` means the bath silently clamped the request to its own configured Hi/Lo Temperature Limit — check the bath's physical Setup Loop (`Hit`/`Lot`) |
 
 ## Temperature Controller
 
-| Function | Returns (success) | On failure |
-|---|---|---|
-| `TempCtrlInit[]` | `Integer` `0` | `1`-as-error |
-| `TempCtrlOn[]` / `TempCtrlOff[]` | `Integer` `0` | `1`-as-error |
-| `TempCtrlGetMode[]` | `Integer` — `0` = normal, `2` = ramp/soak | `1`-as-error **and Garbage** |
-| `TempCtrlSetMode[mode]` | `Integer` — echoes back `mode` | `1`-as-error (safe echo — it's your own input, not an uninitialized local) |
-| `TempCtrlGetTemp[]` | `Real` — thermistor temperature in °C | `1`-as-error **and Garbage** |
-| `TempCtrlGetSetpoint[]` | `Real` — setpoint in °C | `1`-as-error **and Garbage** |
-| `TempCtrlSetSetpoint[temp]` | `Real` — echoes back `temp` | `1`-as-error (safe echo) |
+| Function | Arguments | Returns (success) | On failure |
+|---|---|---|---|
+| `TempCtrlInit[]` | none | `Integer` `0` | `1`-as-error |
+| `TempCtrlOn[]` / `TempCtrlOff[]` | none | `Integer` `0` | `1`-as-error |
+| `TempCtrlGetMode[]` | none | `Integer` — `0` = normal, `2` = ramp/soak | `1`-as-error **and Garbage** |
+| `TempCtrlSetMode[mode]` | `mode` (Integer `0`-`4`) — `0` = normal, `2` = ramp/soak | `Integer` — echoes back `mode` | `1`-as-error (safe echo — it's your own input, not an uninitialized local) |
+| `TempCtrlGetTemp[]` | none | `Real` — thermistor temperature in °C | `1`-as-error **and Garbage** |
+| `TempCtrlGetSetpoint[]` | none | `Real` — setpoint in °C | `1`-as-error **and Garbage** |
+| `TempCtrlSetSetpoint[temp]` | `temp` (Real) — target setpoint in °C | `Real` — echoes back `temp` | `1`-as-error (safe echo) |
+| `TempCtrlPlotTemp[targetTemp, interval:1]` | `targetTemp` (number) — target °C. `interval` (number, optional, default `1`) — seconds between readings | `Graphics` — temperature vs. time, sampled every `interval` seconds until `targetTemp` is reached | `$Failed` **+** `TempCtrlPlotTemp::tempctrlfail` if not initialized |
+
+`TempCtrlPlotTemp[...]` is pure Wolfram Language (`paclet/Kernel/WolframMachineControl.wl`, no DLL
+involved), built on top of the functions above it in this table — it turns on the temp controller
+and sets its setpoint itself, then blocks the kernel sampling every `interval` seconds until the
+target is reached. Like `TempCtrlSetSetpoint[]`, it has no clamp detection (bug #24): an
+out-of-range target could loop forever.
 
 ## Data Acquisition
 
-| Function | Returns (success) | On failure |
-|---|---|---|
-| `ReadLabjack[channel]` | `Real` — voltage reading | Throws with a raw LabJack UD error code **and Garbage** — the voltage value is meaningless |
+### LabJack Data-Collection Suite
 
-### What `channel` actually is
+| Function | Arguments | Returns (success) | On failure |
+|---|---|---|---|
+| `ReadLabjack[channel]` | `channel` (Integer `0`-`19`) — physical LabJack U3 pin, see below | `Real` — voltage reading | Throws with a raw LabJack UD error code **and Garbage** — the voltage value is meaningless |
+| `LabJackRecordData[filename, finalTemp, interval]` | `filename` (string, `.csv` optional) — output name. `finalTemp` (number) — target °C for the temp controller. `interval` (number) — seconds between readings | `String` — full path to `v2/data/<filename>.csv` | `$Failed` **+** `::tempctrlfail` if the temp controller isn't initialized |
+| `LabJackListCSVs[]` | none | `Grid` — name + creation date for every CSV in `v2/data`, newest first | `{}` if `v2/data` has no CSVs — never throws |
+| `LabJackPlotData[filename]` | `filename` (string, `.csv` optional) — which CSV in `v2/data` to plot | `Legended[Graphics, ...]` — one line per channel, plotted against temp controller temperature | `$Failed` **+** `::nofile` if the CSV doesn't exist |
+
+`ReadLabjack[]` is a direct LibraryLink binding. `LabJackRecordData`/`LabJackListCSVs`/
+`LabJackPlotData` are pure Wolfram Language (`paclet/Kernel/WolframMachineControl.wl`, no DLL
+involved), built on top of `ReadLabjack[]` and the temp controller functions above — not the bath.
+
+**Worth knowing:**
+- `LabJackRecordData` turns on the temp controller and sets its setpoint to `finalTemp` itself,
+  then waits for it to actually get there before stopping — same clamp caveat as
+  `TempCtrlSetSetpoint[]` (bug #24, see Temperature Controller section above): no clamp detection,
+  so an out-of-range `finalTemp` could loop forever.
+- Always reads channels 0-7; blocks the kernel for the whole run (no background/async mode).
+
+#### What `channel` actually is
 
 `channel` is a physical pin number on the LabJack U3, not an arbitrary index. The U3 exposes its
 first 8 "Flexible I/O" lines (FIO0-FIO7) on built-in screw terminals — this is what you're
@@ -96,52 +119,19 @@ Source: LabJack's own U3 datasheet —
 [2.6.1 Channel Numbers](https://support.labjack.com/docs/2-6-1-channel-numbers-u3-datasheet),
 [2.5 Flexible I/O](https://support.labjack.com/docs/2-5-flexible-i-o-fio-eio-u3-datasheet).
 
-### LabJack Data-Collection Suite
-
-Pure Wolfram Language, defined directly in `paclet/Kernel/WolframMachineControl.wl` — no
-LibraryLink/DLL involved. Built on top of `ReadLabjack[]`/`BathGetTemp[]`, so their failure modes
-above still apply underneath these.
-
-| Function | Returns (success) | On failure |
-|---|---|---|
-| `LabJackRecordData[filename, finalTemp, interval]` | `String` — full path to the saved `v2/data/<filename>.csv` | `$Failed` **and** `LabJackRecordData::bathfail`/`::tempctrlfail` if `BathGetTemp[]`/`TempCtrlGetTemp[]` doesn't return a real number before the loop even starts (e.g. `BathInit[]`/`TempCtrlInit[]` was never called) |
-| `LabJackListCSVs[]` | `Grid` — file name + creation date for every CSV in `v2/data`, newest first | `{}` (and a `Print[]`) if `v2/data` has no CSVs — never throws |
-| `LabJackPlotData[filename]` | `Legended[Graphics, ...]` — one line per channel, plotted against the bath-temperature column | `$Failed` **and** `LabJackPlotData::nofile` if `<filename>.csv` doesn't exist in `v2/data` |
-
-**Assumptions baked into `LabJackRecordData`, worth knowing if your setup differs:**
-- Calls `BathOn[]`/`BathSetSetpoint[finalTemp]` **and** `TempCtrlOn[]`/`TempCtrlSetSetpoint[finalTemp]`
-  itself before recording — it actively drives both devices toward `finalTemp`, it doesn't just
-  passively wait for something else to get them there. Both devices must actually be initialized
-  (`BathInit[]`/`TempCtrlInit[]`) first, or it fails fast with `LabJackRecordData::bathfail`/
-  `::tempctrlfail` before turning anything on.
-- The loop only stops once **both** devices have reached their target — whichever gets there first
-  just keeps being read every interval while waiting on the other.
-- The bath's side of the stop condition uses its *confirmed* setpoint (`BathSetSetpoint[]`'s return
-  value per bug #26's fix), not the raw `finalTemp` argument — if the bath silently clamps an
-  out-of-range request to its own Hi/Lo Temperature Limit, `LabJackRecordData::clamped` fires and
-  the loop waits for the clamped value instead of looping forever for a temperature the bath will
-  never actually reach. **The temp controller has no equivalent protection** — `TempCtrlSetSetpoint[]`
-  only echoes back whatever was requested (bug #24), so there's no way to detect a silent clamp on
-  that side; an out-of-range `finalTemp` for the temp controller could still loop forever.
-- Reads exactly channels 0-7 (`FIO0`-`FIO7`) every interval, not a caller-specified list.
-- The stop direction (wait for temperature to rise vs. fall) is inferred once per device, from its
-  temperature at the moment the function is called vs. its target — it isn't re-evaluated mid-run.
-- Blocks the kernel for the entire run (a plain `While` loop with `Pause[interval]`) — there's no
-  background/async mode.
-
 ## Servo Motors
 
-| Function | Returns (success) | On failure |
-|---|---|---|
-| `ServoEnable[]` | `Integer` `0` | `1`-as-error, **or `-1`** on a Teknic SDK exception (an unusual value matching no named LibraryLink error — its on-screen presentation is unpredictable) |
-| `ServoDisable[]` | `Integer` `0` | Always succeeds |
-| `ServoGetAlerts[]` | `String` — `"X: <alert text> \| Z: <alert text>"` | `1`-as-error, but the string comes back as `"X:  \| Z: "` (empty, not garbage — the buffers are pre-zeroed) |
-| `ServoHome[milliseconds]` | **Undefined, always** — see below | Same: undefined, always |
-| `ServoHomed[]` | `Integer` — `1` = `True` (homed), `0` = `False` | N/A — always returns a clean answer, never throws (bug #3's fix) |
-| `ServoReady[]` | `Integer` — `1` = `True` (enabled + no alerts), `0` = `False` | N/A — same, always clean |
-| `ServoGetPos[]` | `{Real, Real}` — `{x_mm, z_mm}` | `1`-as-error **and Garbage** — both coordinates are meaningless |
-| `ServoSetPos[x_mm, z_mm, rpm]` | `{Real, Real, Real}` — the *actual* resulting `{x_mm, z_mm, rpm}` after the move | `1`-as-error, and **Echoes input** — you get back the position you asked for, not confirmation it was reached |
-| `ServoManualControl[]` | `Integer` `0` | Not currently reachable — always returns `0` in practice |
+| Function | Arguments | Returns (success) | On failure |
+|---|---|---|---|
+| `ServoEnable[]` | none | `Integer` `0` | `1`-as-error, **or `-1`** on a Teknic SDK exception (an unusual value matching no named LibraryLink error — its on-screen presentation is unpredictable) |
+| `ServoDisable[]` | none | `Integer` `0` | Always succeeds |
+| `ServoGetAlerts[]` | none | `String` — `"X: <alert text> \| Z: <alert text>"` | `1`-as-error, but the string comes back as `"X:  \| Z: "` (empty, not garbage — the buffers are pre-zeroed) |
+| `ServoHome[milliseconds]` | `milliseconds` (Integer) — homing timeout | **Undefined, always** — see below | Same: undefined, always |
+| `ServoHomed[]` | none | `Integer` — `1` = `True` (homed), `0` = `False` | N/A — always returns a clean answer, never throws (bug #3's fix) |
+| `ServoReady[]` | none | `Integer` — `1` = `True` (enabled + no alerts), `0` = `False` | N/A — same, always clean |
+| `ServoGetPos[]` | none | `{Real, Real}` — `{x_mm, z_mm}` | `1`-as-error **and Garbage** — both coordinates are meaningless |
+| `ServoSetPos[x_mm, z_mm, rpm]` | `x_mm`, `z_mm` (Real) — target position in mm. `rpm` (Real) — move speed | `{Real, Real, Real}` — the *actual* resulting `{x_mm, z_mm, rpm}` after the move | `1`-as-error, and **Echoes input** — you get back the position you asked for, not confirmation it was reached |
+| `ServoManualControl[]` | none | `Integer` `0` | Not currently reachable — always returns `0` in practice |
 
 `ServoHome[milliseconds]`'s wrapper (`wservos_home` in `src/wolfram_api.cpp`) never calls any
 `MArgument_set*(Res, ...)` on any code path — success or failure. Its `.wl` binding still declares

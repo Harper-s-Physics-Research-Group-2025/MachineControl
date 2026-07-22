@@ -174,22 +174,19 @@ what each function returns on success and on failure (including a few sharp edge
 - `TempCtrlOn[]`, `TempCtrlOff[]`
 - `TempCtrlGetMode[]`, `TempCtrlSetMode[mode]` (0 = normal, 2 = ramp/soak)
 - `TempCtrlGetTemp[]`, `TempCtrlGetSetpoint[]`, `TempCtrlSetSetpoint[temp]`
+- `TempCtrlPlotTemp[targetTemp, interval:1]` — sets the temp controller's setpoint to `targetTemp`,
+  samples its temperature every `interval` seconds (default 1) until it arrives, then plots
+  temperature vs. time.
 
 ### Data Acquisition
 - `ReadLabjack[channel]`
-- `LabJackRecordData[filename, finalTemp, interval]` — pure Wolfram Language, built on top of
-  `BathOn`/`BathSetSetpoint`/`TempCtrlOn`/`TempCtrlSetSetpoint`/`ReadLabjack`/`BathGetTemp`/
-  `TempCtrlGetTemp` (no DLL/LibraryLink involved). Turns on **both** the bath and the temp
-  controller and sets both setpoints to `finalTemp`, then waits `interval` seconds and reads
-  LabJack channels 0-7 plus both devices' actual temperatures, repeating until **both** have
-  reached `finalTemp` (works whether you're heating or cooling, and can't loop forever if the bath
-  silently clamps an out-of-range request — the temp controller doesn't have that same
-  clamp-detection, see `docs/API_REFERENCE.md`). Saves to `v2/data/<filename>.csv` and returns the
-  full path.
-- `LabJackListCSVs[]` — lists every CSV in `v2/data` as a formatted grid (name + creation date,
-  newest first).
-- `LabJackPlotData[filename]` — plots every channel column from `<filename>.csv` (name with or
-  without `.csv`) against the bath-temperature column.
+- `LabJackRecordData[filename, finalTemp, interval]` — heats/cools the temp controller to
+  `finalTemp`, logging channels 0-7 and its temperature every `interval` seconds until it arrives.
+  Saves to `v2/data/<filename>.csv` and returns the path. Argument meanings in
+  [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
+- `LabJackListCSVs[]` — lists every CSV in `v2/data`, newest first.
+- `LabJackPlotData[filename]` — plots every channel from `<filename>.csv` against the temp
+  controller temperature.
 
 ### Servo Motors
 - `ServoEnable[]`, `ServoDisable[]`, `ServoGetAlerts[]`

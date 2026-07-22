@@ -114,7 +114,37 @@ below were actually confirmed fixed.
   correctly. Also added a `LabJackRecordData[]`/`LabJackListCSVs[]`/`LabJackPlotData[]` suite —
   pure Wolfram Language in `WolframMachineControl.wl`, no DLL changes — for recording LabJack
   channels 0-7 plus bath temperature over time until a target temperature is reached, then
-  listing/plotting the resulting CSVs (saved to the new `v2/data/`).
+  listing/plotting the resulting CSVs (saved to the new `v2/data/`). Extended `LabJackRecordData[]`
+  to drive and wait on both the bath and temp controller together, since it wasn't actually
+  commanding either device toward `finalTemp` at first — it was only reading temperatures and
+  waiting, so calling it while nothing was actively heating/cooling looked exactly like a hang.
+- **2026-07-21** — Fixed bug #27: `BathInit[]`/`TempCtrlInit[]` returned a generic `1`-as-error when
+  called on an already-connected device, because `init_bath()`/`init_temp_controller()` probed for
+  the COM port *before* releasing the existing connection — and the probe opens each candidate port
+  exclusively, so the already-open port (held by the live connection) always failed its own probe.
+  Fixed by releasing the old connection before re-probing; verified live that repeated `Init[]`
+  calls now all return `0` and the device keeps working afterward.
+- Investigated a report that the LabJack wasn't reading the actual laser intensity. Found a real
+  suspect in `Lab::read_labjack_ain` (`src/lab.cpp`): every read set `LJ_chAIN_RESOLUTION` to `1`,
+  which per LabJack's own U3 docs enables "QuickSample" mode -- faster ADC conversions at the cost
+  of more noise. Changed it to `0` (QuickSample off) so a subtle signal isn't masked by that noise;
+  not yet confirmed whether this actually fixes the reported symptom, separate from a wiring check
+  (which channel is physically connected) also still pending.
+- Per request, removed all bath dependence from `LabJackRecordData[]` -- it now only drives/waits
+  on the temp controller (`TempCtrlOn[]`/`TempCtrlSetSetpoint[]`/`TempCtrlGetTemp[]`), and its CSV
+  no longer has a `BathTemp` column. `LabJackPlotData[]` updated to match (plots channels against
+  `TempCtrlTemp` instead of `BathTemp`). Added `TempCtrlPlotTemp[targetTemp]` -- initially took a
+  fixed sampling duration, but per follow-up request now takes a target temperature instead: sets
+  the setpoint, samples `TempCtrlGetTemp[]` once per second until it arrives, then plots
+  temperature vs. time (same drive-and-wait shape as `LabJackRecordData`, just without channels/CSV).
+  Later given an optional `interval` argument (default `1`) too -- first attempt used the
+  `interval_?NumericQ:1` pattern, which silently failed to bind (calls returned unevaluated
+  instead of running); fixed with a plain two-clause definition
+  (`TempCtrlPlotTemp[t_] := TempCtrlPlotTemp[t, 1]`) instead of a combined optional/PatternTest.
+  `docs/API_REFERENCE.md` also reorganized per request: `TempCtrlPlotTemp[]` moved into the
+  Temperature Controller section, and `ReadLabjack[]` (plus its channel-pinout explainer) merged
+  into the "LabJack Data-Collection Suite" subsection under Data Acquisition, so that section is
+  now the single home for everything LabJack-related.
 
 ## Open items for next session
 
