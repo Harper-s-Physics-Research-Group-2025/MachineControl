@@ -131,11 +131,11 @@ pos = ServoGetPos[];              (* returns {x_mm, z_mm} *)
 (* LabJack *)
 voltage = ReadLabjack[0];         (* read channel 0 *)
 
-(* LabJack data-collection suite -- records channels 0-7 + bath temp every 5s until
-   the bath actually reaches 50C, then saves/lists/plots the CSV *)
+(* LabJack data-collection suite -- records channels 0-7 + temp controller temperature
+   every 5s until the temp controller actually reaches 50C, then saves/lists/plots the CSV *)
 LabJackRecordData["run1", 50.0, 5];
 LabJackListCSVs[]
-LabJackPlotData["run1"]
+LabJackPlotData["run1", 0]        (* plot channel 0 *)
 ```
 
 Every function above is documented in more detail in the [API Functions](#api-functions) section below.
@@ -185,8 +185,14 @@ what each function returns on success and on failure (including a few sharp edge
   Saves to `v2/data/<filename>.csv` and returns the path. Argument meanings in
   [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
 - `LabJackListCSVs[]` — lists every CSV in `v2/data`, newest first.
-- `LabJackPlotData[filename]` — plots every channel from `<filename>.csv` against the temp
-  controller temperature.
+- `LabJackPlotData[filename, channel]` — plots the given channel from `<filename>.csv` against
+  the temp controller temperature.
+- `LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1]` — repeatedly
+  returns to `startTemp` and drives out to each temperature in `temps`, recording (via
+  `LabJackRecordData`) both the outbound and return trip every time -- `N` temperatures produce
+  `2N` CSVs, named `lipidName_waterConcentration_rise-or-fall_from_to_to.csv` (e.g.
+  `monopalmatin_60_rise_10_to_45.csv`). Argument meanings in
+  [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
 
 ### Servo Motors
 - `ServoEnable[]`, `ServoDisable[]`, `ServoGetAlerts[]`

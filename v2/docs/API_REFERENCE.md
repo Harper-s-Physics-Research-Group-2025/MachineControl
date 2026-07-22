@@ -64,17 +64,30 @@ out-of-range target could loop forever.
 | `ReadLabjack[channel]` | `channel` (Integer `0`-`19`) — physical LabJack U3 pin, see below | `Real` — voltage reading | Throws with a raw LabJack UD error code **and Garbage** — the voltage value is meaningless |
 | `LabJackRecordData[filename, finalTemp, interval]` | `filename` (string, `.csv` optional) — output name. `finalTemp` (number) — target °C for the temp controller. `interval` (number) — seconds between readings | `String` — full path to `v2/data/<filename>.csv` | `$Failed` **+** `::tempctrlfail` if the temp controller isn't initialized |
 | `LabJackListCSVs[]` | none | `Grid` — name + creation date for every CSV in `v2/data`, newest first | `{}` if `v2/data` has no CSVs — never throws |
-| `LabJackPlotData[filename]` | `filename` (string, `.csv` optional) — which CSV in `v2/data` to plot | `Legended[Graphics, ...]` — one line per channel, plotted against temp controller temperature | `$Failed` **+** `::nofile` if the CSV doesn't exist |
+| `LabJackPlotData[filename, channel]` | `filename` (string, `.csv` optional) — which CSV in `v2/data` to plot. `channel` (Integer `0`-`7`) — which channel column to plot | `Legended[Graphics, ...]` — that channel's voltage, plotted against temp controller temperature | `$Failed` **+** `::nofile` if the CSV doesn't exist, or `::nochannel` if that channel isn't a column in it |
+| `LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1]` | `startTemp` (number) — temperature returned to between every leg. `temps` (list of numbers) — targets to visit, each followed by a return to `startTemp`. `lipidName` (String), `waterConcentration` (String or number) — used to build each CSV's filename. `interval` (number, optional, default `1`) — seconds between readings, passed through to `LabJackRecordData` | `List` of `String` — every CSV path written, in order (`2 * Length[temps]` of them) | `$Failed` **+** `::tempctrlfail` if the temp controller isn't initialized, or `::legfailed` (and the whole sweep aborts) if any individual `LabJackRecordData` call fails |
 
 `ReadLabjack[]` is a direct LibraryLink binding. `LabJackRecordData`/`LabJackListCSVs`/
-`LabJackPlotData` are pure Wolfram Language (`paclet/Kernel/WolframMachineControl.wl`, no DLL
-involved), built on top of `ReadLabjack[]` and the temp controller functions above — not the bath.
+`LabJackPlotData`/`LabJackTempSweep` are pure Wolfram Language (`paclet/Kernel/WolframMachineControl.wl`,
+no DLL involved), built on top of `ReadLabjack[]` and the temp controller functions above — not the bath.
 
 **Worth knowing:**
 - `LabJackRecordData` turns on the temp controller and sets its setpoint to `finalTemp` itself,
   then waits for it to actually get there before stopping — same clamp caveat as
   `TempCtrlSetSetpoint[]` (bug #24, see Temperature Controller section above): no clamp detection,
   so an out-of-range `finalTemp` could loop forever.
+- `LabJackTempSweep` is built entirely on top of `LabJackRecordData` (unmodified) and
+  `waitForTempCtrl` (a private helper, not exported) — it never touches the bath, and inherits the
+  same no-clamp-detection caveat for every leg. For `temps = {t1, t2, ..., tN}`, it first moves to
+  `startTemp` (unrecorded, just positioning), then for each `ti` in order: records the trip
+  `startTemp -> ti`, then records the trip `ti -> startTemp`, before moving to the next `ti` — so
+  `N` temperatures always produce `2N` CSVs. Each file is named
+  `<lipidName>_<waterConcentration>_<rise|fall>_<from>_to_<to>.csv` (e.g.
+  `monopalmatin_60_rise_10_to_45.csv`), where `rise`/`fall` and the two temperatures reflect that
+  leg's actual nominal start and target (not sensor noise, and not position in the array). Note
+  this means a repeated (start, target) pair across two sweeps overwrites the earlier file — there
+  is no measurement counter in the filename. If any leg's `LabJackRecordData` call fails, the
+  sweep stops immediately — it does not attempt the remaining legs.
 - Always reads channels 0-7; blocks the kernel for the whole run (no background/async mode).
 
 #### What `channel` actually is

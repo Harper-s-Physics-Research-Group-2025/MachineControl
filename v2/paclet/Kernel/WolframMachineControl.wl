@@ -32,12 +32,17 @@ WolframMachineControl`ReadLabjack::usage = "ReadLabjack[int channel] reads volta
 (* LabJack Data-Collection Suite -- pure Wolfram Language, built on top of ReadLabjack/TempCtrlGetTemp *)
 WolframMachineControl`LabJackRecordData::usage = "LabJackRecordData[filename, finalTemp, interval] turns on the temp controller and sets its setpoint to finalTemp, then repeatedly waits `interval` seconds and reads LabJack channels 0-7 plus the temp controller's actual temperature (TempCtrlGetTemp[]), stopping once it reaches finalTemp (works whether finalTemp is above or below the starting temperature). Saves the results to <filename>.csv in v2/data and returns the full path."
 WolframMachineControl`LabJackListCSVs::usage = "LabJackListCSVs[] lists every CSV file in v2/data as a formatted grid of file name and creation date, most recent first."
-WolframMachineControl`LabJackPlotData::usage = "LabJackPlotData[filename] plots every LabJack channel column from <filename>.csv (as saved by LabJackRecordData) against the temp controller temperature column."
+WolframMachineControl`LabJackPlotData::usage = "LabJackPlotData[filename, channel] plots the given LabJack channel column from <filename>.csv (as saved by LabJackRecordData) against the temp controller temperature column."
 WolframMachineControl`LabJackPlotData::nofile = "No CSV file found at `1`."
+WolframMachineControl`LabJackPlotData::nochannel = "No column for channel `1` found in `2`."
 WolframMachineControl`LabJackRecordData::tempctrlfail = "Couldn't read the temp controller's temperature -- is TempCtrlInit[] connected?"
 
 WolframMachineControl`TempCtrlPlotTemp::usage = "TempCtrlPlotTemp[targetTemp, interval:1] turns on the temp controller and sets its setpoint to targetTemp, then samples its actual temperature (TempCtrlGetTemp[]) every `interval` seconds (default 1) until it reaches targetTemp, and plots temperature vs. time."
 WolframMachineControl`TempCtrlPlotTemp::tempctrlfail = "Couldn't read the temp controller's temperature -- is TempCtrlInit[] connected?"
+
+WolframMachineControl`LabJackTempSweep::usage = "LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1] repeatedly returns the temp controller to startTemp and drives it to each temperature in temps, recording LabJack data (via LabJackRecordData) for every leg of the trip -- both the move out to each temps[[i]] and the move back to startTemp -- so a list of N temperatures produces 2N CSVs. Each is named lipidName_waterConcentration_rise-or-fall_from_to_to.csv (e.g. monopalmatin_60_rise_10_to_45.csv), where rise/fall and the two temperatures reflect that leg's actual direction and endpoints. Returns the list of CSV paths written."
+WolframMachineControl`LabJackTempSweep::tempctrlfail = "Couldn't read the temp controller's temperature -- is TempCtrlInit[] connected?"
+WolframMachineControl`LabJackTempSweep::legfailed = "Measurement `1` (target `2`\[Degree]C) failed -- aborting the rest of the sweep."
 
 WolframMachineControl`ServoEnable::usage = "ServoOn[] Initializes the global servo communication structures and clears alerts."
 WolframMachineControl`ServoDisable::usage = "ServoOff[] Uninitializes the global servo communication structures."
@@ -96,7 +101,7 @@ WolframMachineControl`TempCtrlSetSetpoint = LibraryFunctionLoad[$dllPath, "wtemp
 WolframMachineControl`ReadLabjack = LibraryFunctionLoad[$dllPath, "wread_labjack_ain", {Integer}, Real]
 
 WolframMachineControl`ServoEnable  = LibraryFunctionLoad[$dllPath, "winitialize_servos", {}, Integer];
-WolframMachineControl`ServoDisable = LibraryFunctionLoad[$dllPath, "wshutdown_servos", {}, Integer]; 
+WolframMachineControl`ServoDisable = LibraryFunctionLoad[$dllPath, "wshutdown_servos", {}, Integer];
 WolframMachineControl`ServoGetAlerts = LibraryFunctionLoad[$dllPath, "wget_servo_alerts", {}, UTF8String];
 WolframMachineControl`ServoHome = LibraryFunctionLoad[$dllPath, "wservos_home", {Integer}, Integer]
 WolframMachineControl`ServoHomed = LibraryFunctionLoad[$dllPath, "wservos_homed", {}, Integer];
@@ -120,6 +125,21 @@ $labJackDataDir = FileNameJoin[{DirectoryName[$dllPath, 4], "data"}];
 If[!DirectoryQ[$labJackDataDir], CreateDirectory[$labJackDataDir]];
 
 normalizeCSVName[name_String] := If[StringEndsQ[name, ".csv", IgnoreCase -> True], name, name <> ".csv"];
+
+(* Sets the temp controller's setpoint and blocks until it actually arrives -- same wait shape as
+   LabJackRecordData/TempCtrlPlotTemp, but no recording/plotting. Used to position the temp
+   controller at a sweep's starting temperature before any measurement begins. *)
+waitForTempCtrl[target_?NumericQ, interval_?NumericQ] := Module[{currentTemp, direction},
+    currentTemp = TempCtrlGetTemp[];
+    TempCtrlOn[];
+    TempCtrlSetSetpoint[target];
+    direction = Sign[target - currentTemp];
+    While[True,
+        Pause[interval];
+        currentTemp = TempCtrlGetTemp[];
+        If[(direction >= 0 && currentTemp >= target) || (direction < 0 && currentTemp <= target), Break[]];
+    ];
+];
 
 WolframMachineControl`LabJackRecordData[filename_String, finalTemp_?NumericQ, interval_?NumericQ] := Module[
     {startTime, currentTemp, direction, header, csvPath, data},
@@ -169,8 +189,8 @@ WolframMachineControl`LabJackListCSVs[] := Module[{files, info},
     ]
 ];
 
-WolframMachineControl`LabJackPlotData[filename_String] := Module[
-    {csvPath, raw, header, data, tempCol, channelNames, series},
+WolframMachineControl`LabJackPlotData[filename_String, channel_Integer] := Module[
+    {csvPath, raw, header, data, tempCol, columnName, columnIndex},
 
     csvPath = FileNameJoin[{$labJackDataDir, normalizeCSVName[filename]}];
     If[!FileExistsQ[csvPath],
@@ -182,13 +202,19 @@ WolframMachineControl`LabJackPlotData[filename_String] := Module[
     header = First[raw];
     data = Rest[raw];
     tempCol = data[[All, 2]]; (* TempCtrlTemp -- the plot's x-axis *)
-    channelNames = header[[3 ;;]];
-    series = Table[Transpose[{tempCol, data[[All, i]]}], {i, 3, Length[header]}];
 
-    ListLinePlot[series,
-        PlotLegends -> channelNames,
+    columnName = "Channel" <> ToString[channel] <> " (V)";
+    columnIndex = FirstPosition[header, columnName];
+    If[MissingQ[columnIndex],
+        Message[WolframMachineControl`LabJackPlotData::nochannel, channel, normalizeCSVName[filename]];
+        Return[$Failed]
+    ];
+    columnIndex = First[columnIndex];
+
+    ListLinePlot[Transpose[{tempCol, data[[All, columnIndex]]}],
+        PlotLegends -> {columnName},
         AxesLabel -> {"Temp Controller Temperature (\[Degree]C)", "Voltage (V)"},
-        PlotLabel -> normalizeCSVName[filename],
+        PlotLabel -> normalizeCSVName[filename] <> " -- " <> columnName,
         PlotMarkers -> Automatic,
         GridLines -> Automatic,
         ImageSize -> Large
@@ -221,12 +247,50 @@ WolframMachineControl`TempCtrlPlotTemp[targetTemp_?NumericQ, interval_?NumericQ]
     ][[2, 1]];
 
     ListLinePlot[data,
-        AxesLabel -> {"Time (s)", "Temp Controller Temperature (\[Degree]C)"},
+        AxesLabel -> {"Time (every " <> ToString[interval] <> "s)", "Temp Controller Temperature (\[Degree]C)"},
         PlotLabel -> "Temp Controller Temperature vs. Time (target: " <> ToString[targetTemp] <> "\[Degree]C)",
         PlotMarkers -> Automatic,
         GridLines -> Automatic,
         ImageSize -> Large
     ]
+];
+
+WolframMachineControl`LabJackTempSweep[startTemp_?NumericQ, temps_List, lipidName_String, waterConcentration_] :=
+    WolframMachineControl`LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, 1];
+
+WolframMachineControl`LabJackTempSweep[startTemp_?NumericQ, temps_List, lipidName_String, waterConcentration_, interval_?NumericQ] := Module[
+    {measurementCount = 0, currentNominalTemp, direction, filename, csvPath, csvPaths = {}},
+
+    If[!NumericQ[TempCtrlGetTemp[]],
+        Message[WolframMachineControl`LabJackTempSweep::tempctrlfail];
+        Return[$Failed]
+    ];
+
+    (* Get to the starting temperature first -- not recorded, just positioning *)
+    waitForTempCtrl[startTemp, interval];
+    currentNominalTemp = startTemp; (* the *intended* temp, not a live sensor reading -- keeps filenames clean *)
+
+    Do[
+        Do[
+            direction = If[target >= currentNominalTemp, "rise", "fall"];
+            measurementCount++;
+            filename = lipidName <> "_" <> ToString[waterConcentration] <> "_" <> direction <> "_" <>
+                ToString[currentNominalTemp] <> "_to_" <> ToString[target];
+            csvPath = LabJackRecordData[filename, target, interval];
+            If[csvPath === $Failed,
+                Message[WolframMachineControl`LabJackTempSweep::legfailed, measurementCount, target];
+                Return[$Failed]
+            ];
+            AppendTo[csvPaths, csvPath];
+            currentNominalTemp = target;
+            ,
+            {target, {temps[[i]], startTemp}}
+        ];
+        ,
+        {i, Length[temps]}
+    ];
+
+    csvPaths
 ];
 
 End[]

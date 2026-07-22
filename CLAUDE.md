@@ -145,6 +145,32 @@ below were actually confirmed fixed.
   Temperature Controller section, and `ReadLabjack[]` (plus its channel-pinout explainer) merged
   into the "LabJack Data-Collection Suite" subsection under Data Acquisition, so that section is
   now the single home for everything LabJack-related.
+- `TempCtrlPlotTemp[]`'s x-axis label changed from a hardcoded `"Time (s)"` to `"Time (every
+  <interval>s)"`, so the graph reflects the actual wait time between measurements for that run
+  instead of a generic label.
+- `LabJackPlotData[filename]` changed to `LabJackPlotData[filename, channel]` -- now plots only
+  the requested channel column (matched by header name, e.g. `"Channel3 (V)"`) instead of every
+  channel at once. Fails cleanly with a new `LabJackPlotData::nochannel` message if that channel
+  isn't a column in the CSV.
+- Added `LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1]` -- a full
+  multi-temperature scan protocol, explicitly built *on top of* the existing, unmodified
+  `LabJackRecordData[]` rather than changing it. Repeatedly returns the temp controller to
+  `startTemp` and drives it out to each temperature in `temps` in turn, recording both legs of
+  every round trip (`N` temperatures -> `2N` CSVs). Filenames went through two iterations: first
+  `lipidName_waterConcentration_rise-or-fall_n.csv`, but per follow-up request changed to match
+  the convention already used by real files sitting in `v2/data/` (e.g.
+  `monopalmatin_60_rise_10_to_45.csv`, produced by the user's own earlier testing) --
+  `lipidName_waterConcentration_rise-or-fall_from_to_to.csv`, with no trailing measurement counter
+  at all (checked by `ls`-ing `v2/data/` directly rather than trusting the user's typed example,
+  which had turned out to include a counter the real files didn't). Added a
+  private `waitForTempCtrl` helper (same wait shape as `LabJackRecordData`/`TempCtrlPlotTemp`, no
+  recording) to position at `startTemp` before the first (unrecorded) leg. Hit the *exact* same
+  `interval_?NumericQ:1` silent-non-binding bug as `TempCtrlPlotTemp` earlier and caught it via a
+  mocked-hardware test (`Block`-overriding `TempCtrlGetTemp`/`TempCtrlOn`/`TempCtrlSetSetpoint`/
+  `LabJackRecordData` to avoid needing real hardware) before it shipped -- fixed the same way, with
+  a two-clause definition instead of the combined optional/PatternTest. Also verified via the same
+  mock harness that a mid-sweep `LabJackRecordData` failure aborts the rest of the sweep rather
+  than continuing with bad data.
 
 ## Open items for next session
 
