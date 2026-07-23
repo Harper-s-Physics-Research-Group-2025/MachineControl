@@ -29,6 +29,7 @@ v2/
 │   ├── Kernel/WolframMachineControl.wl   # Public Wolfram functions, binds to DLL exports
 │   └── PacletInfo.wl
 ├── notebooks/            # Interactive notebooks for manual testing
+│   ├── Experimentation.nb
 │   ├── TestMachineControl.nb
 │   └── Record.nb
 └── data/                 # CSVs written by LabJackRecordData[] / read by LabJackPlotData[]
@@ -189,11 +190,7 @@ what each function returns on success and on failure (including a few sharp edge
   the temp controller temperature.
 - `LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1]` — repeatedly
   returns to `startTemp` and drives out to each temperature in `temps`, recording (via
-  `LabJackRecordData`) both the outbound and return trip every time -- `N` temperatures produce
-  `2N` CSVs, named `lipidName_waterConcentration_rise-or-fall_from_to_to.csv` (e.g.
-  `monopalmatin_60_rise_10_to_45.csv`). Argument meanings in
-  [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
-
+  `LabJackRecordData`) 
 ### Servo Motors
 - `ServoEnable[]`, `ServoDisable[]`, `ServoGetAlerts[]`
 - `ServoHome[milliseconds]`, `ServoHomed[]`, `ServoReady[]`
