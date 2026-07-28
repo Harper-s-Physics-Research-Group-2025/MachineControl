@@ -145,6 +145,54 @@ Source: LabJack's own U3 datasheet —
 | `ServoGetPos[]` | none | `{Real, Real}` — `{x_mm, z_mm}` | `1`-as-error **and Garbage** — both coordinates are meaningless |
 | `ServoSetPos[x_mm, z_mm, rpm]` | `x_mm`, `z_mm` (Real) — target position in mm. `rpm` (Real) — move speed | `{Real, Real, Real}` — the *actual* resulting `{x_mm, z_mm, rpm}` after the move | `1`-as-error, and **Echoes input** — you get back the position you asked for, not confirmation it was reached |
 | `ServoManualControl[]` | none | `Integer` `0` | Not currently reachable — always returns `0` in practice |
+| `ServoFindMaxIntensity[channel, xSpec, zSpec, opts]` | `channel` (Integer) — LabJack channel the detector is wired to. `xSpec`, `zSpec` — each either `{start, end, step}` in mm (scan that axis) or a plain number (hold that axis fixed there). See options below | `Association` — `"Position"` `{x_mm, z_mm}` of peak intensity, `"Intensity"` (V), `"Scan"` (every `{x, z, V}` measured), `"Passes"` (points per pass), `"Plot"` | `$Failed` **+** `::notready` / `::nothomed` / `::badspec` / `::movefail` / `::readfail` |
+
+### Finding the point of highest light intensity
+
+`ServoFindMaxIntensity[]` is pure Wolfram Language (`paclet/Kernel/WolframMachineControl.wl`, no
+DLL involved), built on top of `ServoSetPos[]`, `ServoGetPos[]` and `ReadLabjack[]`. It rasters the
+sample holder over the region you give it, averages several LabJack readings at each stop, and
+returns the position with the highest voltage — then optionally re-scans a tighter window around
+that point to sharpen the answer.
+
+```wolfram
+ServoEnable[]; ServoHome[30000];
+
+(* 2D search: 1 mm grid over a 10x10 mm region, detector on channel 0 *)
+peak = ServoFindMaxIntensity[0, {0, 10, 1}, {-20, -10, 1}]
+peak["Position"]   (* -> {x_mm, z_mm} *)
+
+(* 1D search: sweep X only, hold Z at -15 mm *)
+ServoFindMaxIntensity[0, {0, 10, 0.25}, -15]
+```
+
+| Option | Default | What it does |
+|---|---|---|
+| `"RPM"` | `100` | Move speed passed to `ServoSetPos[]` |
+| `"SettleTime"` | `0.25` | Seconds to wait after each move before reading — let vibration die down |
+| `"SamplesPerPoint"` | `5` | LabJack readings averaged per position, to beat ADC noise |
+| `"RefinePasses"` | `1` | Extra finer scans centred on the best point so far. `0` = single coarse pass |
+| `"RefineFactor"` | `5` | How much each refine pass shrinks the step (and so how many points it takes: `2*RefineFactor + 1` per scanned axis) |
+| `"PositionTolerance"` | `0.1` | mm. If a move lands further than this from where it was told to go, the scan aborts |
+| `"ReturnToPeak"` | `True` | Move the holder back to the winning position when the scan finishes |
+| `"ShowPlot"` | `True` | Print the plot (a curve for a 1-axis scan, a density plot for a 2D raster) |
+
+**Worth knowing:**
+- **Both `ServoEnable[]` and `ServoHome[...]` must have run first** — the function checks
+  `ServoReady[]` and `ServoHomed[]` up front and refuses to move otherwise, rather than scanning
+  from an unknown origin.
+- **There are no default ranges, deliberately.** Nothing in the DLL enforces a travel limit, so
+  `xSpec`/`zSpec` are required arguments — you state the safe region, the function stays inside it
+  (refinement passes are clamped to the original bounds too).
+- Every move is verified: `ServoSetPos[]` echoes your request back on failure rather than
+  reporting it (bug #23), so the returned position is compared against the requested one and the
+  scan aborts on a mismatch instead of attributing a reading to the wrong place.
+- Scan time is dominated by physical movement, not measurement — an *N*x*M* grid means *N*x*M*
+  moves. Prefer a coarse grid plus refine passes over one fine grid: `{0,10,1}` x `{0,10,1}` with
+  one refine pass is 121 + 121 points, while `{0,10,0.2}` x `{0,10,0.2}` is 2601.
+- The raster is serpentine (Z reverses direction each X column), so the holder never makes a long
+  empty fly-back move.
+- Blocks the kernel for the whole scan, like the rest of the data-collection suite.
 
 `ServoHome[milliseconds]`'s wrapper (`wservos_home` in `src/wolfram_api.cpp`) never calls any
 `MArgument_set*(Res, ...)` on any code path — success or failure. Its `.wl` binding still declares

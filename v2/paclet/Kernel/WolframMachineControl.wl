@@ -44,6 +44,14 @@ WolframMachineControl`LabJackTempSweep::usage = "LabJackTempSweep[startTemp, tem
 WolframMachineControl`LabJackTempSweep::tempctrlfail = "Couldn't read the temp controller's temperature -- is TempCtrlInit[] connected?"
 WolframMachineControl`LabJackTempSweep::legfailed = "Measurement `1` (target `2`\[Degree]C) failed -- aborting the rest of the sweep."
 
+(* Intensity Peak-Finding -- pure Wolfram Language, built on top of ServoSetPos/ReadLabjack *)
+WolframMachineControl`ServoFindMaxIntensity::usage = "ServoFindMaxIntensity[channel, xSpec, zSpec] scans the sample holder over the given positions and returns the (X, Z) position where LabJack `channel` reads the highest voltage -- i.e. the point of highest light intensity. Each of xSpec/zSpec is either {start, end, step} (in mm) to scan that axis, or a plain number to hold that axis fixed at that position. Returns an Association with \"Position\", \"Intensity\", \"Scan\", \"Plot\" and \"Passes\". Options: \"RPM\" (move speed, default 100), \"SettleTime\" (seconds to wait after each move before reading, default 0.25), \"SamplesPerPoint\" (readings averaged per point, default 5), \"RefinePasses\" (extra finer scans centred on the running best point, default 1), \"RefineFactor\" (step shrink per refine pass, default 5), \"ReturnToPeak\" (move back to the winning position when done, default True), \"ShowPlot\" (default True)."
+WolframMachineControl`ServoFindMaxIntensity::notready = "Servos aren't ready -- call ServoEnable[] first (and check ServoGetAlerts[])."
+WolframMachineControl`ServoFindMaxIntensity::nothomed = "Servos aren't homed -- call ServoHome[milliseconds] first."
+WolframMachineControl`ServoFindMaxIntensity::badspec = "`1` must be either a number (axis held fixed) or {start, end, step} in mm; got `2`."
+WolframMachineControl`ServoFindMaxIntensity::movefail = "Move to (`1`, `2`) mm failed or landed more than `3` mm away -- aborting the scan."
+WolframMachineControl`ServoFindMaxIntensity::readfail = "Couldn't read LabJack channel `1` at (`2`, `3`) mm -- aborting the scan."
+
 WolframMachineControl`ServoEnable::usage = "ServoOn[] Initializes the global servo communication structures and clears alerts."
 WolframMachineControl`ServoDisable::usage = "ServoOff[] Uninitializes the global servo communication structures."
 WolframMachineControl`ServoGetAlerts::usage = "ServoGetAlerts[] Returns the servo alert register contents."
@@ -291,6 +299,195 @@ WolframMachineControl`LabJackTempSweep[startTemp_?NumericQ, temps_List, lipidNam
     ];
 
     csvPaths
+];
+
+(* ==========================================================================
+   5. INTENSITY PEAK-FINDING (pure Wolfram Language -- no LibraryLink, just
+      orchestrates ServoSetPos/ServoGetPos and ReadLabjack)
+   ========================================================================== *)
+
+(* An axis spec is either a plain number (hold this axis fixed there) or {start, end, step}
+   in mm. Returns the list of positions to visit, or $Failed if the spec is malformed.
+   The endpoint is always included: the step is rounded to the nearest value that divides
+   the span evenly, so a 0-to-10 scan with step 3 gives 4 evenly spaced points, not 0/3/6/9/10. *)
+axisPositions[spec_?NumericQ] := {N[spec]};
+axisPositions[{start_?NumericQ, end_?NumericQ, step_?NumericQ}] := Module[{n},
+    If[step <= 0 || start == end, Return[{N[start]}]];
+    n = Max[1, Round[Abs[end - start]/step]];
+    Table[N[start + (end - start) i/n], {i, 0, n}]
+];
+axisPositions[_] := $Failed;
+
+(* The actual step size a spec resolves to -- used to size each refinement pass's window.
+   0 for a fixed axis, which is what keeps refinement from ever moving a held axis. *)
+axisStep[spec_?NumericQ] := 0;
+axisStep[{start_?NumericQ, end_?NumericQ, step_?NumericQ}] := Module[{n},
+    If[step <= 0 || start == end, Return[0]];
+    n = Max[1, Round[Abs[end - start]/step]];
+    Abs[end - start]/n
+];
+
+(* Move, then confirm we actually landed there. ServoSetPos returns the *measured* position on
+   success but echoes the request back on failure (API_REFERENCE.md / BUGS.md #23), so neither the
+   status nor the returned value alone can be trusted -- compare it against what we asked for
+   instead. A failed LibraryLink call comes back non-numeric, which the MatchQ below also
+   catches; Quiet only suppresses the noise of that message repeating at every grid point. *)
+moveAndVerify[x_, z_, rpm_, tol_] := Module[{result},
+    result = Quiet[ServoSetPos[N[x], N[z], N[rpm]]];
+    If[!MatchQ[result, {_?NumericQ, _?NumericQ, _?NumericQ}], Return[$Failed]];
+    If[Abs[result[[1]] - x] > tol || Abs[result[[2]] - z] > tol, Return[$Failed]];
+    N[result[[1 ;; 2]]]
+];
+
+(* Average several reads to pull a weak optical signal out of ADC noise. A failed ReadLabjack
+   returns a non-numeric LibraryFunctionError, so every sample is checked before it's averaged. *)
+readIntensity[channel_, samples_, settle_] := Module[{values},
+    If[settle > 0, Pause[settle]];
+    values = Quiet[Table[ReadLabjack[channel], {samples}]];
+    If[!AllTrue[values, NumericQ], Return[$Failed]];
+    Mean[values]
+];
+
+(* One serpentine raster over xs * zs. Serpentine (alternating Z direction per X column) rather
+   than raster-scan-and-fly-back, so the holder never makes a long empty return move.
+   Returns the list of {x, z, volts} measured, or $Failed if any move or read failed. *)
+scanGrid[channel_, xs_, zs_, rpm_, settle_, samples_, tol_] := Module[{points},
+    Catch[
+        points = Reap[
+            Do[
+                Module[{voltage, landed},
+                    landed = moveAndVerify[xs[[i]], z, rpm, tol];
+                    If[landed === $Failed,
+                        Message[WolframMachineControl`ServoFindMaxIntensity::movefail, xs[[i]], z, tol];
+                        Throw[$Failed, "scanGrid"]
+                    ];
+                    voltage = readIntensity[channel, samples, settle];
+                    If[voltage === $Failed,
+                        Message[WolframMachineControl`ServoFindMaxIntensity::readfail, channel, xs[[i]], z];
+                        Throw[$Failed, "scanGrid"]
+                    ];
+                    Sow[{landed[[1]], landed[[2]], voltage}]
+                ],
+                {i, Length[xs]}, {z, If[OddQ[i], zs, Reverse[zs]]}
+            ]
+        ][[2]];
+        If[points === {}, {}, First[points]]
+        ,
+        "scanGrid"
+    ]
+];
+
+Options[WolframMachineControl`ServoFindMaxIntensity] = {
+    "RPM" -> 100, "SettleTime" -> 0.25, "SamplesPerPoint" -> 5,
+    "RefinePasses" -> 1, "RefineFactor" -> 5, "PositionTolerance" -> 0.1,
+    "ReturnToPeak" -> True, "ShowPlot" -> True
+};
+
+WolframMachineControl`ServoFindMaxIntensity[channel_Integer, xSpec_, zSpec_, OptionsPattern[]] := Module[
+    {rpm, settle, samples, refinePasses, refineFactor, tol, xs, zs, xStep, zStep,
+     xWindow, zWindow, xBounds, zBounds, allPoints = {}, passPoints, passCounts = {}, best, plot},
+
+    rpm = OptionValue["RPM"];
+    settle = OptionValue["SettleTime"];
+    samples = OptionValue["SamplesPerPoint"];
+    refinePasses = OptionValue["RefinePasses"];
+    refineFactor = OptionValue["RefineFactor"];
+    tol = OptionValue["PositionTolerance"];
+
+    If[ServoReady[] =!= 1,
+        Message[WolframMachineControl`ServoFindMaxIntensity::notready];
+        Return[$Failed]
+    ];
+    If[ServoHomed[] =!= 1,
+        Message[WolframMachineControl`ServoFindMaxIntensity::nothomed];
+        Return[$Failed]
+    ];
+
+    xs = axisPositions[xSpec];
+    zs = axisPositions[zSpec];
+    If[xs === $Failed, Message[WolframMachineControl`ServoFindMaxIntensity::badspec, "xSpec", xSpec]; Return[$Failed]];
+    If[zs === $Failed, Message[WolframMachineControl`ServoFindMaxIntensity::badspec, "zSpec", zSpec]; Return[$Failed]];
+
+    (* Refinement never leaves the region the caller asked for -- these clamp every later pass *)
+    xBounds = MinMax[xs];
+    zBounds = MinMax[zs];
+    xStep = axisStep[xSpec];
+    zStep = axisStep[zSpec];
+
+    (* Coarse pass, then successively finer passes over a +/- one-step window around the best
+       point found so far. A fixed axis has step 0, so its window collapses and it stays put. *)
+    If[Catch[Do[
+        If[pass > 1,
+            (* Re-scan +/- one previous step either side of the best point, at 1/refineFactor
+               the previous resolution. A fixed axis has step 0, so its window collapses to a
+               single position and it never moves. *)
+            xWindow = xStep; zWindow = zStep;
+            xStep = xStep/refineFactor;
+            zStep = zStep/refineFactor;
+            xs = axisPositions[{Max[xBounds[[1]], best[[1]] - xWindow],
+                                Min[xBounds[[2]], best[[1]] + xWindow], xStep}];
+            zs = axisPositions[{Max[zBounds[[1]], best[[2]] - zWindow],
+                                Min[zBounds[[2]], best[[2]] + zWindow], zStep}];
+        ];
+
+        Print["Pass ", pass, "/", refinePasses + 1, ": ", Length[xs] Length[zs],
+              " points (X step ", NumberForm[N[xStep], {4, 3}], " mm, Z step ", NumberForm[N[zStep], {4, 3}], " mm)"];
+
+        passPoints = scanGrid[channel, xs, zs, rpm, settle, samples, tol];
+        If[passPoints === $Failed, Throw[$Failed, "findMax"]];
+
+        allPoints = Join[allPoints, passPoints];
+        AppendTo[passCounts, Length[passPoints]];
+        best = First[MaximalBy[allPoints, Last]];
+        ,
+        {pass, refinePasses + 1}
+    ], "findMax"] === $Failed,
+        Return[$Failed]  (* scanGrid already issued the specific ::movefail/::readfail message *)
+    ];
+
+    plot = intensityPlot[allPoints, best, channel];
+
+    If[TrueQ[OptionValue["ReturnToPeak"]],
+        If[moveAndVerify[best[[1]], best[[2]], rpm, tol] === $Failed,
+            Message[WolframMachineControl`ServoFindMaxIntensity::movefail, best[[1]], best[[2]], tol]
+        ]
+    ];
+
+    Print["Peak intensity ", NumberForm[best[[3]], {6, 4}], " V at (X, Z) = (",
+          NumberForm[best[[1]], {6, 3}], ", ", NumberForm[best[[2]], {6, 3}], ") mm, from ",
+          Length[allPoints], " points"];
+    If[TrueQ[OptionValue["ShowPlot"]], Print[plot]];
+
+    <|"Position" -> best[[1 ;; 2]], "Intensity" -> best[[3]], "Scan" -> allPoints,
+      "Passes" -> passCounts, "Plot" -> plot|>
+];
+
+(* A scan that only moved along one axis plots as a curve; a real 2D raster plots as a surface.
+   The peak is marked on both. *)
+intensityPlot[points_, best_, channel_] := Module[{xVaries, zVaries, curve},
+    xVaries = Length[Union[points[[All, 1]]]] > 1;
+    zVaries = Length[Union[points[[All, 2]]]] > 1;
+
+    If[xVaries && zVaries,
+        Return[ListDensityPlot[points,
+            InterpolationOrder -> 0, ColorFunction -> "SunsetColors",
+            PlotLegends -> Automatic, FrameLabel -> {"X (mm)", "Z (mm)"},
+            PlotLabel -> "LabJack channel " <> ToString[channel] <> " intensity (V)",
+            Epilog -> {White, PointSize[0.02], Point[best[[1 ;; 2]]]},
+            ImageSize -> Large
+        ]]
+    ];
+
+    (* Single-axis scan: plot against whichever axis actually moved (X if neither did) *)
+    curve = SortBy[points[[All, {If[zVaries && !xVaries, 2, 1], 3}]], First];
+    ListLinePlot[curve,
+        AxesLabel -> {If[zVaries && !xVaries, "Z (mm)", "X (mm)"], "Voltage (V)"},
+        PlotLabel -> "LabJack channel " <> ToString[channel] <> " intensity vs. position",
+        PlotMarkers -> Automatic, GridLines -> Automatic,
+        Epilog -> {Red, PointSize[0.02],
+                   Point[{best[[If[zVaries && !xVaries, 2, 1]]], best[[3]]}]},
+        ImageSize -> Large
+    ]
 ];
 
 End[]
