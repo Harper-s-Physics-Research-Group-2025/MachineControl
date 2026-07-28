@@ -172,6 +172,23 @@ below were actually confirmed fixed.
   mock harness that a mid-sweep `LabJackRecordData` failure aborts the rest of the sweep rather
   than continuing with bad data.
 
+- **2026-07-27** — Added `ServoFindMaxIntensity[channel, xSpec, zSpec, opts]` for finding the point
+  of highest light intensity: rasters the sample holder with `ServoSetPos[]`, averages
+  `ReadLabjack[channel]` at each stop, returns the peak position. Pure Wolfram Language in
+  `WolframMachineControl.wl` (section 5) — no DLL changes, same as the LabJack suite. Design notes:
+  each axis spec is either `{start, end, step}` or a plain number (axis held fixed), so one function
+  covers both a 1D sweep and a 2D raster; ranges are **required arguments with no defaults**
+  precisely because nothing in the DLL enforces a travel limit, so the caller has to state the safe
+  region. Coarse pass + `"RefinePasses"` finer re-scans (clamped to the original bounds) rather than
+  one fine grid, since scan time is dominated by servo movement. Every move is verified against the
+  requested position because `ServoSetPos[]` echoes the request back on failure (bug #23) —
+  a silently-failed move would otherwise attribute a reading to the wrong place. **Not yet run
+  against hardware or a kernel** — written on a Mac with no Wolfram install; only a bracket/comment
+  balance check was possible. `v2/tests/test_findmaxintensity_mock.wl` is the mocked-hardware test
+  (simulated Gaussian beam, `Block`-overriding `ServoSetPos`/`ReadLabjack`/`ServoReady`/
+  `ServoHomed`) to run on the Windows box first — same mock-harness pattern used for
+  `LabJackTempSweep`.
+
 ## Open items for next session
 
 A high-effort code review was run against the full session's diff right after hitting 29/29.
