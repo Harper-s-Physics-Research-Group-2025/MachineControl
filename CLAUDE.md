@@ -4,12 +4,12 @@ C++ Wolfram LibraryLink DLL that gives Mathematica direct control over the Josh 
 X-ray lipid analysis system (Harper lab, Calvin University): a fluid bath, a thermoelectric temp
 controller, Teknic ClearPath servo motors, and a LabJack ADC. Windows-only. Lives under `v2/`.
 
-**Status as of 2026-07-17: fully working.** The full test suite
-(`v2/paclet/Tests/Test_WolframMachineControl.wlt`) passes **29/29** against real hardware — bath,
-temp controller, servos, LabJack, logging, all of it. Got there after a long debugging session;
-see `v2/docs/BUGS.md` for the full bug list (14 entries, all fixed) and `v2/specs/` for design
-rationale on the trickier pieces (port auto-detection, the LibraryLink integration, portable
-notebook paths).
+**Status as of 2026-08-07: fully working, and the post-29/29 code-review backlog is now clear.**
+The full test suite (`v2/paclet/Tests/Test_WolframMachineControl.wlt`) passes **29/29** against
+real hardware — bath, temp controller, servos, LabJack, logging, all of it. Got there after a long
+debugging session; see `v2/docs/BUGS.md` for the full bug list (27 entries, all fixed) and
+`v2/specs/` for design rationale on the trickier pieces (port auto-detection, the LibraryLink
+integration, portable notebook paths).
 
 ## Where things live (post-reorg)
 
@@ -61,15 +61,16 @@ below were actually confirmed fixed.
 - **`std::async`'s returned `std::future` blocks in its own destructor** until the task finishes,
   if you never called `.get()` on it — this silently defeated an earlier timeout fix (the timeout
   logic fired correctly, then the function hung anyway one line later when the future went out of
-  scope). The fix used elsewhere (`probe_with_timeout()` in `src/lab.cpp`) is a detached
-  `std::thread` + `std::promise`/`std::future` pair instead, which has no such behavior. Use that
-  pattern, not `std::async`, for any future "bound a blocking Win32/SDK call" needs.
+  scope). The fix used elsewhere (`start_probe()`/`find_port_by_probe()` in `src/lab.cpp`, the
+  rewrite of the original `probe_with_timeout()`) is a `std::thread` + `std::promise`/`std::future`
+  pair instead, which has no such behavior. Use that pattern, not `std::async`, for any future
+  "bound a blocking Win32/SDK call" needs.
 - **Reopening a COM port immediately after closing it can fail.** `find_bath_port()`/
   `find_temp_controller_port()` open a temporary probe object per candidate port, close it on
   match, then `init_bath()`/`init_temp_controller()` immediately reopen the same port persistently
-  — the OS/FTDI driver needs a moment to release the handle. Both now `Sleep(150)` before
-  reopening (`docs/BUGS.md` #14). This is a known-fragile fixed delay, not a real retry loop — see
-  today's code-review findings below.
+  — the OS/FTDI driver needs a moment to release the handle. Both now go through
+  `open_persistent_connection<Device>()`, which retries the reopen a few times with a 150ms delay
+  between attempts rather than a single fixed-delay guess (`docs/BUGS.md` #14, #18).
 - **The bath and temp controller currently use FTDI FT232 adapters** (`VID_0403&PID_6001`),
   matched in `find_serial_adapter_ports()` (`src/lab.cpp`). They used to be Prolific
   (`VID_067B&PID_2303`) until that adapter's Windows 11 driver support was dropped
@@ -171,23 +172,30 @@ below were actually confirmed fixed.
   a two-clause definition instead of the combined optional/PatternTest. Also verified via the same
   mock harness that a mid-sweep `LabJackRecordData` failure aborts the rest of the sweep rather
   than continuing with bad data.
-
-## Open items for next session
-
-A high-effort code review was run against the full session's diff right after hitting 29/29.
-Eight findings survived verification and are recorded as `docs/BUGS.md` #15-22 — **not yet
-fixed**, that's the natural next step. Three are real crash risks worth fixing before doing much
-more in this area: #15 (`servos_homed()` null-deref crashes instead of returning `False`), #16
-(an uncaught exception in a background probe thread can crash the whole process on a garbled
-reply), #17 (a timed-out probe can permanently block a working port from being reopened). The
-rest (#18-22) are lower-priority robustness/efficiency/doc-cleanup items.
-
-A ninth issue (#23) turned up through direct usage the next day: most DLL wrappers in
-`src/wolfram_api.cpp` return their `Lab::` function's raw `1`-for-failure straight through as the
-LibraryLink status code, which collides with `LIBRARY_TYPE_ERROR` — so ordinary failures (e.g.
-calling `BathOn[]` before `BathInit[]`) print a misleading "inconsistent types" error instead of
-a real message. Documented in both `docs/BUGS.md` #23 and `README.md`'s new "Known Confusing
-Error Messages" section, listing exactly which functions are affected and which already return
-proper status. Not fixed yet either.
-
-Full detail for all nine in `docs/BUGS.md`.
+- **2026-08-07** — Cleared the whole post-29/29 code-review backlog (`docs/BUGS.md` #15-24, ten
+  entries, all now fixed). Three were real crash risks: #15 `servos_homed()` null-deref (added the
+  same null check `servos_ready()` already used); #16 an uncaught exception from a garbled reply
+  while probing the wrong device type could `std::terminate()` the whole kernel process (wrapped
+  the probe body in `try`/`catch`, and added length guards to both `Oven5R6900::parse_response`
+  and `RTE7::parse_float_response` so a too-short reply returns the existing `-999` sentinel
+  instead of reading out of bounds — two new doctest cases cover this); #17 a timed-out probe
+  leaked its exclusive port handle forever (now calls `CancelSynchronousIo()` on the stuck worker
+  thread before giving up, the Windows-documented way to unblock a pending synchronous read/write
+  from another thread, with no risk of the calling thread ever blocking on it). Also fixed: #18/#19
+  rewrote the port-probing code (`probe_with_timeout()` → `start_probe()` + `find_port_by_probe()`)
+  so all candidates are probed concurrently against one shared deadline instead of sequentially at
+  full timeout each, and `init_bath()`/`init_temp_controller()`'s reopen-after-probe delay is now a
+  bounded 3-attempt retry (`open_persistent_connection()`) instead of one fixed `Sleep(150)` guess;
+  #20 fixed a stale doc claiming servos still auto-start on package load; #21 merged the pointless
+  `initialize_servos()`/`initialize_servos_impl()` split back into one function; #22 fixed a
+  tautological `GetLogFile[]` test that compared against the same variable used to configure
+  logging, so it could never actually fail; #23/#24 fixed the DLL wrapper layer in
+  `src/wolfram_api.cpp` two ways — status codes are now properly mapped
+  (`lab_status != 0 ? LIBRARY_FUNCTION_ERROR : LIBRARY_NO_ERROR`) instead of passing a raw `1`
+  through as the LibraryLink status (which collided with `LIBRARY_TYPE_ERROR` and printed a
+  misleading "inconsistent types" message), and every previously-uninitialized local that gets
+  written to `Res` now starts from a `0`/`0.0` sentinel so a failure path can no longer return
+  stack garbage disguised as a real reading. `ServoHome[]` specifically also gained a real `Res`
+  write it never had before (it used to return undefined memory unconditionally) — had to match
+  the existing `.wlt` test's expectation of `0` on success, not the `1`-for-true guess tried first.
+  Verified via `wolframscript`: full suite still 29/29 against real hardware after every fix.

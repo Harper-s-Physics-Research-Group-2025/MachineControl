@@ -173,6 +173,11 @@ int32_t Oven5R6900::parse_response(string& response) const {
 
     int32_t data;
 
+    // A reply under 3 bytes can't contain a checksum -- e.g. probing the wrong device with the
+    // wrong protocol can produce a short, garbled reply (docs/BUGS.md #16). Bail out the same
+    // way a checksum mismatch does instead of underflowing the substr() calls below.
+    if (response.size() < 3) return -999;
+
     // validate checksum
     string res_check = response.substr(response.size()-3, 2); // last two bytes of response before terminating char
     response = response.substr(0, response.size()-3);                 // slice string to recompute checksum
@@ -180,6 +185,10 @@ int32_t Oven5R6900::parse_response(string& response) const {
 
     if (res_check != expected_check) return -999;    // checksum failed
 
+    // A valid reply's data payload is '*' plus 8 hex digits (9 bytes); a garbled reply that's
+    // short but still happens to checksum correctly (e.g. an empty body) would otherwise
+    // underflow the substr() below the same way.
+    if (response.size() < 9) return -999;
 
     // extract parameters
     response = response.substr(1, 8); // erase first byte '*'

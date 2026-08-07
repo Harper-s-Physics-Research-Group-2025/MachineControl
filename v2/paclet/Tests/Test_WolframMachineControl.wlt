@@ -35,7 +35,11 @@ VerificationTest[
 
 VerificationTest[
     WolframMachineControl`GetLogFile[],
-    LogFile,
+    (* Independent hardcoded literal, not the LogFile variable used to configure logging above --
+       comparing against LogFile itself would make this assertion tautological, since both sides
+       would always drift together instead of catching a real path-configuration bug
+       (docs/BUGS.md #22). *)
+    "C:\\Users\\Student\\Desktop\\machine_controller\\MachineControl\\v2\\log.txt",
     TestID -> "WolframMachineControl`GetLogFile[]"
 ]
 

@@ -149,50 +149,94 @@ namespace Lab {
     }
 
 
-    // Probes a candidate port as the given Device type (RTE7 or Oven5R6900), with a hard
-    // wall-clock timeout so a stuck serial exchange can't hang the whole kernel. The
-    // real hardware's read/write timeouts (COMMTIMEOUTS, set in each device's initSerial)
-    // are supposed to bound this on their own, but can't always be trusted -- a device or
-    // driver quirk can stall a synchronous ReadFile/WriteFile longer than configured.
+    // Launches a probe of `port` as the given Device type on its own background thread and
+    // returns immediately with a future reporting whether it matched, plus the worker thread
+    // itself (left joinable; find_port_by_probe() below decides whether to wait on it further).
     //
-    // Both constructing the Device (which opens the port via CreateFileA -- itself
-    // capable of blocking if the OS/driver hasn't fully released a just-closed handle
-    // on that same COM port yet) and the get_setpoint() call happen on the background
-    // thread, so the timeout covers the whole probe, not just the read/write.
+    // Deliberately uses a std::thread + std::promise here, NOT std::async: a std::future
+    // returned by std::async blocks in ITS OWN DESTRUCTOR until the task finishes, even if you
+    // never call .get() on it -- so giving up on a stuck probe and moving on would silently
+    // re-block the caller anyway the moment the abandoned std::async future went out of scope,
+    // defeating the entire point of a timeout (docs/BUGS.md #13). A future obtained from a
+    // std::promise has no such blocking-destructor behavior.
     //
-    // Deliberately uses a detached std::thread + std::promise here, NOT std::async:
-    // a std::future returned by std::async blocks in ITS OWN DESTRUCTOR until the task
-    // finishes, even if you never call .get() on it -- so "give up after `timeout` and
-    // return false" would silently re-block the caller anyway the moment the abandoned
-    // std::async future went out of scope, defeating the entire point of the timeout.
-    // A future obtained from a std::promise has no such blocking-destructor behavior,
-    // so it's safe to just walk away from once wait_for() reports a timeout.
-    //
-    // If the probe doesn't finish within `timeout`, this returns false and moves on --
-    // but the Device object (owned entirely by the detached thread's lambda) is kept
-    // alive for as long as that thread keeps running, rather than being destroyed while
-    // it might still be blocked inside a synchronous Win32 call on its handle.
-    // Destroying it out from under a pending synchronous ReadFile/WriteFile/CreateFileA
-    // on another thread is undefined behavior on Windows (can crash), so a timed-out
-    // probe deliberately leaks its handle/thread rather than risk that -- accepted here
-    // since it's a rare edge case, and the alternative is hanging the entire Mathematica
-    // kernel with no recovery but killing the process.
+    // Both constructing the Device (which opens the port via CreateFileA -- itself capable of
+    // blocking if the OS/driver hasn't fully released a just-closed handle on that same COM
+    // port yet) and the get_setpoint() call happen on the background thread, so a caller's
+    // timeout covers the whole probe, not just the read/write. The whole body also runs inside
+    // a try/catch: probing a candidate port as the *wrong* protocol (e.g. sending the bath's
+    // query to the temp controller) can produce a garbled reply that a parser can't safely
+    // index into -- catching here turns that into an ordinary "no match" instead of an
+    // uncaught exception that would std::terminate() the whole kernel process (docs/BUGS.md #16).
     template <typename Device>
-    bool probe_with_timeout(const std::string& port, std::chrono::milliseconds timeout) {
-        auto result = std::make_shared<std::promise<bool>>();
-        std::future<bool> fut = result->get_future();
+    struct PendingProbe {
+        std::string port;
+        std::future<bool> result;
+        std::thread worker;
+    };
 
-        std::thread([port, result]() {
-            Device candidate(port);
-            float temp;
-            bool ok = candidate.get_setpoint(temp);
-            try { result->set_value(ok); } catch (...) {}   // no one may be listening anymore -- fine
-        }).detach();
+    template <typename Device>
+    PendingProbe<Device> start_probe(const std::string& port) {
+        auto promise = std::make_shared<std::promise<bool>>();
+        std::future<bool> fut = promise->get_future();
 
-        if (fut.wait_for(timeout) == std::future_status::ready) {
-            return fut.get();
+        std::thread worker([port, promise]() {
+            bool ok = false;
+            try {
+                Device candidate(port);
+                float temp;
+                ok = candidate.get_setpoint(temp);
+            } catch (...) {
+                ok = false;
+            }
+            try { promise->set_value(ok); } catch (...) {}   // no one may be listening anymore -- fine
+        });
+
+        return PendingProbe<Device>{port, std::move(fut), std::move(worker)};
+    }
+
+
+    // Probes every candidate port as the given Device type concurrently (all worker threads are
+    // started up front) and waits on them against one shared deadline, so total latency is
+    // bounded by `timeout` regardless of candidate count -- probing candidates one at a time,
+    // each awaited for its own full `timeout`, made worst-case latency scale with candidate
+    // count instead (docs/BUGS.md #19).
+    //
+    // A candidate still stuck past the deadline has CancelSynchronousIo() called on its worker
+    // thread before moving on: the Windows-documented way to unblock a pending synchronous
+    // ReadFile/WriteFile call on another thread, so the worker can actually finish, close its
+    // handle, and free the port for a later reopen instead of leaking it for the rest of the
+    // process's lifetime (docs/BUGS.md #17). If the stall isn't inside a cancellable I/O call
+    // (e.g. it's inside CreateFileA itself), cancellation is a harmless no-op and the worker is
+    // left detached exactly as before -- this can only improve recovery, never regress it, since
+    // the calling thread is never made to wait on the worker either way.
+    template <typename Device>
+    std::string find_port_by_probe(const std::vector<std::string>& candidates,
+                                    std::chrono::milliseconds timeout,
+                                    const std::string& log_prefix) {
+        std::vector<PendingProbe<Device>> pending;
+        pending.reserve(candidates.size());
+        for (const std::string& port : candidates) {
+            pending.push_back(start_probe<Device>(port));
         }
-        return false;
+
+        auto deadline = std::chrono::steady_clock::now() + timeout;
+        std::string matched_port;
+
+        for (auto& probe : pending) {
+            bool ok = false;
+            if (probe.result.wait_until(deadline) == std::future_status::ready) {
+                ok = probe.result.get();
+            } else {
+                CancelSynchronousIo(probe.worker.native_handle());
+            }
+            log(log_prefix + ": probed " + probe.port + " -> " +
+                (ok ? "matched" : "no valid reply (or timed out)"));
+            if (ok && matched_port.empty()) matched_port = probe.port;
+            probe.worker.detach();
+        }
+
+        return matched_port;
     }
 
 
@@ -204,13 +248,9 @@ namespace Lab {
     std::string find_bath_port() {
         std::vector<std::string> candidates = find_serial_adapter_ports();
         log("find_bath_port: found " + std::to_string(candidates.size()) + " candidate serial adapter port(s).");
-        for (const std::string& port : candidates) {
-            bool ok = probe_with_timeout<RTE7>(port, std::chrono::milliseconds(1500));
-            log("find_bath_port: probed " + port + " -> " + (ok ? "matched (this is the bath)" : "no valid reply (or timed out)"));
-            if (ok) return port;
-        }
-        log("find_bath_port: no candidate serial adapter port answered the RTE7 protocol probe.");
-        return "";
+        std::string port = find_port_by_probe<RTE7>(candidates, std::chrono::milliseconds(1500), "find_bath_port");
+        if (port.empty()) log("find_bath_port: no candidate serial adapter port answered the RTE7 protocol probe.");
+        return port;
     }
 
 
@@ -219,13 +259,33 @@ namespace Lab {
     std::string find_temp_controller_port() {
         std::vector<std::string> candidates = find_serial_adapter_ports();
         log("find_temp_controller_port: found " + std::to_string(candidates.size()) + " candidate serial adapter port(s).");
-        for (const std::string& port : candidates) {
-            bool ok = probe_with_timeout<Oven5R6900>(port, std::chrono::milliseconds(1500));
-            log("find_temp_controller_port: probed " + port + " -> " + (ok ? "matched (this is the temp controller)" : "no valid reply (or timed out)"));
-            if (ok) return port;
+        std::string port = find_port_by_probe<Oven5R6900>(candidates, std::chrono::milliseconds(1500), "find_temp_controller_port");
+        if (port.empty()) log("find_temp_controller_port: no candidate serial adapter port answered the Oven5R6900 protocol probe.");
+        return port;
+    }
+
+
+    namespace {
+        constexpr int kPortReopenMaxAttempts = 3;
+        constexpr DWORD kPortReopenRetryDelayMs = 150;
+    }
+
+    // Shared by init_bath()/init_temp_controller(): after find_bath_port()/find_temp_controller_port()
+    // closes its temporary probe on `port`, the OS/FTDI driver needs a brief moment to release the
+    // handle before a persistent connection can reopen it (docs/BUGS.md #14) -- 150ms was tuned
+    // against one test run's driver behavior and isn't guaranteed on every machine, so this retries
+    // a few times with a short delay between attempts instead of a single fixed-delay guess
+    // (docs/BUGS.md #18), reusing the early-return-on-success pattern find_port_by_probe() already
+    // establishes elsewhere in this file for "a Win32 serial call might take longer than expected".
+    template <typename Device>
+    Device* open_persistent_connection(const std::string& port) {
+        for (int attempt = 0; attempt < kPortReopenMaxAttempts; ++attempt) {
+            Sleep(kPortReopenRetryDelayMs);
+            Device* device = new Device(port);
+            if (device->is_connected()) return device;
+            delete device;
         }
-        log("find_temp_controller_port: no candidate serial adapter port answered the Oven5R6900 protocol probe.");
-        return "";
+        return nullptr;
     }
 
 
@@ -240,18 +300,8 @@ namespace Lab {
         std::string COMM = find_bath_port();
         if (COMM.empty()) return 1;            // no unambiguous match found
 
-        // find_bath_port()'s temporary probe object just closed this exact port; give the
-        // OS/FTDI driver a moment to fully release the handle before reopening it, or the
-        // reopen below can fail immediately even though the probe just succeeded on it.
-        Sleep(150);
-
-        bath = new RTE7(COMM);          // 2. Instantiate a fresh connection on the heap
-        if (!bath->is_connected()) {    // 3. Constructor logs a failure but doesn't throw -- check explicitly
-            delete bath;
-            bath = nullptr;
-            return 1;
-        }
-        return 0;
+        bath = open_persistent_connection<RTE7>(COMM);
+        return bath ? 0 : 1;
 
     }
 
@@ -290,17 +340,8 @@ namespace Lab {
         std::string COMM = find_temp_controller_port();
         if (COMM.empty()) return 1;         // no unambiguous match found
 
-        // Same reasoning as init_bath(): let the OS/FTDI driver fully release the probe's
-        // just-closed handle on this port before reopening it.
-        Sleep(150);
-
-        tc = new Oven5R6900(COMM);     // 2. Instantiate a fresh connection on the heap
-        if (!tc->is_connected()) {     // 3. Constructor logs a failure but doesn't throw -- check explicitly
-            delete tc;
-            tc = nullptr;
-            return 1;
-        }
-        return 0;
+        tc = open_persistent_connection<Oven5R6900>(COMM);
+        return tc ? 0 : 1;
     }
 
 
@@ -362,12 +403,21 @@ namespace Lab {
     // Teknic ClearPath Servo Motors
     // -------------------------------------------------------------------------
 
-    // Create managers to control the servo motors
-    // set the namespace pointers to the locations of these objects.
-    // Split out from initialize_servos() below -- see that function's comment for why
-    // it's a thin, direct, un-timed wrapper around this rather than running it on a
-    // background thread.
-    int initialize_servos_impl() {
+    // Create managers to control the servo motors, set the namespace pointers to the locations
+    // of these objects. Called directly, on the calling thread, with no timeout.
+    //
+    // A background-thread timeout wrapper was tried here (matching find_port_by_probe()'s
+    // pattern) to guard against BUGS.md #11's hang. It was reverted: running the Teknic SDK
+    // calls (SysManager::Instance(), FindComHubPorts, PortsOpen) from a thread other than the
+    // one that originally calls into this DLL caused the whole process to crash (segfault)
+    // during hub setup, not just hang -- consistent with hardware SDKs like this frequently
+    // having thread-affinity requirements that a generic std::thread wrapper silently violates.
+    // A crash is worse than a hang (no recovery is possible by killing a *different*, still-hung
+    // process), so until there's a safer way to bound this call, the hang risk from #11 is the
+    // accepted tradeoff -- call ServoEnable[] knowing it can block if the Teknic hub doesn't
+    // respond, and if it does hang, recover by killing the kernel process, same as before the
+    // timeout was ever attempted.
+    int initialize_servos() {
 
         std::vector<std::string> comHubPorts;
 
@@ -408,24 +458,6 @@ namespace Lab {
             return -1;
         }
 
-    }
-
-
-    // Calls initialize_servos_impl() directly, on the calling thread, with no timeout.
-    //
-    // A background-thread timeout wrapper was tried here (matching probe_with_timeout()'s
-    // pattern) to guard against BUGS.md #11's hang. It was reverted: running the Teknic
-    // SDK calls (SysManager::Instance(), FindComHubPorts, PortsOpen) from a thread other
-    // than the one that originally calls into this DLL caused the whole process to crash
-    // (segfault) during hub setup, not just hang -- consistent with hardware SDKs like
-    // this frequently having thread-affinity requirements that a generic std::thread
-    // wrapper silently violates. A crash is worse than a hang (no recovery is possible by
-    // killing a *different*, still-hung process), so until there's a safer way to bound
-    // this call, the hang risk from #11 is the accepted tradeoff -- call ServoEnable[]
-    // knowing it can block if the Teknic hub doesn't respond, and if it does hang, recover
-    // by killing the kernel process, same as before the timeout was ever attempted.
-    int initialize_servos() {
-        return initialize_servos_impl();
     }
 
 
@@ -494,6 +526,11 @@ namespace Lab {
 
     // Returns true if both motors have completed a valid homing sequence
     bool servos_homed() {
+
+        if (!motorX || !motorZ) {       // uninitialized -- not homed, not a crash
+            log("servos_homed(): one or more motors are nullptr, returning false.");
+            return false;
+        }
 
         try {
             return (motorX->Motion.Homing.WasHomed() && motorX->Motion.Homing.HomingValid()) && 

@@ -48,9 +48,11 @@ DLLEXPORT int wbath_on(WolframLibraryData lp, mint Argc, MArgument *Args, MArgum
   way). This is easy to get wrong: see `docs/BUGS.md` #3 for a case where a plain success/fail boolean
   got returned directly as this status code and silently meant something else to Mathematica.
 - Two special lifecycle hooks Wolfram calls automatically, not from user code:
-  `WolframLibrary_initialize` (runs once when the DLL is first loaded — starts up the servos here)
-  and `WolframLibrary_uninitialize` (runs on unload — tears down the bath/temp
-  controller/servos).
+  `WolframLibrary_initialize` (runs once when the DLL is first loaded — just logs today; it used
+  to auto-start the servos here too, but that made an unrelated `Needs[...]` call capable of
+  hanging the kernel with no timeout, see `docs/BUGS.md` #11, so servo init only ever happens
+  when a user explicitly calls `ServoEnable[]`) and `WolframLibrary_uninitialize` (runs on
+  unload — tears down the bath/temp controller/servos).
 
 ## 2. The Wolfram side: `paclet/Kernel/WolframMachineControl.wl`
 
