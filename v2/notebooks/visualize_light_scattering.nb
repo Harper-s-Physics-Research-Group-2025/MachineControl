@@ -1,0 +1,69 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 15.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      1907,         59]
+NotebookOptionsPosition[      1362,         43]
+NotebookOutlinePosition[      1770,         59]
+CellTagsIndexPosition[      1727,         56]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{"PacletDirectoryLoad", "[", 
+  RowBox[{"ParentDirectory", "[", 
+   RowBox[{"NotebookDirectory", "[", "]"}], "]"}], "]"}], "\n", 
+ RowBox[{"Needs", "[", "\"\<WolframMachineControl`\>\"", 
+  "]"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.9950973797767887`*^9, 3.9950973948978024`*^9}, 
+   3.995097429009386*^9},ExpressionUUID->"aa6f5325-d6ba-8540-9390-\
+86bb6f3de5f4"],
+
+Cell[BoxData[
+ RowBox[{"LabJackPlotData", "[", 
+  RowBox[{"\"\<monocaprin_0_fall_100_to_10.csv\>\"", ",", "3"}], 
+  "]"}]], "Input",
+ CellChangeTimes->{
+  3.9950974832983265`*^9},ExpressionUUID->"ffd0369c-48db-6b4e-b0ee-\
+da67de15f3c9"],
+
+Cell[BoxData[
+ RowBox[{"\[IndentingNewLine]", 
+  RowBox[{"LabJackListCSVs", "[", "]"}]}]], "Input",ExpressionUUID->"60fb444c-\
+65ae-9d44-a332-2e9c2a51d46a"]
+},
+WindowSize->{581.25, 648.75},
+WindowMargins->{{Automatic, -37.5}, {5.25, Automatic}},
+FrontEndVersion->"15.0 for Microsoft Windows (64-bit) (May 19, 2026)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"2045b4f5-860c-d340-bb3f-4efee40ed237"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[554, 20, 406, 8, 66, "Input",ExpressionUUID->"aa6f5325-d6ba-8540-9390-86bb6f3de5f4"],
+Cell[963, 30, 236, 6, 28, "Input",ExpressionUUID->"ffd0369c-48db-6b4e-b0ee-da67de15f3c9"],
+Cell[1202, 38, 156, 3, 47, "Input",ExpressionUUID->"60fb444c-65ae-9d44-a332-2e9c2a51d46a"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
