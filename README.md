@@ -36,9 +36,8 @@ Intensity-vs-temperature scans from representative rise runs (full data set in
 
 ### Future Goals
 
-- 3D-print a new separation pad for the sample holder.
-- Source longer screws for connecting the base metal block to the separation pad.
 - Add hardware for x-ray density (SAXS/WAXS) experiments.
+- Update and streamline README files
 
 ## Authors
 
