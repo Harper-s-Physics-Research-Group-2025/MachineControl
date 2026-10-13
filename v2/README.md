@@ -190,7 +190,13 @@ what each function returns on success and on failure (including a few sharp edge
   the temp controller temperature.
 - `LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1]` — repeatedly
   returns to `startTemp` and drives out to each temperature in `temps`, recording (via
-  `LabJackRecordData`) 
+  `LabJackRecordData`) both legs of every round trip.
+- `LabJackStepScan[filename, startTemp, channel, direction:"rise"]` — steps the temp controller
+  from `startTemp` by 10°C at a time: up through 100°C for `"rise"` (default), or down through 10°C
+  for `"fall"`. At each step it waits for the temperature, holds 15 minutes,
+  averages 3 readings of `channel`, and saves a two-column CSV (temperature, average voltage) to
+  `v2/data/<filename>.csv`.
+
 ### Servo Motors
 - `ServoEnable[]`, `ServoDisable[]`, `ServoGetAlerts[]`
 - `ServoHome[milliseconds]`, `ServoHomed[]`, `ServoReady[]`

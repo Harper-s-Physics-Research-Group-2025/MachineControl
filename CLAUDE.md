@@ -199,3 +199,15 @@ below were actually confirmed fixed.
   write it never had before (it used to return undefined memory unconditionally) — had to match
   the existing `.wlt` test's expectation of `0` on success, not the `1`-for-true guess tried first.
   Verified via `wolframscript`: full suite still 29/29 against real hardware after every fix.
+- **2026-10-12** — Deleted `v2/notebooks/visualize_light_scattering.nb` (a one-off viewer hardcoded
+  to a single monocaprin CSV that only existed on the lab machine; nothing referenced it). Added
+  `LabJackStepScan[filename, startTemp, channel]` (pure Wolfram Language): steps the temp
+  controller from `startTemp` by +10°C through 100°C. At each step it waits to arrive (reusing
+  `waitForTempCtrl`), holds 10 min (changed to 15 min on 2026-10-13), averages 3 `ReadLabjack[channel]` readings, and writes a
+  two-column CSV (nominal temperature, average voltage), rewritten after every step. Uses
+  `Catch`/`Throw` to abort on a failed read rather than `Return` inside `Do` (which only exits the
+  `Do`). Written on macOS without Wolfram installed, so **not yet run** -- needs a mocked or
+  hardware run on the lab machine. Same day, gained an optional 4th `direction` argument
+  (`"rise"` default, or `"fall"` = step −10°C down through 10°C), via a two-clause definition per
+  the `interval_?NumericQ:1` lesson above; a bad direction string gets a `::baddir` message rather
+  than returning unevaluated.
