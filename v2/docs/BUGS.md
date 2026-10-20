@@ -4,11 +4,12 @@ Originally found via static read-through of the C++ source. Bugs #1-14 have all 
 DLL rebuilds clean (`cmake --build . --config Release`), and as of bug #14, the full
 `Test_WolframMachineControl.wlt` suite passes 29/29 against real hardware (bath, temp controller,
 servos, LabJack). Bugs #15-24 were found by a code review (and, for #23-24, direct usage plus a
-return-value audit) afterward and are **not yet fixed** — see that section below. Bugs #25-26 were
-found while investigating a live "bath setpoint stuck at 25" report and have been fixed and covered
-by new unit tests in `tests/test_protocol_parsing.cpp`. Bug #27 was found while investigating a
-live report of `BathInit[]`/`TempCtrlInit[]` erroring when called on an already-connected device,
-and has been fixed and verified against real hardware.
+return-value audit) afterward; all ten have now been fixed too, and the full suite still passes
+29/29 against real hardware after the fixes (see each entry below for what changed). Bugs #25-26
+were found while investigating a live "bath setpoint stuck at 25" report and have been fixed and
+covered by new unit tests in `tests/test_protocol_parsing.cpp`. Bug #27 was found while
+investigating a live report of `BathInit[]`/`TempCtrlInit[]` erroring when called on an
+already-connected device, and has been fixed and verified against real hardware.
 
 ## High severity
 
@@ -191,72 +192,97 @@ the probe and opening the persistent connection. Confirmed fixed via `wolframscr
 from failing all 6 of its tests to passing all 6, with the log showing `Status: 0` instead of
 `Status: 1` on the exact same command.
 
-## Found via code review after hitting 29/29 (not yet fixed)
+## Found via code review after hitting 29/29 — all fixed
 
 A high-effort code review was run against this whole session's diff right after the suite first
-passed 29/29. These survived verification but haven't been fixed yet.
+passed 29/29. These survived verification; all ten have now been fixed, and the full
+`Test_WolframMachineControl.wlt` suite still passes 29/29 against real hardware afterward.
 
-### 15. `servos_homed()` crashes instead of returning `False` if servos were never initialized
-`src/lab.cpp` — dereferences `motorX`/`motorZ` with no null check, and its `catch (...)` cannot
+### 15. ~~`servos_homed()` crashes instead of returning `False` if servos were never initialized~~ — Fixed
+`src/lab.cpp` — dereferenced `motorX`/`motorZ` with no null check, and its `catch (...)` couldn't
 catch the resulting access violation, since nothing in `CMakeLists.txt` sets `/EHa` (MSVC's
 default `/EHsc` only catches C++ exceptions, not structured/SEH ones like a null-pointer fault).
 Now that `WolframLibrary_initialize` no longer auto-calls `initialize_servos()` on package load
 (bug #11), a user calling `ServoHomed[]` before ever calling `ServoEnable[]` is a realistic, easy
-mistake — and it crashes the kernel instead of returning `False`.
+mistake. Fixed: `servos_homed()` now checks `!motorX || !motorZ` up front and returns `false`,
+matching the pattern `servos_ready()` already used.
 
-### 16. A garbled reply while probing the wrong device can crash the process
-`Lab::probe_with_timeout()` (`src/lab.cpp`) only wraps `promise::set_value(...)` in `try`/`catch`
+### 16. ~~A garbled reply while probing the wrong device can crash the process~~ — Fixed
+`Lab::probe_with_timeout()` (`src/lab.cpp`) only wrapped `promise::set_value(...)` in `try`/`catch`
 on its background thread — not the `candidate.get_setpoint(temp)` call itself. `Oven5R6900::
 parse_response()` (`src/Oven5R6900.cpp`) does `response.substr(response.size()-3, 2)` with no
 length check; a reply under 3 bytes (plausible when probing the *wrong* device with the *wrong*
-protocol — e.g. the bath receiving an Oven5R6900-formatted query) underflows `size()-3` and
-`substr` throws `std::out_of_range`. That exception is never caught anywhere in the chain, so it
-escapes the thread entry point — `std::terminate()`, crashing the whole kernel process, not just
-failing that one probe.
+protocol — e.g. the bath receiving an Oven5R6900-formatted query) underflowed `size()-3` and
+`substr` threw `std::out_of_range`, uncaught, escaping the thread entry point —
+`std::terminate()`, crashing the whole kernel process, not just failing that one probe. Fixed two
+ways: (1) the probe's whole body (device construction + `get_setpoint()`) is now wrapped in
+`try`/`catch` (see bug #19's `start_probe()`/`find_port_by_probe()` rewrite), so any exception
+from either device class just reports "no match" instead of escaping the thread; (2)
+`Oven5R6900::parse_response()` and `RTE7::parse_float_response()` (`src/RTE7.cpp`, which has the
+same unguarded-indexing shape via `response[2]`/`response[3]`/`response[4]`, undefined behavior
+rather than even a catchable exception) now both return the existing `-999` failure sentinel on a
+too-short reply instead of reading/erasing past the end of the buffer. Covered by two new cases in
+`tests/test_protocol_parsing.cpp`.
 
-### 17. A timed-out probe can permanently block a working port from being reopened
+### 17. ~~A timed-out probe can permanently block a working port from being reopened~~ — Fixed
 `RTE7`'s (and `Oven5R6900`'s) `CreateFileA` call (`src/RTE7.cpp`) opens the serial port with
-`dwShareMode = 0` (exclusive). If a `probe_with_timeout()` candidate genuinely times out while
-still in-flight rather than failing fast, the abandoned background thread's `RTE7`/`Oven5R6900`
-object stays alive holding that exclusive handle for as long as the thread keeps running. Any
-later attempt to open that same port — a retry, or the same candidate being probed again in a
-later `BathInit[]`/`TempCtrlInit[]` call in the same session — fails, misreporting a genuinely
-working port as unreachable.
+`dwShareMode = 0` (exclusive). If a probe genuinely timed out while still in-flight rather than
+failing fast, the abandoned background thread's `RTE7`/`Oven5R6900` object stayed alive holding
+that exclusive handle for as long as the thread kept running — any later attempt to open that same
+port (a retry, or the same candidate probed again in a later `BathInit[]`/`TempCtrlInit[]` call in
+the same session) would fail, misreporting a genuinely working port as unreachable. Fixed:
+`find_port_by_probe()` (`src/lab.cpp`, the rewrite of the old `probe_with_timeout()`/candidate loop
+— see bug #19) now calls `CancelSynchronousIo()` on a timed-out candidate's worker thread before
+moving on. This is the Windows-documented way to unblock a pending synchronous `ReadFile`/
+`WriteFile` call from another thread, letting the worker actually finish, close its handle, and
+free the port instead of leaking it. If the stall is inside `CreateFileA` itself rather than a
+cancellable read/write, cancellation is a harmless no-op and the worker is still just detached
+exactly as before — the calling thread is never made to wait on it either way, so this can only
+improve recovery, never regress it into a hang.
 
-### 18. The `Sleep(150)` fix for bug #14 is a magic-number guess, not a bounded retry
-`src/lab.cpp` (`init_bath()` and `init_temp_controller()`, ~line 242 and ~289) — 150ms was tuned
-against one test run's OS/FTDI driver behavior; there's no guarantee it's enough on a different
-machine, USB hub, or driver version, and no adaptive fallback if it isn't — a regression would
-look exactly like bug #14 did. The same fix (with a near-identical comment) is also duplicated at
-both call sites instead of living in one shared helper. `probe_with_timeout()`, two functions
-earlier in the same file, already establishes an early-return-on-success pattern for this exact
-class of problem ("a Win32 serial call might stall longer than expected") that this fix doesn't
-reuse.
+### 18. ~~The `Sleep(150)` fix for bug #14 is a magic-number guess, not a bounded retry~~ — Fixed
+`src/lab.cpp` (`init_bath()` and `init_temp_controller()`) — 150ms was tuned against one test run's
+OS/FTDI driver behavior, with no guarantee it's enough on a different machine, USB hub, or driver
+version, and the same fix (with a near-identical comment) was duplicated at both call sites instead
+of living in one shared helper. Fixed: both call sites now go through a new
+`open_persistent_connection<Device>()` helper that retries the reopen up to three times with a
+150ms delay between attempts (instead of one fixed-delay guess), reusing the same
+early-return-on-success shape the probing code already established elsewhere in this file.
+Verified against real hardware (`BathInit[]`/`TempCtrlInit[]` still succeed).
 
-### 19. Candidate port probes run sequentially, not concurrently, despite already being threaded
-`find_bath_port()`/`find_temp_controller_port()` (`src/lab.cpp`) loop over candidates, calling
+### 19. ~~Candidate port probes run sequentially, not concurrently, despite already being threaded~~ — Fixed
+`find_bath_port()`/`find_temp_controller_port()` (`src/lab.cpp`) looped over candidates, calling
 `probe_with_timeout()` for one and waiting up to its full 1.5s timeout before starting the next —
-even though each probe already runs on its own independent background thread. With both expected
-FTDI adapters present and one stalled, worst-case latency is `candidateCount * 1.5s` instead of
-~1.5s if all candidates were probed concurrently and awaited together.
+even though each probe already ran on its own independent background thread. With both expected
+FTDI adapters present and one stalled, worst-case latency was `candidateCount * 1.5s` instead of
+~1.5s if all candidates were probed concurrently and awaited together. Fixed: `probe_with_timeout()`
+was split into `start_probe<Device>()` (launches one candidate's worker thread and returns
+immediately with its future) and `find_port_by_probe<Device>()` (starts *all* candidates' workers
+up front, then waits on each one's future against one shared absolute deadline instead of a fresh
+per-candidate timeout), so total latency is bounded by `timeout` regardless of candidate count.
+`find_bath_port()`/`find_temp_controller_port()` now call `find_port_by_probe()`. Verified against
+real hardware: the suite still finds and matches both the bath and temp controller correctly.
 
-### 20. Stale doc: `specs/librarylink.md` still says servos auto-start on package load
-Left over from before bug #11's fix removed that automatic call — could mislead a future
-maintainer into reintroducing it (and bug #11's hang) while "fixing" something unrelated.
+### 20. ~~Stale doc: `specs/librarylink.md` still says servos auto-start on package load~~ — Fixed
+Left over from before bug #11's fix removed that automatic call — could have misled a future
+maintainer into reintroducing it (and bug #11's hang) while "fixing" something unrelated. Fixed:
+the doc now explains servo init only happens via an explicit `ServoEnable[]` call, and why.
 
-### 21. `initialize_servos()` is a pointless one-line wrapper left over from a reverted fix
+### 21. ~~`initialize_servos()` is a pointless one-line wrapper left over from a reverted fix~~ — Fixed
 `src/lab.cpp` — the split into `initialize_servos()` / `initialize_servos_impl()` only ever
 existed to support the background-thread timeout wrapper that was tried for bug #11 and then
-fully reverted. The wrapper now does nothing; a reader has to open both functions and the
-cross-referencing comments to confirm that.
+fully reverted, leaving a wrapper that did nothing. Fixed: merged back into a single
+`initialize_servos()`, carrying forward the explanatory comment about why it's called directly
+rather than on a background thread.
 
-### 22. `GetLogFile[]` test became tautological
-`paclet/Tests/Test_WolframMachineControl.wlt` — its expected value was changed from an
+### 22. ~~`GetLogFile[]` test became tautological~~ — Fixed
+`paclet/Tests/Test_WolframMachineControl.wlt` — its expected value had been changed from an
 independent hardcoded path literal to the same `LogFile` variable used to configure logging in
-the first place, so the assertion can no longer catch a real path-configuration bug (both sides
-of the comparison now derive from the same variable and would drift together).
+the first place, so the assertion could no longer catch a real path-configuration bug (both sides
+of the comparison derived from the same variable and would drift together). Fixed: reverted to
+comparing against an independent hardcoded literal.
 
-### 23. Most DLL wrappers return their `Lab::` function's `1`/failure code as the raw LibraryLink status, colliding with `LIBRARY_TYPE_ERROR`
+### 23. ~~Most DLL wrappers return their `Lab::` function's `1`/failure code as the raw LibraryLink status, colliding with `LIBRARY_TYPE_ERROR`~~ — Fixed
 `src/wolfram_api.cpp` — the majority of wrappers (`wbath_on`, `wbath_off`, `wbath_manual`,
 `wbath_get_temp`, `wbath_get_setpoint`, `wbath_set_setpoint`, `winitialize_bath`,
 `wtemperature_control_on`/`off`/`get_mode`/`set_mode`/`get_temp`/`get_setpoint`/`set_setpoint`,
@@ -281,9 +307,17 @@ Not affected — already return a proper status separately from the real answer,
 `DeleteBath[]`, `DeleteTempCtrl[]`, `ServoDisable[]`, `GetLogStatus[]`, `GetLogFile[]` (all of
 these either always succeed or already use `LIBRARY_NO_ERROR` correctly).
 
-### 24. Several "get" functions can hand back a garbage number, not just a confusing error, when the read fails
-`src/wolfram_api.cpp` — a worse variant of bug #23: several wrappers declare an uninitialized
-local, unconditionally hand it to `MArgument_set*(Res, ...)`, and only *then* check whether the
+Fixed: every affected wrapper (plus `ServoEnable[]`/`winitialize_servos`, discussed above) now
+captures the `Lab::` call's result as `lab_status` and returns
+`lab_status != 0 ? LIBRARY_FUNCTION_ERROR : LIBRARY_NO_ERROR` instead of passing it through raw, so
+an ordinary failure now surfaces as `LibraryFunctionError[LIBRARY_FUNCTION_ERROR, ...]` instead of
+the misleading "inconsistent types" message. Verified against real hardware: the full test suite
+still passes 29/29 (success paths are unaffected — `LIBRARY_NO_ERROR` is still `0`), and manually
+calling e.g. `BathOn[]` before `BathInit[]` now reports a function error instead of a type error.
+
+### 24. ~~Several "get" functions can hand back a garbage number, not just a confusing error, when the read fails~~ — Fixed
+`src/wolfram_api.cpp` — a worse variant of bug #23: several wrappers declared an uninitialized
+local, unconditionally handed it to `MArgument_set*(Res, ...)`, and only *then* checked whether the
 `Lab::` call that was supposed to fill it in actually succeeded:
 ```cpp
 DLLEXPORT int wbath_get_temp(...){
@@ -293,35 +327,39 @@ DLLEXPORT int wbath_get_temp(...){
     return return_code;
 }
 ```
-If `Lab::bath_get_temp` fails early (e.g. `bath` is null), `temp` is never assigned, so whatever
-garbage was already on the stack gets returned as if it were a real temperature reading — the
-caller sees a `LibraryFunctionError` *and* a plausible-looking but meaningless number in the same
+If `Lab::bath_get_temp` failed early (e.g. `bath` is null), `temp` was never assigned, so whatever
+garbage was already on the stack got returned as if it were a real temperature reading — the
+caller saw a `LibraryFunctionError` *and* a plausible-looking but meaningless number in the same
 call, easy to accidentally use if the error isn't checked first.
 
 **Affected the same way:** `BathGetTemp[]`, `BathGetSetpoint[]`, `TempCtrlGetMode[]`,
 `TempCtrlGetTemp[]`, `TempCtrlGetSetpoint[]`, `ReadLabjack[]`, `ServoGetPos[]`.
 
-**Worse case:** `wservos_home` (`ServoHome[milliseconds]`) never calls any `MArgument_set*(Res,
+**Worse case:** `wservos_home` (`ServoHome[milliseconds]`) never called any `MArgument_set*(Res,
 ...)` at all, on *any* path — success or failure. Its `.wl` binding still declares an `Integer`
-return type, so `ServoHome[...]`'s returned value is undefined memory unconditionally; only the
-status code (whether it throws `LibraryFunctionError` or not) carries any real signal.
+return type, so `ServoHome[...]`'s returned value was undefined memory unconditionally; only the
+status code (whether it threw `LibraryFunctionError` or not) carried any real signal.
 
 **Different, milder case:** `wservos_set_position` (`ServoSetPos[...]`) initializes its output
 from the function's own *input* arguments, not an uninitialized local — so on failure it echoes
 back the *requested* `{x_mm, z_mm, rpm}` rather than the actual resulting position, which is
-misleading but not undefined memory.
+misleading but not undefined memory; left as-is (not required by the fix below).
 
 Not affected: `SetLogSettings[...]`/`GetLogStatus[]`/`GetLogFile[]` (`Lab::get_log_settings`/
 `set_log_settings` always assign their out-parameters, every path); `wget_servo_alerts` (its
 buffers are explicitly zero-initialized, so a failure just yields empty-looking alert strings,
 not garbage); `ServoHomed[]`/`ServoReady[]` (bug #3's fix already routes them correctly).
 
-Documented in `docs/API_REFERENCE.md`. Not yet fixed — the real fix is initializing every such
-local to a sentinel (or simply not writing to `Res` at all on the failure path) before the
-`Lab::` call, mirroring the fix already applied to `Lab::`-layer functions themselves.
+Documented in `docs/API_REFERENCE.md`. Fixed: every function in the "affected" list now
+initializes its local to a `0`/`0.0` sentinel before the `Lab::` call, so a failure path returns a
+deterministic, documented placeholder instead of stack garbage. `wservos_home` additionally now
+calls `MArgument_setInteger(Res, static_cast<mint>(lab_status))` on every path, matching the
+0-success/nonzero-failure convention every sibling status-only function in this file already
+returns as its Integer value — verified against real hardware that `ServoHome[30000]` still
+returns `0` on a successful home (matching the existing `.wlt` assertion) after this change.
 
-Documented in `README.md`'s "Known Confusing Error Messages" section. Not yet fixed — the real
-fix is mapping these functions' failure paths to `LIBRARY_FUNCTION_ERROR` instead of a raw `1`.
+Documented in `README.md`'s "Known Confusing Error Messages" section. Fixed as part of bug #23
+above — see that entry for the actual `LIBRARY_FUNCTION_ERROR` mapping.
 
 ### 25. ~~`RTE7::parse_float_response` decoded negative readings as huge positive garbage~~ — Fixed
 `src/RTE7.cpp` built the 16-bit temperature/setpoint value into a `uint16_t`, but the NC serial

@@ -70,6 +70,14 @@ TEST_SUITE("RTE7 protocol parsing") {
         float temp = bath.parse_float_response(response);
         CHECK(temp == -999);
     }
+
+    TEST_CASE("parse_float_response returns -999 on a too-short reply instead of reading out of bounds") {
+        RTE7 bath("COM999");
+        // Plausible if the wrong device answers a probe on the wrong protocol (docs/BUGS.md #16).
+        std::vector<uint8_t> response = {0xCA, 0x00};
+        float temp = bath.parse_float_response(response);
+        CHECK(temp == -999);
+    }
 }
 
 TEST_SUITE("Oven5R6900 protocol parsing") {
@@ -99,6 +107,14 @@ TEST_SUITE("Oven5R6900 protocol parsing") {
     TEST_CASE("parse_response returns -999 on a checksum mismatch") {
         Oven5R6900 tc("COM999");
         std::string response = "*12345678a5\r";   // wrong checksum (should be "a4")
+        int32_t value = tc.parse_response(response);
+        CHECK(value == -999);
+    }
+
+    TEST_CASE("parse_response returns -999 on a too-short reply instead of underflowing substr") {
+        Oven5R6900 tc("COM999");
+        // Plausible if the wrong device answers a probe on the wrong protocol (docs/BUGS.md #16).
+        std::string response = "*1";
         int32_t value = tc.parse_response(response);
         CHECK(value == -999);
     }

@@ -137,6 +137,13 @@ float RTE7::parse_float_response(vector<uint8_t>& response) const {
 
     float out_temp;
 
+    // A reply this short can't contain a checksum byte plus the header fields indexed below --
+    // e.g. probing the wrong device with the wrong protocol can produce a short, garbled reply
+    // (docs/BUGS.md #16). Bail out the same way a checksum mismatch does instead of reading
+    // past the end of `response` (vector::operator[] doesn't throw, so an out-of-range index
+    // here would be undefined behavior, not a catchable exception).
+    if (response.size() < 7) return -999;
+
     // validate checksum
     uint8_t res_check = response.back(); // last byte of response
     response.pop_back();                 // remove checksum to recompute for data

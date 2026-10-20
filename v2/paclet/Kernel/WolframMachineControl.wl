@@ -51,6 +51,11 @@ WolframMachineControl`ServoFindMaxIntensity::nothomed = "Servos aren't homed -- 
 WolframMachineControl`ServoFindMaxIntensity::badspec = "`1` must be either a number (axis held fixed) or {start, end, step} in mm; got `2`."
 WolframMachineControl`ServoFindMaxIntensity::movefail = "Move to (`1`, `2`) mm failed or landed more than `3` mm away -- aborting the scan."
 WolframMachineControl`ServoFindMaxIntensity::readfail = "Couldn't read LabJack channel `1` at (`2`, `3`) mm -- aborting the scan."
+WolframMachineControl`LabJackStepScan::usage = "LabJackStepScan[filename, startTemp, channel, direction:\"rise\"] steps the temp controller from startTemp in 10\[Degree]C increments -- upward through 100\[Degree]C for direction \"rise\" (the default), or downward through 10\[Degree]C for \"fall\" (stopping before it would go past that limit). At each step it waits for the temp controller to reach the temperature, holds there for 15 minutes, then takes 3 readings of the given LabJack channel and records their average. Saves a two-column CSV (temperature, average voltage) to <filename>.csv in v2/data, rewriting it after every step so a partial scan isn't lost, and returns the full path."
+WolframMachineControl`LabJackStepScan::tempctrlfail = "Couldn't read the temp controller's temperature -- is TempCtrlInit[] connected?"
+WolframMachineControl`LabJackStepScan::baddir = "direction must be \"rise\" or \"fall\", not `1`."
+WolframMachineControl`LabJackStepScan::outofrange = "startTemp `1`\[Degree]C is already past the `2`\[Degree]C limit for a `3` scan -- nothing to scan."
+WolframMachineControl`LabJackStepScan::readfail = "LabJack read on channel `1` failed at `2`\[Degree]C -- stopping the scan. Steps completed so far are saved in `3`."
 
 WolframMachineControl`ServoEnable::usage = "ServoOn[] Initializes the global servo communication structures and clears alerts."
 WolframMachineControl`ServoDisable::usage = "ServoOff[] Uninitializes the global servo communication structures."
@@ -487,6 +492,52 @@ intensityPlot[points_, best_, channel_] := Module[{xVaries, zVaries, curve},
         Epilog -> {Red, PointSize[0.02],
                    Point[{best[[If[zVaries && !xVaries, 2, 1]]], best[[3]]}]},
         ImageSize -> Large
+WolframMachineControl`LabJackStepScan[filename_String, startTemp_?NumericQ, channel_Integer] :=
+    WolframMachineControl`LabJackStepScan[filename, startTemp, channel, "rise"];
+
+WolframMachineControl`LabJackStepScan[filename_String, startTemp_?NumericQ, channel_Integer, direction_String] := Module[
+    {settleSeconds = 900, readingsPerStep = 3, secondsBetweenReadings = 1,
+     limitTemp, stepSize, header, csvPath, rows = {}, readings},
+
+    If[!MemberQ[{"rise", "fall"}, direction],
+        Message[WolframMachineControl`LabJackStepScan::baddir, direction];
+        Return[$Failed]
+    ];
+    {limitTemp, stepSize} = If[direction === "rise", {100, 10}, {10, -10}];
+
+    If[!NumericQ[TempCtrlGetTemp[]],
+        Message[WolframMachineControl`LabJackStepScan::tempctrlfail];
+        Return[$Failed]
+    ];
+    If[(direction === "rise" && startTemp > limitTemp) || (direction === "fall" && startTemp < limitTemp),
+        Message[WolframMachineControl`LabJackStepScan::outofrange, startTemp, limitTemp, direction];
+        Return[$Failed]
+    ];
+
+    header = {"Temperature (C)", "Channel" <> ToString[channel] <> " Average (V)"};
+    csvPath = FileNameJoin[{$labJackDataDir, normalizeCSVName[filename]}];
+    Export[csvPath, {header}, "CSV"];
+
+    Catch[
+        Do[
+            waitForTempCtrl[target, 1];
+            Pause[settleSeconds];
+            readings = Table[
+                If[k > 1, Pause[secondsBetweenReadings]];
+                ReadLabjack[channel],
+                {k, readingsPerStep}
+            ];
+            If[!AllTrue[readings, NumericQ],
+                Message[WolframMachineControl`LabJackStepScan::readfail, channel, target, csvPath];
+                Throw[$Failed]
+            ];
+            AppendTo[rows, {target, Mean[readings]}];
+            Export[csvPath, Prepend[rows, header], "CSV"]; (* rewrite every step so a partial scan isn't lost *)
+            Print["Recorded ", target, "\[Degree]C: ", Mean[readings], " V"];
+            ,
+            {target, startTemp, limitTemp, stepSize}
+        ];
+        csvPath
     ]
 ];
 

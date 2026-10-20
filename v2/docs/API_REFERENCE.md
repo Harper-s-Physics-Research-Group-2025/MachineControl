@@ -66,9 +66,10 @@ out-of-range target could loop forever.
 | `LabJackListCSVs[]` | none | `Grid` — name + creation date for every CSV in `v2/data`, newest first | `{}` if `v2/data` has no CSVs — never throws |
 | `LabJackPlotData[filename, channel]` | `filename` (string, `.csv` optional) — which CSV in `v2/data` to plot. `channel` (Integer `0`-`7`) — which channel column to plot | `Legended[Graphics, ...]` — that channel's voltage, plotted against temp controller temperature | `$Failed` **+** `::nofile` if the CSV doesn't exist, or `::nochannel` if that channel isn't a column in it |
 | `LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1]` | `startTemp` (number) — temperature returned to between every leg. `temps` (list of numbers) — targets to visit, each followed by a return to `startTemp`. `lipidName` (String), `waterConcentration` (String or number) — used to build each CSV's filename. `interval` (number, optional, default `1`) — seconds between readings, passed through to `LabJackRecordData` | `List` of `String` — every CSV path written, in order (`2 * Length[temps]` of them) | `$Failed` **+** `::tempctrlfail` if the temp controller isn't initialized, or `::legfailed` (and the whole sweep aborts) if any individual `LabJackRecordData` call fails |
+| `LabJackStepScan[filename, startTemp, channel, direction:"rise"]` | `filename` (string, `.csv` optional) — output name. `startTemp` (number) — first temperature, °C. `channel` (Integer `0`-`19`) — LabJack pin to read. `direction` (optional, default `"rise"`) — `"rise"` steps +10 °C up to and including 100 °C; `"fall"` steps −10 °C down to and including 10 °C | `String` — full path to `v2/data/<filename>.csv` | `$Failed` **+** `::baddir` if `direction` isn't `"rise"`/`"fall"`, `::tempctrlfail` if the temp controller isn't initialized, `::outofrange` if `startTemp` is already past the limit (above 100 for rise, below 10 for fall), or `::readfail` (scan stops; steps already done stay in the CSV) if a LabJack read fails |
 
 `ReadLabjack[]` is a direct LibraryLink binding. `LabJackRecordData`/`LabJackListCSVs`/
-`LabJackPlotData`/`LabJackTempSweep` are pure Wolfram Language (`paclet/Kernel/WolframMachineControl.wl`,
+`LabJackPlotData`/`LabJackTempSweep`/`LabJackStepScan` are pure Wolfram Language (`paclet/Kernel/WolframMachineControl.wl`,
 no DLL involved), built on top of `ReadLabjack[]` and the temp controller functions above — not the bath.
 
 **Worth knowing:**
@@ -88,7 +89,16 @@ no DLL involved), built on top of `ReadLabjack[]` and the temp controller functi
   this means a repeated (start, target) pair across two sweeps overwrites the earlier file — there
   is no measurement counter in the filename. If any leg's `LabJackRecordData` call fails, the
   sweep stops immediately — it does not attempt the remaining legs.
-- Always reads channels 0-7; blocks the kernel for the whole run (no background/async mode).
+- `LabJackStepScan` visits `startTemp, startTemp + 10, ...` up to and including 100 °C for
+  `"rise"` (e.g. `startTemp = 25` → 25, 35, …, 95), or `startTemp, startTemp - 10, ...` down to and
+  including 10 °C for `"fall"` (e.g. `startTemp = 95` → 95, 85, …, 15). At each step it waits for the temp controller to arrive (via
+  `waitForTempCtrl`), holds there 15 minutes, then takes 3 `ReadLabjack[channel]` readings 1 s
+  apart and records their mean. The CSV has two columns, `Temperature (C)` (the step's nominal
+  target, not a sensor reading) and `Channel<n> Average (V)`, and is rewritten after every step, so
+  an aborted scan keeps what it finished. Expect at least 15 minutes per step (a 10 → 100 °C scan
+  is 10 steps, so well over 2.5 hours). Same no-clamp-detection caveat as above.
+- `LabJackRecordData`/`LabJackTempSweep` always read channels 0-7. Every function here blocks the
+  kernel for the whole run (no background/async mode).
 
 #### What `channel` actually is
 
