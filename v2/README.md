@@ -190,6 +190,7 @@ what each function returns on success and on failure (including a few sharp edge
   the temp controller temperature.
 - `LabJackTempSweep[startTemp, temps, lipidName, waterConcentration, interval:1]` — repeatedly
   returns to `startTemp` and drives out to each temperature in `temps`, recording (via
+  `LabJackRecordData`) both legs of every round trip, so `N` temperatures produce `2N` CSVs.
   `LabJackRecordData`) both legs of every round trip.
 - `LabJackStepScan[filename, startTemp, channel, direction:"rise"]` — steps the temp controller
   from `startTemp` by 10°C at a time: up through 100°C for `"rise"` (default), or down through 10°C
@@ -203,6 +204,19 @@ what each function returns on success and on failure (including a few sharp edge
 - `ServoGetPos[]` — returns `{x_mm, z_mm}`
 - `ServoSetPos[x_mm, z_mm, rpm]` — returns updated `{x_mm, z_mm}`
 - `ServoManualControl[]` — keyboard-driven manual jogging
+- `ServoFindMaxIntensity[channel, xSpec, zSpec, opts]` — **finds the point of highest light
+  intensity.** Rasters the sample holder over the region given by `xSpec`/`zSpec` (each either
+  `{start, end, step}` in mm, or a plain number to hold that axis fixed), averages several
+  `ReadLabjack[channel]` readings at every stop, and returns the `{x_mm, z_mm}` where the
+  detector voltage peaked — then re-scans a tighter window around it to sharpen the answer.
+  Requires `ServoEnable[]` + `ServoHome[...]` first. Options and caveats in
+  [docs/API_REFERENCE.md](docs/API_REFERENCE.md#finding-the-point-of-highest-light-intensity).
+
+  ```wolfram
+  ServoEnable[]; ServoHome[30000];
+  peak = ServoFindMaxIntensity[0, {0, 10, 1}, {-20, -10, 1}];
+  peak["Position"]    (* -> {x_mm, z_mm} of maximum intensity *)
+  ```
 
 ## Known Confusing Error Messages
 
