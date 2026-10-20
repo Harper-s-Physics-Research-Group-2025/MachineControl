@@ -172,6 +172,43 @@ below were actually confirmed fixed.
   a two-clause definition instead of the combined optional/PatternTest. Also verified via the same
   mock harness that a mid-sweep `LabJackRecordData` failure aborts the rest of the sweep rather
   than continuing with bad data.
+
+- **2026-07-27** — Added `ServoFindMaxIntensity[channel, xSpec, zSpec, opts]` for finding the point
+  of highest light intensity: rasters the sample holder with `ServoSetPos[]`, averages
+  `ReadLabjack[channel]` at each stop, returns the peak position. Pure Wolfram Language in
+  `WolframMachineControl.wl` (section 5) — no DLL changes, same as the LabJack suite. Design notes:
+  each axis spec is either `{start, end, step}` or a plain number (axis held fixed), so one function
+  covers both a 1D sweep and a 2D raster; ranges are **required arguments with no defaults**
+  precisely because nothing in the DLL enforces a travel limit, so the caller has to state the safe
+  region. Coarse pass + `"RefinePasses"` finer re-scans (clamped to the original bounds) rather than
+  one fine grid, since scan time is dominated by servo movement. Every move is verified against the
+  requested position because `ServoSetPos[]` echoes the request back on failure (bug #23) —
+  a silently-failed move would otherwise attribute a reading to the wrong place. **Not yet run
+  against hardware or a kernel** — written on a Mac with no Wolfram install; only a bracket/comment
+  balance check was possible. `v2/tests/test_findmaxintensity_mock.wl` is the mocked-hardware test
+  (simulated Gaussian beam, `Block`-overriding `ServoSetPos`/`ReadLabjack`/`ServoReady`/
+  `ServoHomed`) to run on the Windows box first — same mock-harness pattern used for
+  `LabJackTempSweep`.
+
+## Open items for next session
+
+A high-effort code review was run against the full session's diff right after hitting 29/29.
+Eight findings survived verification and are recorded as `docs/BUGS.md` #15-22 — **not yet
+fixed**, that's the natural next step. Three are real crash risks worth fixing before doing much
+more in this area: #15 (`servos_homed()` null-deref crashes instead of returning `False`), #16
+(an uncaught exception in a background probe thread can crash the whole process on a garbled
+reply), #17 (a timed-out probe can permanently block a working port from being reopened). The
+rest (#18-22) are lower-priority robustness/efficiency/doc-cleanup items.
+
+A ninth issue (#23) turned up through direct usage the next day: most DLL wrappers in
+`src/wolfram_api.cpp` return their `Lab::` function's raw `1`-for-failure straight through as the
+LibraryLink status code, which collides with `LIBRARY_TYPE_ERROR` — so ordinary failures (e.g.
+calling `BathOn[]` before `BathInit[]`) print a misleading "inconsistent types" error instead of
+a real message. Documented in both `docs/BUGS.md` #23 and `README.md`'s new "Known Confusing
+Error Messages" section, listing exactly which functions are affected and which already return
+proper status. Not fixed yet either.
+
+Full detail for all nine in `docs/BUGS.md`.
 - **2026-08-07** — Cleared the whole post-29/29 code-review backlog (`docs/BUGS.md` #15-24, ten
   entries, all now fixed). Three were real crash risks: #15 `servos_homed()` null-deref (added the
   same null check `servos_ready()` already used); #16 an uncaught exception from a garbled reply
