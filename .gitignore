@@ -60,4 +60,4 @@ log.txt
 
 # Recorded experiment data -- the folder itself is tracked (see v2/data/README.md),
 # but the CSVs it fills up with are not.
-v2/data/*.csv
+# v2/data/*.csv
